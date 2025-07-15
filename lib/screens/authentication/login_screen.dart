@@ -1,8 +1,8 @@
-import "package:cfv_mobile/controller/auth_controller.dart";
 import "package:flutter/material.dart";
-import "package:provider/provider.dart";
+import "package:get/get.dart"; // Import GetX
 import "../home/main_screen.dart";
 import "signup_screen.dart";
+import 'package:cfv_mobile/controller/auth_controller.dart'; // Ensure this path is correct
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,6 +12,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AuthenticationController authController = Get.put(AuthenticationController());
+
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -56,11 +58,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (value == null || value.trim().isEmpty) {
       return 'Vui lòng nhập số điện thoại';
     }
-
     if (!_isValidVietnamesePhone(value.trim())) {
       return 'Số điện thoại không hợp lệ';
     }
-
     return null;
   }
 
@@ -68,11 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (value == null || value.isEmpty) {
       return 'Vui lòng nhập mật khẩu';
     }
-
     if (!_isValidPassword(value)) {
       return 'Mật khẩu phải có ít nhất 6 ký tự';
     }
-
     return null;
   }
 
@@ -97,9 +95,8 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // Capture context safely before async gap
-    final currentContext = context;
-    final authController = Provider.of<AuthenticationController>(currentContext, listen: false);
+    // No need to capture context here for controller access, GetX handles it.
+    // But still good practice for ScaffoldMessenger and Navigator if they are not GetX-managed.
 
     final success = await authController.login(
       phoneNumber: _phoneNumberController.text.trim(),
@@ -113,8 +110,8 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (success && authController.isAuthenticated) {
-      // Show snackbar using captured context
-      ScaffoldMessenger.of(currentContext).showSnackBar(
+      // Show snackbar using current context
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Đăng nhập thành công!'),
           backgroundColor: Colors.teal.shade600,
@@ -132,12 +129,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       debugPrint('Attempting to navigate to MainScreen...');
       // Navigate safely using pushReplacement
-      Navigator.of(currentContext).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-      );
+      // Using Get.off or Get.offAll for GetX navigation is also an option here
+      Get.offAll(() => const MainScreen()); // GetX way to navigate and remove all previous routes
     } else {
       final errorMsg = authController.errorMessage ?? 'Đăng nhập thất bại';
-      ScaffoldMessenger.of(currentContext).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMsg),
           backgroundColor: Colors.red.shade600,
@@ -361,13 +357,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 // login button
-                Consumer<AuthenticationController>(
-                  builder: (context, authController, child) {
+                // Use GetBuilder to react to changes in authController.isLoading
+                GetBuilder<AuthenticationController>(
+                  init: authController, // Initialize or provide the controller instance
+                  builder: (controller) {
                     return SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: (_isFormValid && !authController.isLoading) ? _handleLogin : null,
+                        onPressed: (_isFormValid && !controller.isLoading) ? _handleLogin : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal.shade600,
                           foregroundColor: Colors.white,
@@ -377,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           disabledBackgroundColor: Colors.grey.shade300,
                         ),
-                        child: authController.isLoading
+                        child: controller.isLoading
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
@@ -413,10 +411,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextButton(
                         onPressed: () {
                           if (mounted) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                            );
+                            // Use Get.to for GetX navigation
+                            Get.to(() => const RegisterScreen());
                           }
                         },
                         style: TextButton.styleFrom(
@@ -450,6 +446,9 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.removeListener(_validateForm);
     _phoneNumberController.dispose();
     _passwordController.dispose();
+    // GetX automatically disposes controllers when they are no longer used
+    // (e.g., when the widget they were put into is removed from the tree).
+    // So, explicit dispose for GetX controllers is usually not needed here.
     super.dispose();
   }
 }

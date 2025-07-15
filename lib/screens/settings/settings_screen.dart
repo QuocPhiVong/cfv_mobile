@@ -1,12 +1,18 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // Import GetX
+import 'package:cfv_mobile/controller/auth_controller.dart'; // Import your AuthController
+import 'package:cfv_mobile/screens/authentication/login_screen.dart'; // Import LoginScreen
 import 'package:cfv_mobile/screens/order/order_history.dart';
 import 'package:cfv_mobile/screens/settings/profile_screen.dart';
-import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Get the instance of your AuthenticationController
+    final AuthenticationController authController = Get.find<AuthenticationController>();
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -27,7 +33,7 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            
+
             // User profile section
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -36,75 +42,78 @@ class SettingsScreen extends StatelessWidget {
                 color: Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Vòng Quốc Phi',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+              child: Obx(() { // Use Obx to react to changes in currentUser
+                final user = authController.currentUser;
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user?.name ?? 'Tên người dùng', // Display user's name
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '0982912617',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
+                          const SizedBox(height: 4),
+                          Text(
+                            user?.phoneNumber ?? 'Số điện thoại', // Display user's phone number
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () {
-                            // Handle view profile action
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
-                          },
-                          child: Row(
-                            children: [
-                              Text(
-                                'Xem hồ sơ',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade700,
-                                  fontWeight: FontWeight.w500,
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () {
+                              // Handle view profile action
+                              Get.to(() => ProfileScreen()); // Use Get.to for navigation
+                            },
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Xem hồ sơ',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.chevron_right,
-                                size: 16,
-                                color: Colors.grey.shade700,
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.chevron_right,
+                                  size: 16,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey.shade400,
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey.shade400,
+                      ),
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.grey.shade600,
+                        size: 24,
+                      ),
                     ),
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.grey.shade600,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
+                  ],
+                );
+              }),
             ),
-            
+
             const SizedBox(height: 30),
-            
+
             // Menu items
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -127,6 +136,7 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Đơn hàng của bạn',
                     onTap: () {
                       print('Orders tapped');
+                      // Example: Get.to(() => OrdersScreen());
                     },
                   ),
                   _buildDivider(),
@@ -135,6 +145,7 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Quản lý lịch hẹn',
                     onTap: () {
                       print('Manage appointments tapped');
+                      // Example: Get.to(() => AppointmentsScreen());
                     },
                   ),
                   _buildDivider(),
@@ -142,7 +153,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.history,
                     title: 'Lịch sử đặt hàng',
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => OrderHistoryScreen()));
+                      Get.to(() => OrderHistoryScreen()); // Use Get.to for navigation
                     },
                   ),
                   _buildDivider(),
@@ -151,6 +162,7 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Gửi báo cáo',
                     onTap: () {
                       print('Send report tapped');
+                      // Example: Get.to(() => ReportScreen());
                     },
                   ),
                   _buildDivider(),
@@ -158,14 +170,13 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.power_settings_new,
                     title: 'Đăng xuất',
                     onTap: () {
-                      _showLogoutDialog(context);
+                      _showLogoutDialog(context, authController); // Pass authController
                     },
                     isLogout: true,
                   ),
                 ],
               ),
             ),
-            
             const SizedBox(height: 40),
           ],
         ),
@@ -221,7 +232,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context, AuthenticationController authController) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -243,7 +254,7 @@ class SettingsScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Dismiss dialog
               },
               child: Text(
                 'Hủy',
@@ -255,10 +266,9 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Handle logout logic here
-                _handleLogout(context);
+              onPressed: () async {
+                Navigator.of(context).pop(); // Dismiss dialog
+                await _handleLogout(authController); // Call the logout function
               },
               child: Text(
                 'Đăng xuất',
@@ -275,16 +285,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _handleLogout(BuildContext context) {
-    // Add your logout logic here
-    // For example: clear user data, navigate to login screen
-    print('User logged out');
-    
-    // Example navigation to login screen
-    // Navigator.pushAndRemoveUntil(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => LoginScreen()),
-    //   (route) => false,
-    // );
+  // Modified _handleLogout to use the AuthenticationController
+  Future<void> _handleLogout(AuthenticationController authController) async {
+    print('Attempting user logout...');
+    await authController.logout(); // Call the logout method from the controller
+
+    // After logout, navigate to the LoginScreen and remove all previous routes
+    Get.offAll(() => const LoginScreen());
+    print('User logged out and navigated to LoginScreen');
   }
 }
