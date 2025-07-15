@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/screens/authentication/finish_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -82,7 +83,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       );
       
       // Navigate to main app or login screen
-      // Navigator.pushReplacementNamed(context, '/home');
+      Navigator.push(context, MaterialPageRoute(builder: (context) => FinishProfileScreen()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

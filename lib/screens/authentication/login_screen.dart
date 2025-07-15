@@ -1,5 +1,8 @@
-import "package:cfv_mobile/screens/authentication/signup_screen.dart";
+import "package:cfv_mobile/controller/auth_controller.dart";
 import "package:flutter/material.dart";
+import "package:provider/provider.dart";
+import "../home/main_screen.dart";
+import "signup_screen.dart";
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,10 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
+
   bool _isPasswordVisible = false;
-  bool _isLoading = false;
-  
+
   // Validation state
   String? _phoneError;
   String? _passwordError;
@@ -33,13 +35,13 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isValidVietnamesePhone(String phone) {
     // Remove all spaces and special characters
     String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
-    
+
     // Vietnamese phone number patterns
     // Mobile: 03x, 05x, 07x, 08x, 09x (10 digits total)
     // With country code: +84 followed by 9 digits
     RegExp mobilePattern = RegExp(r'^(0[3|5|7|8|9][0-9]{8})$');
     RegExp internationalPattern = RegExp(r'^(\+84[3|5|7|8|9][0-9]{8})$');
-    
+
     return mobilePattern.hasMatch(cleanPhone) || internationalPattern.hasMatch(cleanPhone);
   }
 
@@ -54,11 +56,11 @@ class _LoginScreenState extends State<LoginScreen> {
     if (value == null || value.trim().isEmpty) {
       return 'Vui lòng nhập số điện thoại';
     }
-    
+
     if (!_isValidVietnamesePhone(value.trim())) {
       return 'Số điện thoại không hợp lệ';
     }
-    
+
     return null;
   }
 
@@ -66,23 +68,26 @@ class _LoginScreenState extends State<LoginScreen> {
     if (value == null || value.isEmpty) {
       return 'Vui lòng nhập mật khẩu';
     }
-    
+
     if (!_isValidPassword(value)) {
       return 'Mật khẩu phải có ít nhất 6 ký tự';
     }
-    
+
     return null;
   }
 
   // Validate entire form
   void _validateForm() {
-    setState(() {
-      _phoneError = _validatePhoneNumber(_phoneNumberController.text);
-      _passwordError = _validatePassword(_passwordController.text);
-      _isFormValid = _phoneError == null && _passwordError == null && 
-                     _phoneNumberController.text.isNotEmpty && 
-                     _passwordController.text.isNotEmpty;
-    });
+    if (mounted) {
+      setState(() {
+        _phoneError = _validatePhoneNumber(_phoneNumberController.text);
+        _passwordError = _validatePassword(_passwordController.text);
+        _isFormValid = _phoneError == null &&
+            _passwordError == null &&
+            _phoneNumberController.text.isNotEmpty &&
+            _passwordController.text.isNotEmpty;
+      });
+    }
   }
 
   // Handle login
@@ -92,30 +97,53 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    // Capture context safely before async gap
+    final currentContext = context;
+    final authController = Provider.of<AuthenticationController>(currentContext, listen: false);
 
-    try {      
-      // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
+    final success = await authController.login(
+      phoneNumber: _phoneNumberController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    // Check if the widget is still mounted after the async operation
+    if (!mounted) {
+      debugPrint('LoginScreen is no longer mounted after login attempt.');
+      return;
+    }
+
+    if (success && authController.isAuthenticated) {
+      // Show snackbar using captured context
+      ScaffoldMessenger.of(currentContext).showSnackBar(
         SnackBar(
           content: const Text('Đăng nhập thành công!'),
           backgroundColor: Colors.teal.shade600,
+          duration: const Duration(seconds: 1),
         ),
       );
-    } catch (e) {
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
+      // Wait a bit so the snackbar can appear before navigating
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Check again before navigation, as another async gap occurred
+      if (!mounted) {
+        debugPrint('LoginScreen is no longer mounted after snackbar delay.');
+        return;
+      }
+
+      debugPrint('Attempting to navigate to MainScreen...');
+      // Navigate safely using pushReplacement
+      Navigator.of(currentContext).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    } else {
+      final errorMsg = authController.errorMessage ?? 'Đăng nhập thất bại';
+      ScaffoldMessenger.of(currentContext).showSnackBar(
         SnackBar(
-          content: const Text('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'),
+          content: Text(errorMsg),
           backgroundColor: Colors.red.shade600,
+          duration: const Duration(seconds: 3),
         ),
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -137,7 +165,6 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 60),
-
                 // app logo
                 Center(
                   child: Container(
@@ -154,9 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
                 // welcome text
                 const Text(
                   'Chào mừng quay trở lại!\nVui lòng đăng nhập để tiếp tục',
@@ -167,9 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 1.3,
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
                 // phone number input
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,9 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                   ],
                 ),
-
                 const SizedBox(height: 24),
-
                 // password input
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,15 +311,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _isPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                             color: Colors.grey.shade600,
                           ),
                           onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
+                            if (mounted) {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            }
                           },
                         ),
                         contentPadding: const EdgeInsets.symmetric(
@@ -320,9 +341,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
                 // forgot password
                 Align(
                   alignment: Alignment.centerRight,
@@ -340,45 +359,45 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 // login button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: (_isFormValid && !_isLoading) ? _handleLogin : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade600,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      disabledBackgroundColor: Colors.grey.shade300,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text(
-                            'Đăng nhập',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                Consumer<AuthenticationController>(
+                  builder: (context, authController, child) {
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: (_isFormValid && !authController.isLoading) ? _handleLogin : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade600,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                  ),
+                          disabledBackgroundColor: Colors.grey.shade300,
+                        ),
+                        child: authController.isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Đăng nhập',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    );
+                  },
                 ),
-
                 const SizedBox(height: 32),
-
                 // sign up text
                 Center(
                   child: Row(
@@ -393,11 +412,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Handle sign up action
-                          Navigator.push(
-                            context, 
-                            MaterialPageRoute(builder: (context) => RegisterScreen())
-                          );
+                          if (mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                            );
+                          }
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
