@@ -1,5 +1,5 @@
 import 'package:cfv_mobile/screens/product/product_details.dart';
-import 'package:cfv_mobile/screens/cart/cart_info.dart'; // Add this import
+import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,6 +13,18 @@ class _HomeScreenState extends State<HomeScreen> {
   // Track which posts are expanded
   Set<int> expandedPosts = {};
   Set<int> likedPosts = {};
+  
+  // Controllers for message input fields
+  Map<int, TextEditingController> messageControllers = {};
+
+  @override
+  void dispose() {
+    // Dispose all controllers
+    for (var controller in messageControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header section
+              // Header section (keeping existing code)
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -65,10 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Row(
                           children: [
-                            // Cart icon with navigation
                             GestureDetector(
                               onTap: () {
-                                // Navigate to CartInfoScreen
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -109,8 +119,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    
-                    // Search bar
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
@@ -132,10 +140,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
-              // Categories section - Updated to horizontal scroll with images
+
+              // Categories section (keeping existing code)
               Container(
                 height: 120,
                 child: ListView(
@@ -173,10 +181,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
-              // Filter buttons
+
+              // Filter buttons (keeping existing code)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
@@ -243,84 +251,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
-              // Products section - WITH NAVIGATION
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Sản Phẩm',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        Text(
-                          'Xem Thêm',
-                          style: TextStyle(
-                            color: Colors.green.shade600,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Custom flexible grid layout with navigation
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final cardWidth = (constraints.maxWidth - 16) / 2;
-                        
-                        final products = [
-                          {
-                            'name': 'Xà lách xoong tươi',
-                            'price': '25,000',
-                            'quantity': '50',
-                            'garden': 'Vườn Xanh Miền Tây',
-                          },
-                          {
-                            'name': 'Cà chua bí đá hữu cơ',
-                            'price': '30,000',
-                            'quantity': '35',
-                            'garden': 'Vườn Xanh Miền Tây',
-                          },
-                          {
-                            'name': 'Rau dền đỏ hữu cơ',
-                            'price': '18,000',
-                            'quantity': '40',
-                            'garden': 'Vườn Organic Cần Thơ',
-                          },
-                          {
-                            'name': 'Cải bó xôi',
-                            'price': '26,000',
-                            'quantity': '35',
-                            'garden': 'Vườn Organic Cần Thơ',
-                          },
-                        ];
-                        
-                        return Wrap(
-                          spacing: 16,
-                          runSpacing: 16,
-                          children: products.map((product) =>
-                             _buildProductCard(product, cardWidth)
-                          ).toList(),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
+
               // Gardens list section (keeping existing code)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -379,9 +312,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             'joinDate': 'Tham gia: Tháng 2/2023',
                           },
                         ];
-                        
+
                         final garden = gardens[index];
-                        
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
@@ -471,10 +404,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              
-              // Posts section (keeping existing code)
+
+              // Posts section - UPDATED
               const SizedBox(height: 24),
-              
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -516,7 +449,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             'fullDescription': 'Vườn chúng tôi vừa thu hoạch lô cà chua bí organic đầu tiên của năm. Những quả cà chua được trồng hoàn toàn tự nhiên, không sử dụng thuốc trừ sâu hay phân bón hóa học. Chất lượng tuyệt vời với độ ngọt tự nhiên và màu sắc đẹp mắt.',
                             'seasonInfo': 'Gieo trồng: 15/08/2024 - Thu hoạch: 20/12/2024',
                             'productName': 'Cà chua bí đá hữu cơ',
-                            'productPrice': '30,000 VNĐ/kg',
+                            'productPrice': '30,000',
+                            'productQuantity': '100',
+                            'productGarden': 'Vườn Xanh Miền Tây',
                           },
                           {
                             'gardenName': 'Vườn Sạch Đồng Tháp',
@@ -527,14 +462,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             'fullDescription': 'Rau muống nước trồng theo phương pháp hữu cơ, tươi ngon và an toàn cho sức khỏe. Được trồng trong môi trường nước sạch, không ô nhiễm. Lá xanh mướt, thân giòn ngọt, rất thích hợp cho các món ăn gia đình.',
                             'seasonInfo': 'Gieo trồng: 01/10/2024 - Thu hoạch: 15/01/2025',
                             'productName': 'Rau muống nước tươi',
-                            'productPrice': '15,000 VNĐ/kg',
+                            'productPrice': '15,000',
+                            'productQuantity': '50',
+                            'productGarden': 'Vườn Sạch Đồng Tháp',
                           },
                         ];
-                        
+
                         final post = posts[index];
                         bool isExpanded = expandedPosts.contains(index);
                         bool isLiked = likedPosts.contains(index);
-                        
+
+                        // Initialize controller for this post if not exists
+                        if (!messageControllers.containsKey(index)) {
+                          messageControllers[index] = TextEditingController();
+                        }
+
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
@@ -596,7 +538,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              
+
                               // Post title
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -609,9 +551,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 8),
-                              
+
                               // Post description
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -649,9 +591,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 16),
-                              
+
                               // Season info
                               Container(
                                 margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -694,9 +636,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 16),
-                              
+
                               // Post image
                               Container(
                                 width: double.infinity,
@@ -712,10 +654,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   size: 60,
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 16),
-                              
-                              // Product attachment
+
+                              // Product attachment - UPDATED with navigation
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16),
                                 child: Column(
@@ -730,54 +672,76 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: 60,
-                                          height: 60,
-                                          decoration: BoxDecoration(
-                                            color: Colors.green.shade100,
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: Colors.green.shade200),
+                                    GestureDetector(
+                                      onTap: () {
+                                        // Navigate to ProductDetailScreen with product data
+                                        final productData = {
+                                          'name': post['productName']!,
+                                          'price': post['productPrice']!,
+                                          'quantity': post['productQuantity']!,
+                                          'garden': post['productGarden']!,
+                                        };
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => ProductDetailScreen(product: productData),
                                           ),
-                                          child: Icon(
-                                            Icons.eco,
-                                            color: Colors.green.shade600,
-                                            size: 30,
+                                        );
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.shade100,
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.green.shade200),
+                                            ),
+                                            child: Icon(
+                                              Icons.eco,
+                                              color: Colors.green.shade600,
+                                              size: 30,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                post['productName']!,
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.black87,
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  post['productName']!,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.black87,
+                                                  ),
                                                 ),
-                                              ),
-                                              Text(
-                                                post['productPrice']!,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.green.shade600,
+                                                Text(
+                                                  '${post['productPrice']} VNĐ/kg',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.green.shade600,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                          Icon(
+                                            Icons.arrow_forward_ios,
+                                            size: 16,
+                                            color: Colors.grey.shade400,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              
+
                               const SizedBox(height: 16),
-                              
+
                               // Like button
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -815,6 +779,91 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 ),
                               ),
+
+                              // FIXED: Functional Message box at the bottom of each post
+                              Container(
+                                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8F5E8), // Light green background
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.eco,
+                                          color: Colors.green.shade600,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          'Gửi tin nhắn cho Gardener',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: TextField(
+                                              controller: messageControllers[index],
+                                              decoration: InputDecoration(
+                                                hintText: 'Nhập tin nhắn...',
+                                                hintStyle: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey.shade500,
+                                                ),
+                                                border: InputBorder.none,
+                                                contentPadding: const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 12,
+                                                ),
+                                              ),
+                                              maxLines: null,
+                                              textInputAction: TextInputAction.send,
+                                              onSubmitted: (value) {
+                                                _sendMessage(index, value);
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        GestureDetector(
+                                          onTap: () {
+                                            _sendMessage(index, messageControllers[index]!.text);
+                                          },
+                                          child: Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.shade600,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                              Icons.send,
+                                              color: Colors.white,
+                                              size: 18,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -823,7 +872,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 100), // Space for bottom nav
             ],
           ),
@@ -832,11 +881,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Method to handle sending messages
+  void _sendMessage(int postIndex, String message) {
+    if (message.trim().isNotEmpty) {
+      // Here you would typically send the message to your backend
+      print('Sending message for post $postIndex: $message');
+      
+      // Clear the input field
+      messageControllers[postIndex]?.clear();
+      
+      // Show a confirmation (optional)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tin nhắn đã được gửi!'),
+          backgroundColor: Colors.green.shade600,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   // Updated product card widget with navigation
   Widget _buildProductCard(Map<String, String> product, double width) {
     return GestureDetector(
       onTap: () {
-        // Navigate to product detail screen
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -862,7 +930,6 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image section
             AspectRatio(
               aspectRatio: 1.5,
               child: Container(
@@ -881,15 +948,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            
-            // Content section
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Product name
                   Text(
                     product['name']!,
                     style: const TextStyle(
@@ -901,10 +965,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  
                   const SizedBox(height: 6),
-                  
-                  // Price
                   Text(
                     '${product['price']} VNĐ/kg',
                     style: TextStyle(
@@ -913,10 +974,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.green.shade600,
                     ),
                   ),
-                  
                   const SizedBox(height: 4),
-                  
-                  // Quantity
                   Text(
                     'Số lượng: ${product['quantity']} kg',
                     style: TextStyle(
@@ -924,10 +982,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.grey.shade600,
                     ),
                   ),
-                  
                   const SizedBox(height: 2),
-                  
-                  // Garden name
                   Text(
                     product['garden']!,
                     style: TextStyle(
@@ -946,7 +1001,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Updated category item widget with images and horizontal scroll
   Widget _buildCategoryItem({
     required String imagePath,
     required String label,

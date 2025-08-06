@@ -11,6 +11,7 @@ class CartInfoScreen extends StatefulWidget {
 
 class _CartInfoScreenState extends State<CartInfoScreen> {
   late CartService _cartService;
+  bool _isEditMode = false; // Add edit mode state
 
   @override
   void initState() {
@@ -34,7 +35,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     final cartItems = _cartService.items;
     final totalPrice = _cartService.totalPrice;
     final itemCount = _cartService.itemCount;
-    
+        
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -53,18 +54,23 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
+          // Add edit/save button
+          if (cartItems.isNotEmpty)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isEditMode = !_isEditMode;
+                });
+              },
               child: Text(
-                'Tổng: $itemCount sản phẩm',
+                _isEditMode ? 'Lưu' : 'Chỉnh sửa',
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Colors.green.shade600,
                   fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-          ),
         ],
       ),
       body: cartItems.isEmpty ? _buildEmptyCart() : _buildCartWithItems(cartItems, totalPrice, itemCount),
@@ -135,7 +141,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
             itemBuilder: (context, index) {
               final garden = groupedItems.keys.elementAt(index);
               final items = groupedItems[garden]!;
-              
+                            
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
@@ -173,7 +179,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                         ),
                       ),
                     ),
-                    
+                                        
                     // Items list
                     ...items.map((item) => _buildCartItem(item)).toList(),
                   ],
@@ -182,42 +188,43 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
             },
           ),
         ),
-        
-        // Bottom create order button
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 1,
-                blurRadius: 5,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: () => _showOrderConfirmation(cartItems, totalPrice, itemCount),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green.shade600,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
+                
+        // Bottom create order button - only show when not in edit mode
+        if (!_isEditMode)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, -2),
+                ),
+              ],
             ),
-            child: Text(
-              'Tạo đơn hàng ($itemCount sản phẩm) - ${_cartService.formattedTotalPrice} VNĐ',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+            child: ElevatedButton(
+              onPressed: () => _showOrderConfirmation(cartItems, totalPrice, itemCount),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                'Tạo đơn hàng ($itemCount sản phẩm) - ${_cartService.formattedTotalPrice} VNĐ',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -242,21 +249,40 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
               size: 30,
             ),
           ),
-          
+                    
           const SizedBox(width: 12),
-          
+                    
           // Product details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    // Delete icon - only show in edit mode
+                    if (_isEditMode)
+                      GestureDetector(
+                        onTap: () => _removeItem(item),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: Colors.red.shade400,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -278,85 +304,90 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                       ),
                     ),
                     const Spacer(),
-                    // Quantity controls
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            if (item.quantity > 1) {
-                              _cartService.updateQuantity(item.id, item.quantity - 1);
-                            }
-                          },
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey.shade400),
-                              color: Colors.white,
-                            ),
-                            child: Icon(
-                              Icons.remove,
-                              color: Colors.grey.shade600,
-                              size: 16,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '${item.quantity} kg',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: () {
-                            _cartService.updateQuantity(item.id, item.quantity + 1);
-                          },
-                          child: Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey.shade400),
-                              color: Colors.white,
-                            ),
-                            child: Icon(
-                              Icons.add,
-                              color: Colors.grey.shade600,
-                              size: 16,
+                    // Quantity controls - always show quantity, but controls only in edit mode
+                    if (_isEditMode)
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              if (item.quantity > 1) {
+                                _cartService.updateQuantity(item.id, item.quantity - 1);
+                              }
+                            },
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey.shade400),
+                                color: Colors.white,
+                              ),
+                              child: Icon(
+                                Icons.remove,
+                                color: Colors.grey.shade600,
+                                size: 16,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${item.quantity} kg',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: () {
+                              _cartService.updateQuantity(item.id, item.quantity + 1);
+                            },
+                            child: Container(
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey.shade400),
+                                color: Colors.white,
+                              ),
+                              child: Icon(
+                                Icons.add,
+                                color: Colors.grey.shade600,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      // Show quantity without controls when not in edit mode
+                      Text(
+                        '${item.quantity} kg',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
-                      ],
-                    ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Tổng: ${_formatPrice(item.totalPrice.toInt())} VNĐ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green.shade600,
+                // Total price - only show when not in edit mode
+                if (!_isEditMode)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Tổng: ${_formatPrice(item.totalPrice.toInt())} VNĐ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green.shade600,
+                        ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => _removeItem(item),
-                      child: Icon(
-                        Icons.delete_outline,
-                        color: Colors.red.shade400,
-                        size: 20,
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ],
             ),
           ),
@@ -405,23 +436,23 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
   }
 
   void _showOrderConfirmation(List<CartItem> cartItems, double totalPrice, int itemCount) {
-  // Navigate to Order Summary screen
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => OrderSummaryScreen(
-        orderItems: cartItems,
-        totalPrice: totalPrice,
-        itemCount: itemCount,
+    // Navigate to Order Summary screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderSummaryScreen(
+          orderItems: cartItems,
+          totalPrice: totalPrice,
+          itemCount: itemCount,
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   void _createOrder() {
     // Clear cart after creating order
     _cartService.clearCart();
-    
+        
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
@@ -435,7 +466,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
         ),
       ),
     );
-    
+        
     // Navigate back to home
     Navigator.pop(context);
   }

@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/screens/cart/address_selection.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:flutter/material.dart';
 import 'order_success.dart';
@@ -19,7 +20,7 @@ class OrderSummaryScreen extends StatefulWidget {
 }
 
 class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
-  String selectedDeliveryMethod = 'pickup';
+  String selectedDeliveryMethod = 'card';
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -54,7 +55,6 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Remove automatic delivery fee calculation
     final totalWithDelivery = widget.totalPrice;
 
     return Scaffold(
@@ -101,92 +101,93 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                           icon: Icons.phone,
                           keyboardType: TextInputType.phone,
                         ),
+                        const SizedBox(height: 16),
+                        _buildAddressField(),
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Order Items (moved up)
+                  // Order Items
                   _buildSectionCard(
                     title: 'Chi tiết đơn hàng (${widget.itemCount} sản phẩm)',
                     child: Column(
                       children: widget.orderItems.map((item) => _buildOrderItem(item)).toList(),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
-                  // Delivery Method (moved down)
+                  // Payment Method
                   _buildSectionCard(
-                    title: 'Phương thức nhận hàng',
+                    title: 'Phương thức thanh toán',
                     child: Column(
                       children: [
                         _buildDeliveryOption(
-                          value: 'pickup',
-                          title: 'Tự đến lấy',
-                          subtitle: 'Đến trực tiếp vườn để nhận hàng',
-                          icon: Icons.store,
+                          value: 'card',
+                          title: 'Thanh toán thẻ',
+                          subtitle: 'Thanh toán chuyển khoản/quét thẻ ngân hàng',
+                          icon: Icons.credit_card,
                         ),
                         const SizedBox(height: 12),
                         _buildDeliveryOption(
-                          value: 'delivery',
-                          title: 'Giao hàng tận nơi',
-                          subtitle: 'Phí giao hàng sẽ được xác nhận bởi Chủ Vườn',
+                          value: 'cod',
+                          title: 'COD',
+                          subtitle: 'Thanh toán khi nhận hàng',
                           icon: Icons.delivery_dining,
                         ),
-                        if (selectedDeliveryMethod == 'delivery') ...[
-                          const SizedBox(height: 16),
-                          _buildTextField(
-                            controller: _addressController,
-                            label: 'Địa chỉ giao hàng',
-                            icon: Icons.location_on,
-                            maxLines: 2,
+                        const SizedBox(height: 16),
+                        // Notification message
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue.shade200),
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: Colors.blue.shade600,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Phí giao hàng sẽ được xác nhận bởi chủ vườn sau khi tạo đơn hàng',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.blue.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-
+                
                   const SizedBox(height: 16),
-
-                  // Order Note
-                  _buildSectionCard(
-                    title: 'Ghi chú đơn hàng',
-                    child: _buildTextField(
-                      controller: _noteController,
-                      label: 'Ghi chú cho người bán (tùy chọn)',
-                      icon: Icons.note,
-                      maxLines: 3,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
                   // Order Summary
                   _buildSectionCard(
                     title: 'Tóm tắt đơn hàng',
                     child: Column(
                       children: [
                         _buildSummaryRow('Tổng tiền hàng:', _formatPrice(widget.totalPrice.toInt())),
-                        if (selectedDeliveryMethod == 'delivery') ...[
-                          const SizedBox(height: 8),
-                          _buildSummaryRow('Phí giao hàng:', 'Sẽ được xác nhận', isDeliveryFee: true),
-                          const SizedBox(height: 8),
-                          const Divider(),
-                          const SizedBox(height: 8),
-                        ],
-                        _buildTotalRow(selectedDeliveryMethod == 'delivery'),
+                        const SizedBox(height: 8),
+                        _buildSummaryRow('Phí giao hàng:', 'Sẽ được chủ vườn xác nhận sau khi tạo đơn', isDeliveryFee: true),
+                        const SizedBox(height: 8),
+                        const Divider(),
+                        const SizedBox(height: 8),
+                        _buildTotalRow(true),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
           ),
-
           // Bottom confirm button
           Container(
             padding: const EdgeInsets.all(20),
@@ -222,12 +223,10 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                       children: [
                         const Icon(Icons.check_circle, size: 20),
                         const SizedBox(width: 8),
-                        Flexible(
+                        const Flexible(
                           child: Text(
-                            selectedDeliveryMethod == 'delivery'
-                                ? 'Xác nhận đặt hàng'
-                                : 'Xác nhận đặt hàng',
-                            style: const TextStyle(
+                            'Xác nhận đặt hàng',
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -238,9 +237,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      selectedDeliveryMethod == 'delivery'
-                          ? '${_formatPrice(widget.totalPrice.toInt())} VNĐ + phí giao hàng'
-                          : '${_formatPrice(widget.totalPrice.toInt())} VNĐ',
+                      '${_formatPrice(widget.totalPrice.toInt())} VNĐ + phí giao hàng',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -257,22 +254,86 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     );
   }
 
-  // ... (keeping all the existing widget building methods the same)
+  Widget _buildAddressField() {
+    return GestureDetector(
+      onTap: () async {
+        final selectedAddress = await Navigator.push<String>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddressListScreen(
+              selectedAddress: _addressController.text,
+            ),
+          ),
+        );
+        
+        if (selectedAddress != null) {
+          setState(() {
+            _addressController.text = selectedAddress;
+          });
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.home, color: Colors.green.shade600),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Địa chỉ',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _addressController.text.isEmpty 
+                        ? 'Chọn địa chỉ giao hàng'
+                        : _addressController.text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _addressController.text.isEmpty 
+                          ? Colors.grey.shade500
+                          : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey.shade400,
+              size: 16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  // Rest of the methods remain the same...
   void _confirmOrder(double totalPrice) {
     // Validate required fields
     if (_nameController.text.trim().isEmpty) {
       _showErrorMessage('Vui lòng nhập họ và tên');
       return;
     }
-    
+        
     if (_phoneController.text.trim().isEmpty) {
       _showErrorMessage('Vui lòng nhập số điện thoại');
       return;
     }
-
-    if (selectedDeliveryMethod == 'delivery' && _addressController.text.trim().isEmpty) {
-      _showErrorMessage('Vui lòng nhập địa chỉ giao hàng');
+    
+    if (_addressController.text.trim().isEmpty) {
+      _showErrorMessage('Vui lòng chọn địa chỉ giao hàng');
       return;
     }
 
@@ -308,9 +369,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   children: [
                     Text('Khách hàng: ${_nameController.text}'),
                     Text('Số điện thoại: ${_phoneController.text}'),
-                    Text('Phương thức: ${selectedDeliveryMethod == 'pickup' ? 'Tự đến lấy' : 'Giao hàng'}'),
-                    if (selectedDeliveryMethod == 'delivery')
-                      Text('Địa chỉ: ${_addressController.text}'),
+                    Text('Phương thức: ${selectedDeliveryMethod == 'card' ? 'Thanh toán thẻ' : 'COD'}'),
+                    Text('Địa chỉ: ${_addressController.text}'),
                     const SizedBox(height: 8),
                     Text(
                       'Tổng tiền: ${_formatPrice(totalPrice.toInt())} VNĐ',
@@ -367,10 +427,10 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     // Simulate order processing
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.of(context).pop(); // Close loading dialog
-      
+            
       // Clear cart
       CartService().clearCart();
-      
+            
       // Navigate to success screen
       _navigateToSuccessScreen();
     });
@@ -378,7 +438,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
   void _navigateToSuccessScreen() {
     final orderId = _generateOrderId();
-    
+        
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -389,7 +449,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           customerName: _nameController.text,
           customerPhone: _phoneController.text,
           deliveryMethod: selectedDeliveryMethod,
-          deliveryAddress: selectedDeliveryMethod == 'delivery' ? _addressController.text : null,
+          deliveryAddress: _addressController.text,
           orderNote: _noteController.text.isNotEmpty ? _noteController.text : null,
           orderId: orderId,
         ),
@@ -397,8 +457,6 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     );
   }
 
-  // ... (keeping all other existing methods the same)
-  
   Widget _buildSectionCard({required String title, required Widget child}) {
     return Container(
       width: double.infinity,
@@ -483,53 +541,28 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         setState(() {
           selectedDeliveryMethod = value;
         });
-        
-        // Show snackbar notification when delivery is selected
-        if (value == 'delivery') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                'Phí giao hàng sẽ được Chủ Vườn xác nhận sau khi đơn hàng được chấp nhận',
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: Colors.blue.shade600,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              duration: const Duration(seconds: 4),
-              action: SnackBarAction(
-                label: 'Đã hiểu',
-                textColor: Colors.white,
-                onPressed: () {
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                },
-              ),
-            ),
-          );
-        }
       },
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           border: Border.all(
-            color: selectedDeliveryMethod == value 
-                ? Colors.green.shade600 
-                : Colors.grey.shade300,
+            color: selectedDeliveryMethod == value
+                 ? Colors.green.shade600
+                 : Colors.grey.shade300,
             width: selectedDeliveryMethod == value ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
-          color: selectedDeliveryMethod == value 
-              ? Colors.green.shade50 
-              : Colors.white,
+          color: selectedDeliveryMethod == value
+               ? Colors.green.shade50
+               : Colors.white,
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: selectedDeliveryMethod == value 
-                  ? Colors.green.shade600 
-                  : Colors.grey.shade600,
+              color: selectedDeliveryMethod == value
+                   ? Colors.green.shade600
+                   : Colors.grey.shade600,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -541,9 +574,9 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: selectedDeliveryMethod == value 
-                          ? Colors.green.shade700 
-                          : Colors.black87,
+                      color: selectedDeliveryMethod == value
+                           ? Colors.green.shade700
+                           : Colors.black87,
                     ),
                   ),
                   Text(
@@ -563,31 +596,6 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                 setState(() {
                   selectedDeliveryMethod = newValue!;
                 });
-                
-                // Show snackbar notification when delivery is selected
-                if (newValue == 'delivery') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        'Phí giao hàng sẽ được Chủ Vườn xác nhận sau khi đơn hàng được chấp nhận',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      backgroundColor: Colors.blue.shade600,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      duration: const Duration(seconds: 4),
-                      action: SnackBarAction(
-                        label: 'Đã hiểu',
-                        textColor: Colors.white,
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        },
-                      ),
-                    ),
-                  );
-                }
               },
               activeColor: Colors.green.shade600,
             ),
