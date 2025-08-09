@@ -37,7 +37,7 @@ class CartItemModel {
   final String? productId;
   final String? productName;
   final double? price;
-  final int? quantity;
+  int? quantity;
   final String? productUnit;
 
   CartItemModel({

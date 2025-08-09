@@ -15,7 +15,7 @@ class CartInfoScreen extends StatefulWidget {
 
 class _CartInfoScreenState extends State<CartInfoScreen> {
   late CartService _cartService;
-  bool _isEditMode = false; // Add edit mode state
+  bool _isEditMode = true; // Add edit mode state
 
   CartController get cartController => Get.find<CartController>();
 
@@ -204,7 +204,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                 elevation: 0,
               ),
               child: Text(
-                'Tạo đơn hàng ($itemCount sản phẩm) - ${_cartService.formattedTotalPrice} VNĐ',
+                'Tạo đơn hàng ($itemCount sản phẩm) - ${cartItems.isNotEmpty ? cartItems.map((item) => (item.cartItems?.first.price ?? 1) * (item.cartItems?.first.quantity ?? 1)).reduce((a, b) => a + b) : 0} VNĐ',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
@@ -270,8 +270,9 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                           GestureDetector(
                             onTap: () {
                               if ((item.cartItems?.first.quantity ?? 0) > 1) {
-                                _cartService.updateQuantity(
-                                  'item.cartItems?.first.cartItemId',
+                                cartController.updateQuantity(
+                                  item.cartId,
+                                  item.cartItems?.first.cartItemId,
                                   (item.cartItems?.first.quantity ?? 0) - 1,
                                 );
                               }
@@ -295,8 +296,9 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                           const SizedBox(width: 12),
                           GestureDetector(
                             onTap: () {
-                              _cartService.updateQuantity(
-                                'item.cartItems?.first.cartItemId',
+                              cartController.updateQuantity(
+                                item.cartId,
+                                item.cartItems?.first.cartItemId,
                                 (item.cartItems?.first.quantity ?? 0) + 1,
                               );
                             },
@@ -352,7 +354,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
             TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Hủy')),
             ElevatedButton(
               onPressed: () {
-                _cartService.removeItem(item.cartId ?? '');
+                cartController.removeItem(item.cartId ?? '');
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

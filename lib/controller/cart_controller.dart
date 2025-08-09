@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/data/repositories/cart_repository.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,15 @@ class CartController extends GetxController {
     debugPrint('CartController onReady: Initialized successfully.');
   }
 
+  void removeItem(String cartId) {
+    cartItems.removeWhere((item) => item.cartId == cartId);
+
+    _cartRepository.updateCart(
+      retailerId: Get.find<AuthenticationController>().currentUser?.accountId ?? '',
+      cartItems: cartItems, // Assuming CartItemModel has a constructor
+    );
+  }
+
   Future<bool> addToCart({
     required String retailerId,
     required String gardenerId,
@@ -28,7 +38,7 @@ class CartController extends GetxController {
 
       temp.add(CartResponse(null, retailerId, gardenerId, gardenerName, cartItems: [cartItem]));
 
-      final response = await _cartRepository.addToCart(retailerId: retailerId, cartItems: temp);
+      final response = await _cartRepository.updateCart(retailerId: retailerId, cartItems: temp);
       debugPrint('Added to cart successfully: $response');
       return true;
     } catch (e) {
@@ -53,6 +63,21 @@ class CartController extends GetxController {
       debugPrint('Error loading cart details: $e');
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void updateQuantity(String? cartId, String? cartItemId, int i) {
+    final cart = cartItems.value.firstWhereOrNull((cart) => cart.cartId == cartId);
+    if (cart != null) {
+      final item = cart.cartItems?.firstWhereOrNull((item) => item.cartItemId == cartItemId);
+      if (item != null) {
+        item.quantity = i;
+        debugPrint('Updated quantity for item $cartItemId in cart $cartId to $i');
+        _cartRepository.updateCart(
+          retailerId: Get.find<AuthenticationController>().currentUser?.accountId ?? '',
+          cartItems: cartItems.value,
+        );
+      }
     }
   }
 }

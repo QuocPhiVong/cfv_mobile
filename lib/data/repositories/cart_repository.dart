@@ -16,12 +16,13 @@ class CartRepository extends GetxController {
     debugPrint('CartRepository onReady: Initialized successfully.');
   }
 
-  Future<bool> addToCart({String? retailerId, List<CartResponse> cartItems = const []}) async {
+  Future<bool> updateCart({String? retailerId, List<CartResponse> cartItems = const []}) async {
     try {
+      debugPrint('Updating cart: $cartItems');
       final response = await _apiService.dio.put('/retailer/$retailerId/carts', data: cartItems);
       return true;
     } catch (e) {
-      debugPrint('Error adding to cart: $e');
+      debugPrint('Error updating cart: $e');
       return false;
     }
   }
