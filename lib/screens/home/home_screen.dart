@@ -1,26 +1,63 @@
+import 'package:cfv_mobile/controller/home_controller.dart';
+import 'package:cfv_mobile/data/responses/home_response.dart';
 import 'package:cfv_mobile/screens/product/product_details.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // VideoPlayerControllers for posts with videos
+  final Map<int, VideoPlayerController> _videoControllers = {};
+  String timeAgoSinceDate(DateTime date, {bool numericDates = true}) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 8) {
+      return DateFormat('dd/MM/yyyy').format(date);
+    } else if (difference.inDays >= 1) {
+      return '${difference.inDays} ngày trước';
+    } else if (difference.inHours >= 1) {
+      return '${difference.inHours} giờ trước';
+    } else if (difference.inMinutes >= 1) {
+      return '${difference.inMinutes} phút trước';
+    } else {
+      return 'Vừa xong';
+    }
+  }
+
   // Track which posts are expanded
   Set<int> expandedPosts = {};
   Set<int> likedPosts = {};
-  
+
+  HomeController get homeController => Get.find<HomeController>();
   // Controllers for message input fields
   Map<int, TextEditingController> messageControllers = {};
 
   @override
+  void initState() {
+    super.initState();
+    homeController.loadCategoriesData();
+    homeController.loadGardenersData();
+    homeController.loadPostsData();
+  }
+
+  @override
   void dispose() {
-    // Dispose all controllers
+    // Dispose all message controllers
     for (var controller in messageControllers.values) {
+      controller.dispose();
+    }
+    // Dispose all video controllers
+    for (var controller in _videoControllers.values) {
       controller.dispose();
     }
     super.dispose();
@@ -58,20 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Xin chào!',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
+                            Text('Xin chào!', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
                             const Text(
                               'Vòng Quốc Phi',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
+                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
                             ),
                           ],
                         ),
@@ -81,38 +108,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const CartInfoScreen(),
-                                  ),
+                                  MaterialPageRoute(builder: (context) => const CartInfoScreen()),
                                 );
                               },
                               child: Container(
                                 width: 50,
                                 height: 50,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.blue.shade100,
-                                ),
-                                child: Icon(
-                                  Icons.shopping_cart_outlined,
-                                  color: Colors.blue.shade600,
-                                  size: 24,
-                                ),
+                                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blue.shade100),
+                                child: Icon(Icons.shopping_cart_outlined, color: Colors.blue.shade600, size: 24),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Container(
                               width: 50,
                               height: 50,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.green.shade100,
-                              ),
-                              child: Icon(
-                                Icons.notifications_outlined,
-                                color: Colors.green.shade600,
-                                size: 24,
-                              ),
+                              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
+                              child: Icon(Icons.notifications_outlined, color: Colors.green.shade600, size: 24),
                             ),
                           ],
                         ),
@@ -121,19 +132,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(25),
-                      ),
+                      decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(25)),
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Tìm kiếm...',
                           hintStyle: TextStyle(color: Colors.grey.shade500),
                           border: InputBorder.none,
-                          icon: Icon(
-                            Icons.search,
-                            color: Colors.grey.shade500,
-                          ),
+                          icon: Icon(Icons.search, color: Colors.grey.shade500),
                         ),
                       ),
                     ),
@@ -144,41 +149,24 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
 
               // Categories section (keeping existing code)
-              Container(
+              SizedBox(
                 height: 120,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    _buildCategoryItem(
-                      imagePath: '/placeholder.svg?height=60&width=60',
-                      label: 'Rau',
-                    ),
-                    _buildCategoryItem(
-                      imagePath: '/placeholder.svg?height=60&width=60',
-                      label: 'Củ',
-                    ),
-                    _buildCategoryItem(
-                      imagePath: '/placeholder.svg?height=60&width=60',
-                      label: 'Gia Vị',
-                    ),
-                    _buildCategoryItem(
-                      imagePath: '/placeholder.svg?height=60&width=60',
-                      label: 'Đậu',
-                    ),
-                    _buildCategoryItem(
-                      imagePath: '/placeholder.svg?height=60&width=60',
-                      label: 'Quả',
-                    ),
-                    _buildCategoryItem(
-                      imagePath: '/placeholder.svg?height=60&width=60',
-                      label: 'Gạo',
-                    ),
-                    _buildCategoryItem(
-                      imagePath: '/placeholder.svg?height=60&width=60',
-                      label: 'Xem thêm',
-                    ),
-                  ],
+                child: Obx(
+                  () => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: homeController.isCategoriesLoading.value
+                        ? const Center(child: CircularProgressIndicator())
+                        : ListView.builder(
+                            itemCount: homeController.categories.length,
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (BuildContext context, int index) {
+                              return _buildCategoryItem(
+                                imagePath: '/placeholder.svg?height=60&width=60',
+                                label: homeController.categories[index].name,
+                              );
+                            },
+                          ),
+                  ),
                 ),
               ),
 
@@ -200,19 +188,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.access_time,
-                              size: 16,
-                              color: Colors.grey.shade600,
-                            ),
+                            Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
                             const SizedBox(width: 8),
                             Text(
                               'Gần Tôi',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade700,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: TextStyle(fontSize: 14, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -230,19 +210,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 16,
-                              color: Colors.grey.shade600,
-                            ),
+                            Icon(Icons.location_on, size: 16, color: Colors.grey.shade600),
                             const SizedBox(width: 8),
                             Text(
                               'Lọc Theo Vị Trí',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade700,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: TextStyle(fontSize: 14, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
@@ -264,142 +236,102 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Text(
                           'Danh Sách Vườn',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
                         ),
                         Text(
                           'Xem Thêm',
-                          style: TextStyle(
-                            color: Colors.green.shade600,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
+                          style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: 4,
-                      itemBuilder: (context, index) {
-                        final gardens = [
-                          {
-                            'name': 'Vườn Xanh Miền Tây',
-                            'address': '123 Đường Cần Thơ, An Giang',
-                            'rating': '4.8',
-                            'joinDate': 'Tham gia: Tháng 3/2023',
-                          },
-                          {
-                            'name': 'Vườn Sạch Đồng Tháp',
-                            'address': '456 Đường Cao Lãnh, Đồng Tháp',
-                            'rating': '4.9',
-                            'joinDate': 'Tham gia: Tháng 1/2023',
-                          },
-                          {
-                            'name': 'Nông Trại Hạnh Phúc',
-                            'address': '789 Đường Mỹ Tho, Tiền Giang',
-                            'rating': '4.7',
-                            'joinDate': 'Tham gia: Tháng 5/2023',
-                          },
-                          {
-                            'name': 'Vườn Organic Cần Thơ',
-                            'address': '321 Đường Ninh Kiều, Cần Thơ',
-                            'rating': '4.6',
-                            'joinDate': 'Tham gia: Tháng 2/2023',
-                          },
-                        ];
+                    Obx(
+                      () => homeController.isGardenersLoading.value
+                          ? const Center(child: CircularProgressIndicator())
+                          : homeController.gardeners.isEmpty
+                          ? const Center(child: Text('Không có vườn nào'))
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: homeController.gardeners.length,
+                              itemBuilder: (context, index) {
+                                final garden = homeController.gardeners[index];
 
-                        final garden = gardens[index];
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade100,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.agriculture,
-                                  color: Colors.green.shade600,
-                                  size: 24,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      garden['name']!,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.1),
+                                        spreadRadius: 1,
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 2),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      garden['address']!,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          color: Colors.green.shade100,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(Icons.agriculture, color: Colors.green.shade600, size: 24),
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.star,
-                                          size: 16,
-                                          color: Colors.orange,
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              garden.name ?? 'Vườn Không Tên',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "${garden.addresses?[0].city}, ${garden.addresses?[0].country}",
+                                              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.star, size: 16, color: Colors.orange),
+                                                const SizedBox(width: 4),
+                                                // Text(
+                                                //   garden.rating ?? 'Chưa có đánh giá',
+                                                //   style: const TextStyle(
+                                                //     fontSize: 14,
+                                                //     fontWeight: FontWeight.w600,
+                                                //     color: Colors.black87,
+                                                //   ),
+                                                // ),
+                                                const SizedBox(width: 16),
+                                                Text(
+                                                  DateFormat(
+                                                    "MMMM, y",
+                                                    "vi",
+                                                  ).format(garden.createAt?.toLocal() ?? DateTime.now()),
+                                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          garden['rating']!,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        Text(
-                                          garden['joinDate']!,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),
@@ -417,457 +349,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Text(
                           'Bài Đăng',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
                         ),
                         Text(
                           'Xem thêm',
-                          style: TextStyle(
-                            color: Colors.green.shade600,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
+                          style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: 2,
-                      itemBuilder: (context, index) {
-                        final posts = [
-                          {
-                            'gardenName': 'Vườn Xanh Miền Tây',
-                            'phone': '0901 234 567',
-                            'timeAgo': '2 giờ trước',
-                            'title': 'Mua thu hoạch cà chua bí đá bắt đầu!',
-                            'shortDescription': 'Vườn chúng tôi vừa thu hoạch lô cà chua bí organic đầu tiên của năm......',
-                            'fullDescription': 'Vườn chúng tôi vừa thu hoạch lô cà chua bí organic đầu tiên của năm. Những quả cà chua được trồng hoàn toàn tự nhiên, không sử dụng thuốc trừ sâu hay phân bón hóa học. Chất lượng tuyệt vời với độ ngọt tự nhiên và màu sắc đẹp mắt.',
-                            'seasonInfo': 'Gieo trồng: 15/08/2024 - Thu hoạch: 20/12/2024',
-                            'productName': 'Cà chua bí đá hữu cơ',
-                            'productPrice': '30,000',
-                            'productQuantity': '100',
-                            'productGarden': 'Vườn Xanh Miền Tây',
-                          },
-                          {
-                            'gardenName': 'Vườn Sạch Đồng Tháp',
-                            'phone': '0902 345 678',
-                            'timeAgo': '5 giờ trước',
-                            'title': 'Rau muống nước mùa khô chất lượng cao',
-                            'shortDescription': 'Rau muống nước trồng theo phương pháp hữu cơ, tươi ngon và an toàn......',
-                            'fullDescription': 'Rau muống nước trồng theo phương pháp hữu cơ, tươi ngon và an toàn cho sức khỏe. Được trồng trong môi trường nước sạch, không ô nhiễm. Lá xanh mướt, thân giòn ngọt, rất thích hợp cho các món ăn gia đình.',
-                            'seasonInfo': 'Gieo trồng: 01/10/2024 - Thu hoạch: 15/01/2025',
-                            'productName': 'Rau muống nước tươi',
-                            'productPrice': '15,000',
-                            'productQuantity': '50',
-                            'productGarden': 'Vườn Sạch Đồng Tháp',
-                          },
-                        ];
 
-                        final post = posts[index];
-                        bool isExpanded = expandedPosts.contains(index);
-                        bool isLiked = likedPosts.contains(index);
+                    Obx(
+                      () => homeController.isPostsLoading.value
+                          ? const Center(child: CircularProgressIndicator())
+                          : homeController.posts.isEmpty
+                          ? const Center(child: Text('Không có bài đăng nào'))
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: homeController.posts.length,
+                              itemBuilder: (context, index) {
+                                final post = homeController.posts[index];
+                                bool isExpanded = expandedPosts.contains(index);
+                                bool isLiked = likedPosts.contains(index);
 
-                        // Initialize controller for this post if not exists
-                        if (!messageControllers.containsKey(index)) {
-                          messageControllers[index] = TextEditingController();
-                        }
+                                // Initialize controller for this post if not exists
+                                if (!messageControllers.containsKey(index)) {
+                                  messageControllers[index] = TextEditingController();
+                                }
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Post header
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 50,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.green.shade100,
-                                      ),
-                                      child: Icon(
-                                        Icons.person,
-                                        color: Colors.green.shade600,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            post['gardenName']!,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          Text(
-                                            '${post['phone']} • ${post['timeAgo']}',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.grey.shade500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Post title
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  post['title']!,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 8),
-
-                              // Post description
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      isExpanded ? post['fullDescription']! : post['shortDescription']!,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade700,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          if (isExpanded) {
-                                            expandedPosts.remove(index);
-                                          } else {
-                                            expandedPosts.add(index);
-                                          }
-                                        });
-                                      },
-                                      child: Text(
-                                        isExpanded ? 'Thu gọn' : 'Xem thêm',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.green.shade600,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Season info
-                              Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 16),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade50,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.green.shade200),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.calendar_today,
-                                      size: 16,
-                                      color: Colors.green.shade600,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Thông tin mùa vụ:',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.green.shade700,
-                                            ),
-                                          ),
-                                          Text(
-                                            post['seasonInfo']!,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.green.shade600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Post image
-                              Container(
-                                width: double.infinity,
-                                height: 200,
-                                margin: const EdgeInsets.symmetric(horizontal: 16),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade100,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.eco,
-                                  color: Colors.green.shade600,
-                                  size: 60,
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Product attachment - UPDATED with navigation
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Sản phẩm đính kèm',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    GestureDetector(
-                                      onTap: () {
-                                        // Navigate to ProductDetailScreen with product data
-                                        final productData = {
-                                          'name': post['productName']!,
-                                          'price': post['productPrice']!,
-                                          'quantity': post['productQuantity']!,
-                                          'garden': post['productGarden']!,
-                                        };
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ProductDetailScreen(product: productData),
-                                          ),
-                                        );
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            width: 60,
-                                            height: 60,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green.shade100,
-                                              borderRadius: BorderRadius.circular(8),
-                                              border: Border.all(color: Colors.green.shade200),
-                                            ),
-                                            child: Icon(
-                                              Icons.eco,
-                                              color: Colors.green.shade600,
-                                              size: 30,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  post['productName']!,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.black87,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '${post['productPrice']} VNĐ/kg',
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.green.shade600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Icon(
-                                            Icons.arrow_forward_ios,
-                                            size: 16,
-                                            color: Colors.grey.shade400,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              // Like button
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          if (isLiked) {
-                                            likedPosts.remove(index);
-                                          } else {
-                                            likedPosts.add(index);
-                                          }
-                                        });
-                                      },
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            isLiked ? Icons.favorite : Icons.favorite_border,
-                                            color: isLiked ? Colors.red : Colors.grey.shade500,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            'Yêu thích',
-                                            style: TextStyle(
-                                              color: Colors.grey.shade600,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // FIXED: Functional Message box at the bottom of each post
-                              Container(
-                                margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE8F5E8), // Light green background
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.eco,
-                                          color: Colors.green.shade600,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          'Gửi tin nhắn cho Gardener',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(20),
-                                            ),
-                                            child: TextField(
-                                              controller: messageControllers[index],
-                                              decoration: InputDecoration(
-                                                hintText: 'Nhập tin nhắn...',
-                                                hintStyle: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey.shade500,
-                                                ),
-                                                border: InputBorder.none,
-                                                contentPadding: const EdgeInsets.symmetric(
-                                                  horizontal: 16,
-                                                  vertical: 12,
-                                                ),
-                                              ),
-                                              maxLines: null,
-                                              textInputAction: TextInputAction.send,
-                                              onSubmitted: (value) {
-                                                _sendMessage(index, value);
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        GestureDetector(
-                                          onTap: () {
-                                            _sendMessage(index, messageControllers[index]!.text);
-                                          },
-                                          child: Container(
-                                            width: 40,
-                                            height: 40,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green.shade600,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(
-                                              Icons.send,
-                                              color: Colors.white,
-                                              size: 18,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                                return postItem(post, isExpanded, index, context, isLiked);
+                              },
+                            ),
                     ),
                   ],
                 ),
@@ -881,15 +394,340 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Container postItem(PostModel post, bool isExpanded, int index, BuildContext context, bool isLiked) {
+    // Video player logic
+    Widget? videoWidget;
+    if (post.thumbNail != null && post.thumbNail!.endsWith('.mp4')) {
+      if (!_videoControllers.containsKey(index)) {
+        final controller = VideoPlayerController.networkUrl(Uri.parse(post.thumbNail!));
+        controller.setLooping(true);
+        controller.initialize().then((_) {
+          if (mounted) {
+            controller.play();
+            setState(() {});
+          }
+        });
+        _videoControllers[index] = controller;
+      } else {
+        final vidController = _videoControllers[index]!;
+        if (vidController.value.isInitialized && !vidController.value.isPlaying) {
+          vidController.play();
+        }
+      }
+      final vidController = _videoControllers[index];
+      videoWidget = vidController != null && vidController.value.isInitialized
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: AspectRatio(aspectRatio: vidController.value.aspectRatio, child: VideoPlayer(vidController)),
+            )
+          : Container(
+              height: 200,
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.black12),
+              child: const Center(child: CircularProgressIndicator()),
+            );
+    }
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Post header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
+                  child: Icon(Icons.person, color: Colors.green.shade600, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        post.gardenerName ?? "",
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                      ),
+                      Text(
+                        '091231231 • '
+                        '${post.createdAt != null ? timeAgoSinceDate(post.createdAt!) : 'Chưa có ngày'}',
+                        style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Post title
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              post.title ?? 'Bài đăng không có tiêu đề',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Post description
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isExpanded
+                      ? post.content ?? ""
+                      : post.content?.substring(0, post.content!.length > 30 ? 30 : post.content!.length) ?? "",
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.4),
+                ),
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (isExpanded) {
+                        expandedPosts.remove(index);
+                      } else {
+                        expandedPosts.add(index);
+                      }
+                    });
+                  },
+                  child: Text(
+                    isExpanded ? 'Thu gọn' : 'Xem thêm',
+                    style: TextStyle(fontSize: 14, color: Colors.green.shade600, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Season info
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.calendar_today, size: 16, color: Colors.green.shade600),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Thông tin mùa vụ:',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.green.shade700),
+                      ),
+                      Text("post.seasonInfo", style: TextStyle(fontSize: 12, color: Colors.green.shade600)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          if (post.thumbNail != null && post.thumbNail!.endsWith('.mp4'))
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: videoWidget ?? const SizedBox.shrink())
+          else if (post.thumbNail != null && post.thumbNail!.isNotEmpty)
+            Container(
+              width: double.infinity,
+              height: 200,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(image: NetworkImage(post.thumbNail ?? ""), fit: BoxFit.cover),
+              ),
+            ),
+
+          // Product attachment - UPDATED with navigation
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Sản phẩm đính kèm',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                ),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () {
+                    // Navigate to ProductDetailScreen with product data
+                    final productData = {
+                      'name': post.title ?? "",
+                      'price': "${post.price}",
+                      'quantity': post.weightUnit ?? "",
+                      // 'garden': post. ?? "",
+                    };
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProductDetailScreen(productId: post.productId ?? '')),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.green.shade200),
+                        ),
+                        child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post.title ?? "",
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                            ),
+                            Text(
+                              '${post.price} ${post.weightUnit ?? "VNĐ/kg"}',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green.shade600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Like button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (isLiked) {
+                        likedPosts.remove(index);
+                      } else {
+                        likedPosts.add(index);
+                      }
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : Colors.grey.shade500,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 4),
+                      Text('Yêu thích', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // FIXED: Functional Message box at the bottom of each post
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F5E8), // Light green background
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.eco, color: Colors.green.shade600, size: 20),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Gửi tin nhắn cho Gardener',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                        child: TextField(
+                          controller: messageControllers[index],
+                          decoration: InputDecoration(
+                            hintText: 'Nhập tin nhắn...',
+                            hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          maxLines: null,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (value) {
+                            _sendMessage(index, value);
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        _sendMessage(index, messageControllers[index]!.text);
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(color: Colors.green.shade600, shape: BoxShape.circle),
+                        child: const Icon(Icons.send, color: Colors.white, size: 18),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Method to handle sending messages
   void _sendMessage(int postIndex, String message) {
     if (message.trim().isNotEmpty) {
       // Here you would typically send the message to your backend
       print('Sending message for post $postIndex: $message');
-      
+
       // Clear the input field
       messageControllers[postIndex]?.clear();
-      
+
       // Show a confirmation (optional)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -902,109 +740,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Updated product card widget with navigation
-  Widget _buildProductCard(Map<String, String> product, double width) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailScreen(product: product),
-          ),
-        );
-      },
-      child: Container(
-        width: width,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AspectRatio(
-              aspectRatio: 1.5,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                ),
-                child: Icon(
-                  Icons.eco,
-                  color: Colors.green.shade600,
-                  size: 40,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    product['name']!,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                      height: 1.2,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${product['price']} VNĐ/kg',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.green.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Số lượng: ${product['quantity']} kg',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    product['garden']!,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey.shade500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // Widget _buildProductCard(Map<String, String> product, double width) {
+  //   ...unused code...
+  // }
 
-  Widget _buildCategoryItem({
-    required String imagePath,
-    required String label,
-  }) {
+  Widget _buildCategoryItem({required String imagePath, required String label}) {
     return Container(
       margin: const EdgeInsets.only(right: 16),
       child: Column(
@@ -1036,11 +776,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 70,
                     height: 70,
                     color: Colors.green.shade100,
-                    child: Icon(
-                      Icons.eco,
-                      color: Colors.green.shade600,
-                      size: 30,
-                    ),
+                    child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
                   );
                 },
               ),
@@ -1051,11 +787,7 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 70,
             child: Text(
               label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

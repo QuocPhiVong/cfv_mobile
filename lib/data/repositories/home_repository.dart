@@ -1,0 +1,52 @@
+import 'package:cfv_mobile/data/responses/home_response.dart';
+import 'package:cfv_mobile/data/services/api_services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart'; // Using the import path from your desired repo
+
+class HomeRepository extends GetxController {
+  // Provides a static instance getter for easy access throughout your app
+  static HomeRepository get instance => Get.find();
+
+  final ApiService _apiService = ApiService();
+
+  @override
+  void onReady() {
+    debugPrint('HomeRepository onReady: Initialized successfully.');
+  }
+
+  Future<CategoriesResponse?> fetchCategories() async {
+    try {
+      final response = await _apiService.dio.get(
+        '/categories',
+        queryParameters: {'page': 1, 'size': 10, 'fetchAll': true},
+      );
+      debugPrint('Home data fetched: ${response.data}');
+      return CategoriesResponse.fromJson(response.data);
+    } catch (e) {
+      debugPrint('Error fetching home data: $e');
+      return null; // Return null to indicate failure
+    }
+  }
+
+  Future<GardenersResponse?> fetchGardeners() async {
+    try {
+      final response = await _apiService.dio.get('/accounts/gardeners', queryParameters: {'page': 1, 'size': 10});
+      debugPrint('Gardeners data fetched: ${response.data}');
+      return GardenersResponse.fromJson(response.data);
+    } catch (e) {
+      debugPrint('Error fetching gardeners data: $e');
+      return null; // Return null to indicate failure
+    }
+  }
+
+  Future<PostsResponse?> fetchPosts() async {
+    try {
+      final response = await _apiService.dio.get('/retailer/posts');
+      debugPrint('Posts data fetched: ${response.data}');
+      return PostsResponse.fromJson(response.data);
+    } catch (e) {
+      debugPrint('Error fetching posts data: $e');
+      return null; // Return null to indicate failure
+    }
+  }
+}

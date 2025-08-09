@@ -15,10 +15,7 @@ class AuthenticationRepository extends GetxController {
 
   /// Handles user login with phone number and password.
   /// Returns a Map<String, dynamic>? representing the API response data, or null on error.
-  Future<Map<String, dynamic>?> onLogin({
-    required String phoneNumber,
-    required String password,
-  }) async {
+  Future<Map<String, dynamic>?> onLogin({required String phoneNumber, required String password}) async {
     try {
       debugPrint('Attempting login with phone: $phoneNumber');
       final response = await _apiService.dio.post(

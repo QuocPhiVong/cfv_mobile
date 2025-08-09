@@ -74,19 +74,13 @@ class AuthenticationController extends GetxController {
 
   /// Handles user login with phone number and password.
   /// Determines success by the presence of a 'token' in the API response.
-  Future<bool> login({
-    required String phoneNumber,
-    required String password,
-  }) async {
+  Future<bool> login({required String phoneNumber, required String password}) async {
     _isLoading.value = true;
     _errorMessage.value = ''; // Clear previous error
     update();
 
     try {
-      final response = await _repository.onLogin(
-        phoneNumber: phoneNumber,
-        password: password,
-      );
+      final response = await _repository.onLogin(phoneNumber: phoneNumber, password: password);
 
       // Check if the response from the repository is not null
       if (response != null) {
@@ -125,7 +119,7 @@ class AuthenticationController extends GetxController {
           _errorMessage.value = response['message'] ?? 'Đăng nhập thất bại: Không nhận được token.';
           _isAuthenticated.value = false;
           _currentUser.value = null;
-          debugPrint('Login failed: ${errorMessage}');
+          debugPrint('Login failed: $errorMessage');
           return false;
         }
       } else {
@@ -176,7 +170,7 @@ class AuthenticationController extends GetxController {
         return true;
       } else {
         _errorMessage.value = response?['message'] ?? 'Đăng ký thất bại.';
-        debugPrint('Registration failed: ${errorMessage}');
+        debugPrint('Registration failed: $errorMessage');
         return false;
       }
     } catch (e) {
