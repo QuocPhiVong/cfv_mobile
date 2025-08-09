@@ -14,10 +14,10 @@ class CartResponse {
 
 class CartItemModel {
   final String? cartItemId;
-  final String? cartId;
+  String? cartId;
   final String? productId;
   final String? productName;
-  final int? price;
+  final double? price;
   final int? quantity;
   final String? productUnit;
 

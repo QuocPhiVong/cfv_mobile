@@ -15,7 +15,12 @@ class CartController extends GetxController {
     debugPrint('CartController onReady: Initialized successfully.');
   }
 
-  Future<void> addToCart(String retailerId, CartItemModel cartItem) async {
+  Future<bool> addToCart({
+    required String retailerId,
+    required String gardenerId,
+    required String gardenerName,
+    required CartItemModel cartItem,
+  }) async {
     isLoading.value = true;
     try {
       await loadCarts(retailerId); // Ensure cart is loaded before adding items
@@ -23,17 +28,31 @@ class CartController extends GetxController {
 
       temp.add(cartItem);
 
-      final response = await _cartRepository.addToCart(retailerId, temp);
+      for (CartItemModel item in temp) {
+        item.cartId = cartItems.value.isNotEmpty ? cartItems.value.first.cartId : null;
+      }
+
+      final response = await _cartRepository.addToCart(
+        cartId: cartItem.cartId,
+        retailerId: retailerId,
+        cartItem: temp,
+        gardenerId: gardenerId,
+        gardenerName: gardenerName,
+      );
       if (response != null) {
         debugPrint('Added to cart successfully: $response');
         await loadCarts(retailerId); // Refresh cart items after adding
+        return true;
       } else {
         debugPrint('Failed to add items to cart for retailer ID: $retailerId');
+        return false;
       }
     } catch (e) {
       debugPrint('Error adding to cart: $e');
     } finally {
       isLoading.value = false;
+
+      return false;
     }
   }
 

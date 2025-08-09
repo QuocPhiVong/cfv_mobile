@@ -51,7 +51,7 @@ class ProductController extends GetxController {
     try {
       final data = await _productRepository.fetchProductPrices(productId);
       if (data != null && data.productPrices != null && data.productPrices!.isNotEmpty) {
-        productPrice.value = data.productPrices?.first; // Assuming you want the first price
+        productPrice.value = data.productPrices?.first;
         debugPrint('Product price loaded successfully: ${data.productPrices?.first.price}');
       } else {
         debugPrint('Failed to load product price for ID: $productId');

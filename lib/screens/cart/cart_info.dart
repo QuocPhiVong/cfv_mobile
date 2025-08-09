@@ -1,9 +1,12 @@
+import 'package:cfv_mobile/controller/auth_controller.dart';
+import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'order_summary.dart';
 
 class CartInfoScreen extends StatefulWidget {
-  const CartInfoScreen({Key? key}) : super(key: key);
+  const CartInfoScreen({super.key});
 
   @override
   State<CartInfoScreen> createState() => _CartInfoScreenState();
@@ -13,11 +16,14 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
   late CartService _cartService;
   bool _isEditMode = false; // Add edit mode state
 
+  CartController get cartController => Get.find<CartController>();
+
   @override
   void initState() {
     super.initState();
     _cartService = CartService();
     _cartService.addListener(_onCartChanged);
+    cartController.loadCarts(Get.find<AuthenticationController>().currentUser?.id ?? '');
   }
 
   @override
@@ -35,7 +41,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     final cartItems = _cartService.items;
     final totalPrice = _cartService.totalPrice;
     final itemCount = _cartService.itemCount;
-        
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -47,11 +53,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
         ),
         title: const Text(
           'Giỏ hàng của bạn',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.w600),
         ),
         actions: [
           // Add edit/save button
@@ -64,11 +66,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
               },
               child: Text(
                 _isEditMode ? 'Lưu' : 'Chỉnh sửa',
-                style: TextStyle(
-                  color: Colors.green.shade600,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: Colors.green.shade600, fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
         ],
@@ -82,28 +80,14 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.shopping_cart_outlined,
-            size: 80,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             'Giỏ hàng của bạn đang trống',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 18, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Hãy thêm sản phẩm vào giỏ hàng',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade500,
-            ),
-          ),
+          Text('Hãy thêm sản phẩm vào giỏ hàng', style: TextStyle(fontSize: 14, color: Colors.grey.shade500)),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
@@ -111,9 +95,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
               backgroundColor: Colors.green.shade600,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Tiếp tục mua sắm'),
           ),
@@ -141,7 +123,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
             itemBuilder: (context, index) {
               final garden = groupedItems.keys.elementAt(index);
               final items = groupedItems[garden]!;
-                            
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
@@ -172,23 +154,19 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                       ),
                       child: Text(
                         garden,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
-                        ),
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green.shade700),
                       ),
                     ),
-                                        
+
                     // Items list
-                    ...items.map((item) => _buildCartItem(item)).toList(),
+                    ...items.map((item) => _buildCartItem(item)),
                   ],
                 ),
               );
             },
           ),
         ),
-                
+
         // Bottom create order button - only show when not in edit mode
         if (!_isEditMode)
           Container(
@@ -211,17 +189,12 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                 backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
               ),
               child: Text(
                 'Tạo đơn hàng ($itemCount sản phẩm) - ${_cartService.formattedTotalPrice} VNĐ',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -239,19 +212,12 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
           Container(
             width: 60,
             height: 60,
-            decoration: BoxDecoration(
-              color: Colors.green.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.eco,
-              color: Colors.green.shade600,
-              size: 30,
-            ),
+            decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
+            child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
           ),
-                    
+
           const SizedBox(width: 12),
-                    
+
           // Product details
           Expanded(
             child: Column(
@@ -262,11 +228,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                     Expanded(
                       child: Text(
                         item.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                       ),
                     ),
                     // Delete icon - only show in edit mode
@@ -275,33 +237,19 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                         onTap: () => _removeItem(item),
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          child: Icon(
-                            Icons.delete_outline,
-                            color: Colors.red.shade400,
-                            size: 20,
-                          ),
+                          child: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 20),
                         ),
                       ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'Danh mục: ${item.category}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
+                Text('Danh mục: ${item.category}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
                       item.priceText,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green.shade600,
-                      ),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green.shade600),
                     ),
                     const Spacer(),
                     // Quantity controls - always show quantity, but controls only in edit mode
@@ -322,21 +270,13 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                                 border: Border.all(color: Colors.grey.shade400),
                                 color: Colors.white,
                               ),
-                              child: Icon(
-                                Icons.remove,
-                                color: Colors.grey.shade600,
-                                size: 16,
-                              ),
+                              child: Icon(Icons.remove, color: Colors.grey.shade600, size: 16),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Text(
                             '${item.quantity} kg',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                           ),
                           const SizedBox(width: 12),
                           GestureDetector(
@@ -351,11 +291,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                                 border: Border.all(color: Colors.grey.shade400),
                                 color: Colors.white,
                               ),
-                              child: Icon(
-                                Icons.add,
-                                color: Colors.grey.shade600,
-                                size: 16,
-                              ),
+                              child: Icon(Icons.add, color: Colors.grey.shade600, size: 16),
                             ),
                           ),
                         ],
@@ -364,11 +300,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                       // Show quantity without controls when not in edit mode
                       Text(
                         '${item.quantity} kg',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                       ),
                   ],
                 ),
@@ -380,11 +312,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                     children: [
                       Text(
                         'Tổng: ${_formatPrice(item.totalPrice.toInt())} VNĐ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.green.shade600,
-                        ),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green.shade600),
                       ),
                     ],
                   ),
@@ -404,19 +332,13 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
           title: const Text('Xóa sản phẩm'),
           content: Text('Bạn có muốn xóa "${item.name}" khỏi giỏ hàng?'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Hủy'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Hủy')),
             ElevatedButton(
               onPressed: () {
                 _cartService.removeItem(item.id);
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Đã xóa ${item.name} khỏi giỏ hàng'),
-                    backgroundColor: Colors.red.shade600,
-                  ),
+                  SnackBar(content: Text('Đã xóa ${item.name} khỏi giỏ hàng'), backgroundColor: Colors.red.shade600),
                 );
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -429,10 +351,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
   }
 
   String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
+    return price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 
   void _showOrderConfirmation(List<CartItem> cartItems, double totalPrice, int itemCount) {
@@ -440,11 +359,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => OrderSummaryScreen(
-          orderItems: cartItems,
-          totalPrice: totalPrice,
-          itemCount: itemCount,
-        ),
+        builder: (context) => OrderSummaryScreen(orderItems: cartItems, totalPrice: totalPrice, itemCount: itemCount),
       ),
     );
   }
@@ -452,21 +367,16 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
   void _createOrder() {
     // Clear cart after creating order
     _cartService.clearCart();
-        
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          'Đơn hàng đã được tạo thành công!',
-          style: TextStyle(color: Colors.white),
-        ),
+        content: const Text('Đơn hàng đã được tạo thành công!', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green.shade600,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
-        
+
     // Navigate back to home
     Navigator.pop(context);
   }

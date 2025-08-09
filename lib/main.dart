@@ -1,6 +1,7 @@
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
+import 'package:cfv_mobile/data/repositories/cart_repository.dart';
 import 'package:cfv_mobile/data/repositories/home_repository.dart';
 import 'package:cfv_mobile/data/repositories/product_repository.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ void main() async {
   Get.put(AuthenticationRepository());
   Get.put(HomeRepository());
   Get.put(ProductRepository());
-  Get.put(CartController());
+  Get.put(CartRepository());
 
   // Then, initialize your AuthenticationController with GetX
   Get.put(AuthenticationController());

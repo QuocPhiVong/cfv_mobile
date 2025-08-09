@@ -1,4 +1,7 @@
+import 'package:cfv_mobile/controller/auth_controller.dart';
+import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
+import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:cfv_mobile/screens/product/review_list.dart';
@@ -20,6 +23,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late CartService _cartService;
 
   ProductController get productController => Get.find<ProductController>();
+  CartController get cartController => Get.find<CartController>();
 
   @override
   void initState() {
@@ -943,52 +947,64 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  void _addToCart() {
+  void _addToCart() async {
     final product = productController.product.value;
-    final cartItem = CartItem(
-      id: '${product?.productName ?? ''}_${'gendername'}_${DateTime.now().millisecondsSinceEpoch}',
-      name: product?.productName ?? 'Xà lách xoong tươi',
-      price: '${product?.price ?? '25,000'}',
-      priceText: '${product?.price ?? '25,000'} VNĐ/kg',
-      garden: 'Vườn Xanh Miền Tây',
-      phone: '0901 234 567',
-      category: product?.productCategory ?? 'Rau Lá',
-      quantity: quantity,
-    );
 
-    _cartService.addItem(cartItem);
+    // _cartService.addItem(cartItem);
 
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Đã thêm ${cartItem.name} (${cartItem.quantity} kg) vào giỏ hàng',
-                style: const TextStyle(color: Colors.white),
+    await cartController
+        .addToCart(
+          retailerId: Get.find<AuthenticationController>().currentUser?.id ?? 'retailer123',
+          gardenerId: product?.gardenerId ?? 'gardener456',
+          gardenerName: product?.gardenerName ?? 'Vườn Xanh Miền Tây',
+          cartItem: CartItemModel(
+            cartId: 'cart123',
+            productId: product?.productId ?? 'product123',
+            productName: product?.productName ?? 'Xà lách xoong tươi',
+            price: double.parse(product?.price.toString() ?? '25000'),
+            quantity: quantity,
+          ),
+        )
+        .then((response) {
+          if (response == false) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: const Text('Thêm vào giỏ hàng thất bại'), backgroundColor: Colors.red.shade600),
+            );
+            return;
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Đã thêm ${product?.productName ?? 'Xà lách xoong tươi'} ($quantity kg) vào giỏ hàng',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green.shade600,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              action: SnackBarAction(
+                label: 'Xem giỏ hàng',
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CartInfoScreen()));
+                },
               ),
             ),
-          ],
-        ),
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        action: SnackBarAction(
-          label: 'Xem giỏ hàng',
-          textColor: Colors.white,
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const CartInfoScreen()));
-          },
-        ),
-      ),
-    );
+          );
 
-    // Reset quantity to 1 after adding to cart
-    setState(() {
-      quantity = 1;
-    });
+          // Reset quantity to 1 after adding to cart
+          setState(() {
+            quantity = 1;
+          });
+        });
+
+    // Show success message
   }
 }

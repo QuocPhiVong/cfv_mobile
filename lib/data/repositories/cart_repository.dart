@@ -14,17 +14,22 @@ class CartRepository extends GetxController {
     debugPrint('CartRepository onReady: Initialized successfully.');
   }
 
-  Future<dynamic> addToCart(String retailerId, List<CartItemModel> cartItem) async {
+  Future<dynamic> addToCart({
+    String? cartId,
+    required String retailerId,
+    required String gardenerId,
+    required String gardenerName,
+    required List<CartItemModel> cartItem,
+  }) async {
     try {
       await fetchCartDetails(retailerId);
 
       final response = await _apiService.dio.post(
         '/retailer/$retailerId/carts',
         data: {
-          // "cartId": {},
+          "cartId": cartId,
           "retailerId": retailerId,
-          // "gardenerId": {},
-          // "gardenerName": "string",
+          "gardenerId": gardenerId,
           "cartItems": cartItem.map((item) => item.toJson()).toList(),
         },
       );
