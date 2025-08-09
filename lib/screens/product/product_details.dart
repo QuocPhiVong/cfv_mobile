@@ -374,145 +374,153 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ),
                           const SizedBox(height: 24),
                           // Combined Certificate Section - UPDATED
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withAlpha(25),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.verified, color: Colors.green.shade600, size: 24),
-                                      const SizedBox(width: 8),
-                                      const Text(
-                                        'Chứng nhận chất lượng',
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
+                          Obx(
+                            () => productController.isProductCertificateLoading.value
+                                ? const Center(child: CircularProgressIndicator())
+                                : productController.productCertificates.value == null
+                                ? const Center(child: Text('Chưa có chứng chỉ cho sản phẩm này'))
+                                : Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withAlpha(25),
+                                            spreadRadius: 1,
+                                            blurRadius: 5,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-
-                                  // Certificate information (moved to top)
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.orange.withAlpha(25),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.orange.withAlpha(76)),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Container(
-                                              padding: const EdgeInsets.all(6),
-                                              decoration: BoxDecoration(
-                                                color: Colors.orange.withAlpha(51),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Icon(Icons.agriculture, color: Colors.orange, size: 16),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                'Chứng nhận VietGAP',
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.verified, color: Colors.green.shade600, size: 24),
+                                              const SizedBox(width: 8),
+                                              const Text(
+                                                'Chứng nhận chất lượng',
                                                 style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Colors.orange,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 16),
+
+                                          // Certificate information (moved to top)
+                                          Container(
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: Colors.orange.withAlpha(25),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: Colors.orange.withAlpha(76)),
+                                            ),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      padding: const EdgeInsets.all(6),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.orange.withAlpha(51),
+                                                        borderRadius: BorderRadius.circular(4),
+                                                      ),
+                                                      child: Icon(Icons.agriculture, color: Colors.orange, size: 16),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        productController.productCertificates.value?.certificateName ??
+                                                            'Chưa có chứng chỉ',
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Colors.orange,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Icon(Icons.verified, color: Colors.orange, size: 16),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  'Cấp bởi: ${productController.productCertificates.value?.issuingOrganization ?? 'Chưa có'}',
+                                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  'Có hiệu lực: ${productController.productCertificates.value?.issuedDate ?? 'Chưa có'} - ${productController.productCertificates.value?.expirationDate ?? 'Chưa có'}',
+                                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                // Certificate number field
+                                                Text(
+                                                  'Chứng chỉ số: ${productController.productCertificates.value?.certificateNumber ?? 'Chưa có'}',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: Colors.orange.shade700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 16),
+
+                                          // Certificate image (moved below information)
+                                          Center(
+                                            child: Container(
+                                              width: 120,
+                                              height: 140,
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey.shade100,
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: Colors.grey.shade300),
+                                              ),
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Image.network(
+                                                  productController.productCertificates.value?.imageUrl ??
+                                                      'https://via.placeholder.com/120x140.png?text=Chưa+có+chứng+chỉ',
+                                                  width: 120,
+                                                  height: 140,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Container(
+                                                      width: 120,
+                                                      height: 140,
+                                                      color: Colors.grey.shade100,
+                                                      child: Column(
+                                                        mainAxisAlignment: MainAxisAlignment.center,
+                                                        children: [
+                                                          Icon(Icons.image, color: Colors.grey.shade400, size: 32),
+                                                          const SizedBox(height: 4),
+                                                          Text(
+                                                            'Chứng chỉ',
+                                                            style: TextStyle(color: Colors.grey.shade600, fontSize: 10),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  },
                                                 ),
                                               ),
                                             ),
-                                            Icon(Icons.verified, color: Colors.orange, size: 16),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          'Cấp bởi: Trung tâm Chứng nhận Nông nghiệp',
-                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Có hiệu lực: 20/02/2024 - 20/02/2025',
-                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        // Certificate number field
-                                        Text(
-                                          'Chứng chỉ số: ${1231 ?? '2200'}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.orange.shade700,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 16),
-
-                                  // Certificate image (moved below information)
-                                  Center(
-                                    child: Container(
-                                      width: 120,
-                                      height: 140,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade100,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: Colors.grey.shade300),
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.network(
-                                          '/placeholder.svg?height=140&width=120&text=VietGAP',
-                                          width: 120,
-                                          height: 140,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              width: 120,
-                                              height: 140,
-                                              color: Colors.grey.shade100,
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(Icons.image, color: Colors.grey.shade400, size: 32),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    'Chứng chỉ',
-                                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
                           ),
                           const SizedBox(height: 24),
                           // Reviews Section
@@ -746,7 +754,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               Icon(Icons.image, color: Colors.grey.shade400, size: 64),
                               const SizedBox(height: 16),
                               Text(
-                                'Chứng chỉ VietGAP đầy đủ',
+                                productController.productCertificates.value?.certificateName ?? 'Chứng chỉ VietGAP',
                                 style: TextStyle(
                                   color: Colors.grey.shade600,
                                   fontSize: 16,
@@ -755,7 +763,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Chứng chỉ số: ${productController.productCertificates.value?.productPriceId ?? '2200'}',
+                                'Chứng chỉ số: ${productController.productCertificates.value?.certificateNumber ?? '2200'}',
                                 style: TextStyle(
                                   color: Colors.orange.shade700,
                                   fontSize: 14,

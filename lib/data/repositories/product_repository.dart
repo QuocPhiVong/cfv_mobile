@@ -24,20 +24,20 @@ class ProductRepository extends GetxController {
     }
   }
 
-  Future<ProductPriceModel?> fetchProductPrices(String productId) async {
+  Future<ProductPricesResponse?> fetchProductPrices(String productId) async {
     try {
       final response = await _apiService.dio.get('/products/$productId/prices');
-      return ProductPriceModel.fromJson(response.data);
+      return ProductPricesResponse.fromJson(response.data);
     } catch (e) {
       debugPrint('Error fetching product prices: $e');
       return null; // Return null to indicate failure
     }
   }
 
-  Future<ProductCertificateModel?> fetchProductCertificates(String productId) async {
+  Future<ProductCertificateResponse?> fetchProductCertificates(String productId) async {
     try {
       final response = await _apiService.dio.get('/products/$productId/product-certificates');
-      return response.data; // Assuming the response is a list of certificates
+      return ProductCertificateResponse.fromJson(response.data);
     } catch (e) {
       debugPrint('Error fetching product certificates: $e');
       return null; // Return null to indicate failure

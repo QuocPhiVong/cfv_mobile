@@ -50,9 +50,9 @@ class ProductController extends GetxController {
     isProductPriceLoading.value = true;
     try {
       final data = await _productRepository.fetchProductPrices(productId);
-      if (data != null) {
-        productPrice.value = data;
-        debugPrint('Product price loaded successfully: ${data.price}');
+      if (data != null && data.productPrices != null && data.productPrices!.isNotEmpty) {
+        productPrice.value = data.productPrices?.first; // Assuming you want the first price
+        debugPrint('Product price loaded successfully: ${data.productPrices?.first.price}');
       } else {
         debugPrint('Failed to load product price for ID: $productId');
       }
@@ -67,9 +67,9 @@ class ProductController extends GetxController {
     isProductCertificateLoading.value = true;
     try {
       final data = await _productRepository.fetchProductCertificates(productId);
-      if (data != null) {
-        productCertificates.value = data;
-        debugPrint('Product certificates loaded successfully: $data certificates found.');
+      if (data != null && data.productCertificates != null && data.productCertificates!.isNotEmpty) {
+        productCertificates.value = data.productCertificates?.first; // Assuming you want the first certificate
+        debugPrint('Product certificates loaded successfully: ${data.productCertificates?.length} certificates found.');
       } else {
         debugPrint('Failed to load product certificates for ID: $productId');
       }
