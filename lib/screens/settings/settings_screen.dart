@@ -6,7 +6,7 @@ import 'package:cfv_mobile/screens/order/order_history.dart';
 import 'package:cfv_mobile/screens/settings/profile_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,11 +18,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Cài đặt',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
@@ -38,11 +34,9 @@ class SettingsScreen extends StatelessWidget {
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Obx(() { // Use Obx to react to changes in currentUser
+              decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
+              child: Obx(() {
+                // Use Obx to react to changes in currentUser
                 final user = authController.currentUser;
                 return Row(
                   children: [
@@ -52,19 +46,12 @@ class SettingsScreen extends StatelessWidget {
                         children: [
                           Text(
                             user?.name ?? 'Tên người dùng', // Display user's name
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             user?.phoneNumber ?? 'Số điện thoại', // Display user's phone number
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
+                            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                           ),
                           const SizedBox(height: 8),
                           GestureDetector(
@@ -83,11 +70,7 @@ class SettingsScreen extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                Icon(
-                                  Icons.chevron_right,
-                                  size: 16,
-                                  color: Colors.grey.shade700,
-                                ),
+                                Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade700),
                               ],
                             ),
                           ),
@@ -97,15 +80,8 @@ class SettingsScreen extends StatelessWidget {
                     Container(
                       width: 50,
                       height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey.shade400,
-                      ),
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.grey.shade600,
-                        size: 24,
-                      ),
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey.shade400),
+                      child: Icon(Icons.person, color: Colors.grey.shade600, size: 24),
                     ),
                   ],
                 );
@@ -197,11 +173,7 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 24,
-              color: isLogout ? Colors.red.shade600 : Colors.grey.shade600,
-            ),
+            Icon(icon, size: 24, color: isLogout ? Colors.red.shade600 : Colors.grey.shade600),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
@@ -213,11 +185,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.chevron_right, size: 20, color: Colors.grey.shade400),
           ],
         ),
       ),
@@ -225,11 +193,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildDivider() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      height: 1,
-      color: Colors.grey.shade200,
-    );
+    return Container(margin: const EdgeInsets.symmetric(horizontal: 20), height: 1, color: Colors.grey.shade200);
   }
 
   void _showLogoutDialog(BuildContext context, AuthenticationController authController) {
@@ -237,20 +201,9 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: const Text(
-            'Đăng xuất',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: const Text(
-            'Bạn có chắc chắn muốn đăng xuất không?',
-            style: TextStyle(fontSize: 16),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Đăng xuất', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          content: const Text('Bạn có chắc chắn muốn đăng xuất không?', style: TextStyle(fontSize: 16)),
           actions: [
             TextButton(
               onPressed: () {
@@ -258,11 +211,7 @@ class SettingsScreen extends StatelessWidget {
               },
               child: Text(
                 'Hủy',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
             TextButton(
@@ -272,11 +221,7 @@ class SettingsScreen extends StatelessWidget {
               },
               child: Text(
                 'Đăng xuất',
-                style: TextStyle(
-                  color: Colors.red.shade600,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(color: Colors.red.shade600, fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ],
