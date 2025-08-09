@@ -1,14 +1,33 @@
 class CartResponse {
+  final String? cartId;
+  final String retailerId;
+  final String gardenerId;
+  final String gardenerName;
   final List<CartItemModel>? cartItems;
+  double get totalPrice =>
+      cartItems?.fold(0.0, (sum, item) => (sum ?? 0.0) + ((item.price ?? 0.0) * (item.quantity ?? 1))) ?? 0.0;
+  int get itemCount => cartItems?.fold(0, (count, item) => (count ?? 0) + (item.quantity ?? 0)) ?? 0;
 
-  CartResponse({this.cartItems});
+  CartResponse(this.cartId, this.retailerId, this.gardenerId, this.gardenerName, {this.cartItems});
 
   factory CartResponse.fromJson(Map<String, dynamic> json) {
-    return CartResponse(cartItems: (json['items'] as List?)?.map((item) => CartItemModel.fromJson(item)).toList());
+    return CartResponse(
+      json['cartId'],
+      json['retailerId'],
+      json['gardenerId'],
+      json['gardenerName'],
+      cartItems: (json['cartItems'] as List<dynamic>?)?.map((item) => CartItemModel.fromJson(item)).toList(),
+    );
   }
 
   Map<String, dynamic> toJson() {
-    return {'items': cartItems?.map((item) => item.toJson()).toList()};
+    return {
+      'cartId': cartId,
+      'retailerId': retailerId,
+      'gardenerId': gardenerId,
+      'gardenerName': gardenerName,
+      'cartItems': cartItems?.map((item) => item.toJson()).toList(),
+    };
   }
 }
 

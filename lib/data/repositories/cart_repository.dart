@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/data/services/api_services.dart';
 import 'package:flutter/material.dart';
@@ -14,38 +16,22 @@ class CartRepository extends GetxController {
     debugPrint('CartRepository onReady: Initialized successfully.');
   }
 
-  Future<dynamic> addToCart({
-    String? cartId,
-    required String retailerId,
-    required String gardenerId,
-    required String gardenerName,
-    required List<CartItemModel> cartItem,
-  }) async {
+  Future<bool> addToCart({String? retailerId, List<CartResponse> cartItems = const []}) async {
     try {
-      await fetchCartDetails(retailerId);
-
-      final response = await _apiService.dio.post(
-        '/retailer/$retailerId/carts',
-        data: {
-          "cartId": cartId,
-          "retailerId": retailerId,
-          "gardenerId": gardenerId,
-          "cartItems": cartItem.map((item) => item.toJson()).toList(),
-        },
-      );
-      return response.data;
+      final response = await _apiService.dio.put('/retailer/$retailerId/carts', data: cartItems);
+      return true;
     } catch (e) {
       debugPrint('Error adding to cart: $e');
-      return null;
+      return false;
     }
   }
 
-  Future<CartResponse?> fetchCartDetails(String userId) async {
+  Future<List<CartResponse>?> fetchCartDetails(String userId) async {
     try {
       final response = await _apiService.dio.get('/retailer/$userId/carts');
-      if (response.data != null) {
-        debugPrint('Cart details loaded successfully: ${response.data} items found.');
-        return CartResponse.fromJson(response.data);
+      if (response.data != null && response.data is List) {
+        debugPrint('Cart details loaded successfully: ${(response.data as List).length} items found.');
+        return (response.data as List).map((e) => CartResponse.fromJson(e as Map<String, dynamic>)).toList();
       } else {
         debugPrint('Failed to load cart details for user ID: $userId');
         return null;

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -31,8 +32,10 @@ class StorageService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userJson = jsonEncode(userData);
+      debugPrint('Saving user data: $userJson'); // Debug print
       return await prefs.setString(_userKey, userJson);
     } catch (e) {
+      debugPrint('Error saving user data: $e');
       return false;
     }
   }
@@ -42,11 +45,13 @@ class StorageService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userJson = prefs.getString(_userKey);
+      debugPrint('User JSON: $userJson'); // Debug print
       if (userJson != null) {
         return jsonDecode(userJson);
       }
       return null;
     } catch (e) {
+      debugPrint('Error getting user data: $e');
       return null;
     }
   }

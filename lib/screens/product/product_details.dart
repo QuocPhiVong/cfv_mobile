@@ -708,110 +708,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  // Show certificate dialog
-  void _showCertificateDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Chứng chỉ VietGAP',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.orange.shade700),
-                    ),
-                    IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      '/placeholder.svg?height=300&width=400&text=Full+VietGAP+Certificate',
-                      width: double.infinity,
-                      height: 300,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: double.infinity,
-                          height: 300,
-                          color: Colors.grey.shade100,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.image, color: Colors.grey.shade400, size: 64),
-                              const SizedBox(height: 16),
-                              Text(
-                                productController.productCertificates.value?.certificateName ?? 'Chứng chỉ VietGAP',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Chứng chỉ số: ${productController.productCertificates.value?.certificateNumber ?? '2200'}',
-                                style: TextStyle(
-                                  color: Colors.orange.shade700,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Tính năng tải xuống sẽ có sớm'),
-                          backgroundColor: Colors.orange.shade600,
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.download, size: 18),
-                    label: const Text('Tải xuống chứng chỉ'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange.shade600,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   // Build product tags
   List<Widget> _buildProductTags() {
     if (productController.product.value?.productTags == null || productController.product.value!.productTags!.isEmpty) {
@@ -952,17 +848,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
     // _cartService.addItem(cartItem);
 
-    await cartController
+    cartController
         .addToCart(
-          retailerId: Get.find<AuthenticationController>().currentUser?.id ?? 'retailer123',
+          retailerId: Get.find<AuthenticationController>().currentUser?.accountId ?? '',
           gardenerId: product?.gardenerId ?? 'gardener456',
           gardenerName: product?.gardenerName ?? 'Vườn Xanh Miền Tây',
           cartItem: CartItemModel(
-            cartId: 'cart123',
+            cartId: null,
+            cartItemId: null,
             productId: product?.productId ?? 'product123',
             productName: product?.productName ?? 'Xà lách xoong tươi',
             price: double.parse(product?.price.toString() ?? '25000'),
             quantity: quantity,
+            productUnit: product?.weightUnit ?? 'kg',
           ),
         )
         .then((response) {

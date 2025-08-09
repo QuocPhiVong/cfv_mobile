@@ -1,19 +1,15 @@
+import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/cart/address_selection.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:flutter/material.dart';
 import 'order_success.dart';
 
 class OrderSummaryScreen extends StatefulWidget {
-  final List<CartItem> orderItems;
+  final List<CartResponse> orderItems;
   final double totalPrice;
   final int itemCount;
 
-  const OrderSummaryScreen({
-    Key? key,
-    required this.orderItems,
-    required this.totalPrice,
-    required this.itemCount,
-  }) : super(key: key);
+  const OrderSummaryScreen({super.key, required this.orderItems, required this.totalPrice, required this.itemCount});
 
   @override
   State<OrderSummaryScreen> createState() => _OrderSummaryScreenState();
@@ -68,11 +64,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         ),
         title: const Text(
           'Xác nhận đơn hàng',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -89,11 +81,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     title: 'Thông tin khách hàng',
                     child: Column(
                       children: [
-                        _buildTextField(
-                          controller: _nameController,
-                          label: 'Họ và tên',
-                          icon: Icons.person,
-                        ),
+                        _buildTextField(controller: _nameController, label: 'Họ và tên', icon: Icons.person),
                         const SizedBox(height: 16),
                         _buildTextField(
                           controller: _phoneController,
@@ -110,9 +98,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   // Order Items
                   _buildSectionCard(
                     title: 'Chi tiết đơn hàng (${widget.itemCount} sản phẩm)',
-                    child: Column(
-                      children: widget.orderItems.map((item) => _buildOrderItem(item)).toList(),
-                    ),
+                    child: Column(children: widget.orderItems.map((item) => _buildOrderItem(item)).toList()),
                   ),
                   const SizedBox(height: 16),
                   // Payment Method
@@ -144,11 +130,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.info_outline,
-                                color: Colors.blue.shade600,
-                                size: 20,
-                              ),
+                              Icon(Icons.info_outline, color: Colors.blue.shade600, size: 20),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -166,7 +148,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                       ],
                     ),
                   ),
-                
+
                   const SizedBox(height: 16),
                   // Order Summary
                   _buildSectionCard(
@@ -175,7 +157,11 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                       children: [
                         _buildSummaryRow('Tổng tiền hàng:', _formatPrice(widget.totalPrice.toInt())),
                         const SizedBox(height: 8),
-                        _buildSummaryRow('Phí giao hàng:', 'Sẽ được chủ vườn xác nhận sau khi tạo đơn', isDeliveryFee: true),
+                        _buildSummaryRow(
+                          'Phí giao hàng:',
+                          'Sẽ được chủ vườn xác nhận sau khi tạo đơn',
+                          isDeliveryFee: true,
+                        ),
                         const SizedBox(height: 8),
                         const Divider(),
                         const SizedBox(height: 8),
@@ -209,9 +195,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   backgroundColor: Colors.green.shade600,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 2,
                   shadowColor: Colors.green.shade200,
                 ),
@@ -226,10 +210,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                         const Flexible(
                           child: Text(
                             'Xác nhận đặt hàng',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -238,10 +219,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     const SizedBox(height: 4),
                     Text(
                       '${_formatPrice(widget.totalPrice.toInt())} VNĐ + phí giao hàng',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -259,13 +237,9 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       onTap: () async {
         final selectedAddress = await Navigator.push<String>(
           context,
-          MaterialPageRoute(
-            builder: (context) => AddressListScreen(
-              selectedAddress: _addressController.text,
-            ),
-          ),
+          MaterialPageRoute(builder: (context) => AddressListScreen(selectedAddress: _addressController.text)),
         );
-        
+
         if (selectedAddress != null) {
           setState(() {
             _addressController.text = selectedAddress;
@@ -286,33 +260,19 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Địa chỉ',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+                  Text('Địa chỉ', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                   const SizedBox(height: 2),
                   Text(
-                    _addressController.text.isEmpty 
-                        ? 'Chọn địa chỉ giao hàng'
-                        : _addressController.text,
+                    _addressController.text.isEmpty ? 'Chọn địa chỉ giao hàng' : _addressController.text,
                     style: TextStyle(
                       fontSize: 16,
-                      color: _addressController.text.isEmpty 
-                          ? Colors.grey.shade500
-                          : Colors.black87,
+                      color: _addressController.text.isEmpty ? Colors.grey.shade500 : Colors.black87,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey.shade400,
-              size: 16,
-            ),
+            Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 16),
           ],
         ),
       ),
@@ -326,12 +286,12 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       _showErrorMessage('Vui lòng nhập họ và tên');
       return;
     }
-        
+
     if (_phoneController.text.trim().isEmpty) {
       _showErrorMessage('Vui lòng nhập số điện thoại');
       return;
     }
-    
+
     if (_addressController.text.trim().isEmpty) {
       _showErrorMessage('Vui lòng chọn địa chỉ giao hàng');
       return;
@@ -342,16 +302,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: const Text(
-            'Xác nhận đặt hàng',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: const Text('Xác nhận đặt hàng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,10 +312,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -374,10 +323,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'Tổng tiền: ${_formatPrice(totalPrice.toInt())} VNĐ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green.shade600,
-                      ),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade600),
                     ),
                   ],
                 ),
@@ -387,10 +333,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Hủy',
-                style: TextStyle(color: Colors.grey.shade600),
-              ),
+              child: Text('Hủy', style: TextStyle(color: Colors.grey.shade600)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -400,9 +343,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('Xác nhận'),
             ),
@@ -418,19 +359,17 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
+        return const Center(child: CircularProgressIndicator());
       },
     );
 
     // Simulate order processing
     Future.delayed(const Duration(seconds: 2), () {
       Navigator.of(context).pop(); // Close loading dialog
-            
+
       // Clear cart
       CartService().clearCart();
-            
+
       // Navigate to success screen
       _navigateToSuccessScreen();
     });
@@ -438,7 +377,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
   void _navigateToSuccessScreen() {
     final orderId = _generateOrderId();
-        
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -464,12 +403,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -480,24 +414,14 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.green.shade50,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             ),
             child: Text(
               title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.green.shade700,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green.shade700),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: child,
-          ),
+          Padding(padding: const EdgeInsets.all(16), child: child),
         ],
       ),
     );
@@ -546,24 +470,15 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           border: Border.all(
-            color: selectedDeliveryMethod == value
-                 ? Colors.green.shade600
-                 : Colors.grey.shade300,
+            color: selectedDeliveryMethod == value ? Colors.green.shade600 : Colors.grey.shade300,
             width: selectedDeliveryMethod == value ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),
-          color: selectedDeliveryMethod == value
-               ? Colors.green.shade50
-               : Colors.white,
+          color: selectedDeliveryMethod == value ? Colors.green.shade50 : Colors.white,
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: selectedDeliveryMethod == value
-                   ? Colors.green.shade600
-                   : Colors.grey.shade600,
-            ),
+            Icon(icon, color: selectedDeliveryMethod == value ? Colors.green.shade600 : Colors.grey.shade600),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -574,18 +489,10 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: selectedDeliveryMethod == value
-                           ? Colors.green.shade700
-                           : Colors.black87,
+                      color: selectedDeliveryMethod == value ? Colors.green.shade700 : Colors.black87,
                     ),
                   ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+                  Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
                 ],
               ),
             ),
@@ -605,7 +512,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     );
   }
 
-  Widget _buildOrderItem(CartItem item) {
+  Widget _buildOrderItem(CartResponse item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -619,15 +526,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           Container(
             width: 50,
             height: 50,
-            decoration: BoxDecoration(
-              color: Colors.green.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.eco,
-              color: Colors.green.shade600,
-              size: 24,
-            ),
+            decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
+            child: Icon(Icons.eco, color: Colors.green.shade600, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -635,20 +535,13 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
+                  item.gardenerName,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  item.garden,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  item.cartItems!.first.productName ?? '',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -656,21 +549,14 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                        '${item.quantity} kg × ${item.priceText}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                        ),
+                        '${item.cartItems?.first.quantity} kg × ${item.cartItems?.first.price}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       '${_formatPrice(item.totalPrice.toInt())} VNĐ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green.shade600,
-                      ),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green.shade600),
                     ),
                   ],
                 ),
@@ -719,11 +605,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         const Flexible(
           child: Text(
             'Tổng thanh toán:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
         ),
         const SizedBox(width: 8),
@@ -733,21 +615,13 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
             children: [
               Text(
                 '${_formatPrice(widget.totalPrice.toInt())} VNĐ',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green.shade600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green.shade600),
                 textAlign: TextAlign.right,
               ),
               if (hasDelivery)
                 Text(
                   '+ phí giao hàng',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.grey.shade600),
                   textAlign: TextAlign.right,
                 ),
             ],
@@ -758,10 +632,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   }
 
   String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
+    return price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 
   void _showErrorMessage(String message) {
@@ -770,9 +641,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         content: Text(message),
         backgroundColor: Colors.red.shade600,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

@@ -39,6 +39,7 @@ class AuthenticationController extends GetxController {
 
       debugPrint('Auth check - Token: ${token != null ? 'Present' : 'Missing'}');
       debugPrint('Auth check - Login status: $isLoggedIn');
+      debugPrint('Auth check - User data: ${userDataMap != null ? 'Present' : 'Missing'}');
 
       if (token != null && token.isNotEmpty && isLoggedIn) {
         _isAuthenticated.value = true;
@@ -89,16 +90,14 @@ class AuthenticationController extends GetxController {
 
         if (token != null && token.isNotEmpty) {
           // Login successful: token is present
-          final Map<String, dynamic>? userDataMap = response['user']; // Assuming 'user' key exists for user data
+          final Map<String, dynamic> userDataMap = response; // Assuming 'user' key exists for user data
           User? user;
-          if (userDataMap != null) {
-            try {
-              user = User.fromJson(userDataMap);
-            } catch (e) {
-              debugPrint('Error parsing user data from login response: $e');
-              _errorMessage.value = 'Đăng nhập thành công nhưng lỗi đọc dữ liệu người dùng.';
-              // Decide if this is a critical error or if you can proceed without user details
-            }
+          try {
+            user = User.fromJson(userDataMap);
+          } catch (e) {
+            debugPrint('Error parsing user data from login response: $e');
+            _errorMessage.value = 'Đăng nhập thành công nhưng lỗi đọc dữ liệu người dùng.';
+            // Decide if this is a critical error or if you can proceed without user details
           }
 
           // Save token and user data to storage

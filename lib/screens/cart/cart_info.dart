@@ -1,5 +1,6 @@
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/cart_controller.dart';
+import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,7 +24,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     super.initState();
     _cartService = CartService();
     _cartService.addListener(_onCartChanged);
-    cartController.loadCarts(Get.find<AuthenticationController>().currentUser?.id ?? '');
+    cartController.loadCarts(Get.find<AuthenticationController>().currentUser?.accountId ?? '');
   }
 
   @override
@@ -71,7 +72,17 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
             ),
         ],
       ),
-      body: cartItems.isEmpty ? _buildEmptyCart() : _buildCartWithItems(cartItems, totalPrice, itemCount),
+      body: Obx(
+        () => !cartController.isLoading.value
+            ? cartController.cartItems.value.isEmpty
+                  ? _buildEmptyCart()
+                  : _buildCartWithItems(
+                      cartController.cartItems.value,
+                      cartController.cartItems.value.fold(0.0, (sum, item) => sum + item.totalPrice),
+                      cartController.cartItems.value.fold(0, (count, item) => count + item.itemCount),
+                    )
+            : Center(child: CircularProgressIndicator(color: Colors.green.shade600)),
+      ),
     );
   }
 
@@ -104,14 +115,14 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     );
   }
 
-  Widget _buildCartWithItems(List<CartItem> cartItems, double totalPrice, int itemCount) {
+  Widget _buildCartWithItems(List<CartResponse> cartItems, double totalPrice, int itemCount) {
     // Group items by garden
-    Map<String, List<CartItem>> groupedItems = {};
+    Map<String, List<CartResponse>> groupedItems = {};
     for (var item in cartItems) {
-      if (!groupedItems.containsKey(item.garden)) {
-        groupedItems[item.garden] = [];
+      if (!groupedItems.containsKey(item.gardenerName)) {
+        groupedItems[item.gardenerName] = [];
       }
-      groupedItems[item.garden]!.add(item);
+      groupedItems[item.gardenerName]!.add(item);
     }
 
     return Column(
@@ -202,7 +213,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     );
   }
 
-  Widget _buildCartItem(CartItem item) {
+  Widget _buildCartItem(CartResponse item) {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -227,7 +238,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        item.name,
+                        item.cartItems?.first.productName ?? 'Sản phẩm không rõ',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                       ),
                     ),
@@ -242,13 +253,13 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text('Danh mục: ${item.category}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+                // const SizedBox(height: 4),
+                // Text('Danh mục: ${item.cartItems.first.ca}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
-                      item.priceText,
+                      "${item.cartItems?.first.price ?? 0} VNĐ/ ${item.cartItems?.first.productUnit ?? 'kg'}",
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green.shade600),
                     ),
                     const Spacer(),
@@ -258,8 +269,11 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              if (item.quantity > 1) {
-                                _cartService.updateQuantity(item.id, item.quantity - 1);
+                              if ((item.cartItems?.first.quantity ?? 0) > 1) {
+                                _cartService.updateQuantity(
+                                  'item.cartItems?.first.cartItemId',
+                                  (item.cartItems?.first.quantity ?? 0) - 1,
+                                );
                               }
                             },
                             child: Container(
@@ -275,13 +289,16 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            '${item.quantity} kg',
+                            '${item.cartItems?.first.quantity} kg',
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                           ),
                           const SizedBox(width: 12),
                           GestureDetector(
                             onTap: () {
-                              _cartService.updateQuantity(item.id, item.quantity + 1);
+                              _cartService.updateQuantity(
+                                'item.cartItems?.first.cartItemId',
+                                (item.cartItems?.first.quantity ?? 0) + 1,
+                              );
                             },
                             child: Container(
                               width: 28,
@@ -299,7 +316,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                     else
                       // Show quantity without controls when not in edit mode
                       Text(
-                        '${item.quantity} kg',
+                        '${item.cartItems?.first.quantity} kg',
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                       ),
                   ],
@@ -324,21 +341,24 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     );
   }
 
-  void _removeItem(CartItem item) {
+  void _removeItem(CartResponse item) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Xóa sản phẩm'),
-          content: Text('Bạn có muốn xóa "${item.name}" khỏi giỏ hàng?'),
+          content: Text('Bạn có muốn xóa "${item.cartItems?.first.productName}" khỏi giỏ hàng?'),
           actions: [
             TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Hủy')),
             ElevatedButton(
               onPressed: () {
-                _cartService.removeItem(item.id);
+                _cartService.removeItem(item.cartId ?? '');
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Đã xóa ${item.name} khỏi giỏ hàng'), backgroundColor: Colors.red.shade600),
+                  SnackBar(
+                    content: Text('Đã xóa ${item.cartItems?.first.productName} khỏi giỏ hàng'),
+                    backgroundColor: Colors.red.shade600,
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -354,7 +374,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
     return price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 
-  void _showOrderConfirmation(List<CartItem> cartItems, double totalPrice, int itemCount) {
+  void _showOrderConfirmation(List<CartResponse> cartItems, double totalPrice, int itemCount) {
     // Navigate to Order Summary screen
     Navigator.push(
       context,

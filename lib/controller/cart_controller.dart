@@ -7,7 +7,7 @@ class CartController extends GetxController {
   final CartRepository _cartRepository = CartRepository.instance;
 
   Rx<bool> isLoading = true.obs;
-  RxList<CartItemModel> cartItems = RxList<CartItemModel>();
+  RxList<CartResponse> cartItems = RxList<CartResponse>();
 
   @override
   void onReady() {
@@ -24,35 +24,18 @@ class CartController extends GetxController {
     isLoading.value = true;
     try {
       await loadCarts(retailerId); // Ensure cart is loaded before adding items
-      List<CartItemModel> temp = cartItems.value;
+      List<CartResponse> temp = cartItems.value.toList();
 
-      temp.add(cartItem);
+      temp.add(CartResponse(null, retailerId, gardenerId, gardenerName, cartItems: [cartItem]));
 
-      for (CartItemModel item in temp) {
-        item.cartId = cartItems.value.isNotEmpty ? cartItems.value.first.cartId : null;
-      }
-
-      final response = await _cartRepository.addToCart(
-        cartId: cartItem.cartId,
-        retailerId: retailerId,
-        cartItem: temp,
-        gardenerId: gardenerId,
-        gardenerName: gardenerName,
-      );
-      if (response != null) {
-        debugPrint('Added to cart successfully: $response');
-        await loadCarts(retailerId); // Refresh cart items after adding
-        return true;
-      } else {
-        debugPrint('Failed to add items to cart for retailer ID: $retailerId');
-        return false;
-      }
+      final response = await _cartRepository.addToCart(retailerId: retailerId, cartItems: temp);
+      debugPrint('Added to cart successfully: $response');
+      return true;
     } catch (e) {
       debugPrint('Error adding to cart: $e');
+      return false;
     } finally {
       isLoading.value = false;
-
-      return false;
     }
   }
 
@@ -61,8 +44,8 @@ class CartController extends GetxController {
     try {
       final data = await _cartRepository.fetchCartDetails(userId);
       if (data != null) {
-        cartItems.value = data.cartItems ?? [];
-        debugPrint('Cart details loaded successfully: ${data.toString()}');
+        cartItems.value = data ?? [];
+        debugPrint('Cart details loaded successfully controller: ${data.length}');
       } else {
         debugPrint('Failed to load cart details for user ID: $userId');
       }
