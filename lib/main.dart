@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
 import 'package:cfv_mobile/data/repositories/home_repository.dart';
@@ -24,11 +25,13 @@ void main() async {
   Get.put(AuthenticationRepository());
   Get.put(HomeRepository());
   Get.put(ProductRepository());
+  Get.put(CartController());
 
   // Then, initialize your AuthenticationController with GetX
   Get.put(AuthenticationController());
   Get.put(HomeController());
   Get.put(ProductController());
+  Get.put(CartController());
 
   runApp(const MyApp());
 }

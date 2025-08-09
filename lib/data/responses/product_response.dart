@@ -11,6 +11,8 @@ class ProductModel {
   final String? currency;
   final DateTime? availabledDate;
   final String? weightUnit;
+  final String? gardenerId;
+  final String? gardenerName;
 
   ProductModel({
     this.productId,
@@ -25,6 +27,8 @@ class ProductModel {
     this.currency,
     this.availabledDate,
     this.weightUnit,
+    this.gardenerId,
+    this.gardenerName,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
@@ -40,6 +44,8 @@ class ProductModel {
     currency: json["currency"],
     availabledDate: json["availabledDate"] == null ? null : DateTime.parse(json["availabledDate"]),
     weightUnit: json["weightUnit"],
+    gardenerId: json["gardenerId"],
+    gardenerName: json["gardenerName"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -55,6 +61,8 @@ class ProductModel {
     "currency": currency,
     "availabledDate": availabledDate?.toIso8601String(),
     "weightUnit": weightUnit,
+    "gardenerId": gardenerId,
+    "gardenerName": gardenerName,
   };
 }
 
