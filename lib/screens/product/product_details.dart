@@ -4,6 +4,7 @@ import 'package:cfv_mobile/controller/product_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
+import 'package:cfv_mobile/screens/gardener/gardener_profile.dart';
 import 'package:cfv_mobile/screens/product/review_list.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -296,50 +297,52 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               ),
                               child: Column(
                                 children: [
-                                  // Row(
-                                  //   children: [
-                                  //     GestureDetector(
-                                  //       onTap: () {
-                                  //         Navigator.push(
-                                  //           context,
-                                  //           MaterialPageRoute(
-                                  //             builder: (context) => GardenerProfileScreen(gardenerData: widget.product),
-                                  //           ),
-                                  //         );
-                                  //       },
-                                  //       child: Container(
-                                  //         width: 60,
-                                  //         height: 60,
-                                  //         decoration: BoxDecoration(
-                                  //           shape: BoxShape.circle,
-                                  //           color: Colors.green.shade100,
-                                  //           border: Border.all(color: Colors.green.shade300, width: 2),
-                                  //         ),
-                                  //         child: Icon(Icons.person, color: Colors.green.shade600, size: 30),
-                                  //       ),
-                                  //     ),
-                                  //     const SizedBox(width: 16),
-                                  //     Expanded(
-                                  //       child: Column(
-                                  //         crossAxisAlignment: CrossAxisAlignment.start,
-                                  //         children: [
-                                  //           Text(
-                                  //             widget.product['garden'] ?? 'Vườn Xanh Miền Tây',
-                                  //             style: const TextStyle(
-                                  //               fontSize: 18,
-                                  //               fontWeight: FontWeight.bold,
-                                  //               color: Colors.black87,
-                                  //             ),
-                                  //           ),
-                                  //           Text(
-                                  //             widget.product['phone'] ?? '0901 234 567',
-                                  //             style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
-                                  //           ),
-                                  //         ],
-                                  //       ),
-                                  //     ),
-                                  //   ],
-                                  // ),
+                                  Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          // Navigator.push(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //     builder: (context) => GardenerProfileScreen(
+                                          //       gardenerData: productController.product.value?.productCategory,
+                                          //     ),
+                                          //   ),
+                                          // );
+                                        },
+                                        child: Container(
+                                          width: 60,
+                                          height: 60,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.green.shade100,
+                                            border: Border.all(color: Colors.green.shade300, width: 2),
+                                          ),
+                                          child: Icon(Icons.person, color: Colors.green.shade600, size: 30),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              productController.product.value?.gardenerName ?? 'Vườn Xanh Miền Tây',
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            Text(
+                                              productController.product.value?.gardenerName ?? '0901 234 567',
+                                              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(height: 20),
                                   Row(
                                     children: [
@@ -462,7 +465,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                 ),
                                                 const SizedBox(height: 4),
                                                 Text(
-                                                  'Có hiệu lực: ${productController.productCertificates.value?.issuedDate ?? 'Chưa có'} - ${productController.productCertificates.value?.expirationDate ?? 'Chưa có'}',
+                                                  'Có hiệu lực: ${DateFormat("dd/MM/yyyy").format(productController.productCertificates.value?.issuedDate ?? DateTime.now())} - ${DateFormat("dd/MM/yyyy").format(productController.productCertificates.value?.expirationDate ?? DateTime.now())}',
                                                   style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                                                 ),
                                                 const SizedBox(height: 8),

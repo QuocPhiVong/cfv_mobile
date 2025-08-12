@@ -29,10 +29,7 @@ class ProductController extends GetxController {
         product.value = data;
         debugPrint('Product details loaded successfully: ${data.productName}');
         if (data.productPriceId != null && data.productPriceId?.isNotEmpty == true) {
-          Future.wait([
-            loadProductPrice(data.productPriceId ?? ''),
-            loadProductCertificates(data.productPriceId ?? ''),
-          ]);
+          Future.wait([loadProductPrice(data.productPriceId ?? ''), loadProductCertificates(data.productId ?? '')]);
         } else {
           debugPrint('No product price ID found for product: ${data.productName}');
         }
