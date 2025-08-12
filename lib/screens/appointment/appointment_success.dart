@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/screens/appointment/appointment_detail.dart';
 import 'package:cfv_mobile/screens/appointment/appointment_list.dart';
 import 'package:flutter/material.dart';
 
@@ -197,7 +198,12 @@ class AppointmentSuccessScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => AppointmentDetailScreen(appointmentId: appointmentData['id']),
+                      //   ),
+                      // );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade600,

@@ -1,34 +1,27 @@
+import 'package:cfv_mobile/data/responses/appointment_response.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
+import 'package:cfv_mobile/controller/appointment_detail_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class AppointmentDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> appointment;
+class AppointmentDetailScreen extends StatelessWidget {
+  final String appointmentId;
 
-  const AppointmentDetailScreen({Key? key, required this.appointment}) : super(key: key);
-
-  @override
-  _AppointmentDetailScreenState createState() => _AppointmentDetailScreenState();
-}
-
-class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
-  bool isLoading = false;
-
-  // Cancellation reasons
-  final List<String> cancellationReasons = [
-    'Bận việc đột xuất',
-    'Thay đổi kế hoạch',
-    'Vấn đề sức khỏe',
-    'Thời tiết không thuận lợi',
-    'Lý do cá nhân',
-    'Khác'
-  ];
+  const AppointmentDetailScreen({super.key, required this.appointmentId});
 
   @override
   Widget build(BuildContext context) {
-    final appointment = widget.appointment;
-    final appointmentDate = DateTime.parse(appointment['appointmentDate']);
-    final status = appointment['status'].toString().toLowerCase();
-    
+    // Initialize controller with appointmentId
+    final controller = Get.put(AppointmentDetailController());
+
+    // Load appointment if not already loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.appointment.value == null) {
+        controller.loadAppointmentDetail(appointmentId);
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -40,49 +33,88 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
         ),
         title: Text(
           'Chi tiết lịch hẹn',
-          style: TextStyle(
-            color: Colors.grey[800],
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.grey[800], fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-            onPressed: () => _showMoreOptions(),
+            onPressed: () => _showMoreOptions(controller),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildStatusCard(status),
-            SizedBox(height: 16),
-            _buildAppointmentInfo(appointment, appointmentDate),
-            SizedBox(height: 16),
-            _buildLocationCard(appointment),
-            SizedBox(height: 16),
-            _buildDescriptionCard(appointment),
-            if (status == 'cancelled') ...[
+      body: Obx(() {
+        // Show loading indicator
+        if (controller.isLoading.value) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Đang tải thông tin lịch hẹn...')],
+            ),
+          );
+        }
+
+        // Show error message
+        if (controller.errorMessage.value.isNotEmpty && controller.appointment.value == null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                SizedBox(height: 16),
+                Text(controller.errorMessage.value, textAlign: TextAlign.center, style: TextStyle(fontSize: 16)),
+                SizedBox(height: 16),
+                ElevatedButton(onPressed: () => controller.refreshAppointmentDetail(), child: Text('Thử lại')),
+              ],
+            ),
+          );
+        }
+
+        // Show appointment details
+        final appointment = controller.appointment.value;
+        if (appointment == null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
+                SizedBox(height: 16),
+                Text('Không tìm thấy thông tin lịch hẹn'),
+              ],
+            ),
+          );
+        }
+
+        final appointmentDate = appointment.appointmentDate ?? DateTime.now();
+        final status = appointment.status?.toLowerCase() ?? 'unknown';
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStatusCard(status, controller),
               SizedBox(height: 16),
-              _buildCancellationInfo(appointment),
+              _buildAppointmentInfo(appointment, appointmentDate),
+              SizedBox(height: 16),
+              _buildLocationCard(appointment),
+              SizedBox(height: 16),
+              _buildDescriptionCard(appointment),
+              if (status == 'cancelled') ...[SizedBox(height: 16), _buildCancellationInfo(appointment, controller)],
+              SizedBox(height: 24),
+              _buildActionButtons(status, appointmentDate, controller),
+              SizedBox(height: 32),
             ],
-            SizedBox(height: 24),
-            _buildActionButtons(status, appointmentDate),
-            SizedBox(height: 32),
-          ],
-        ),
-      ),
+          ),
+        );
+      }),
     );
   }
 
-  Widget _buildStatusCard(String status) {
+  Widget _buildStatusCard(String status, AppointmentDetailController controller) {
     Color statusColor;
     IconData statusIcon;
     String statusText;
-    
+
     switch (status) {
       case 'confirmed':
         statusColor = Colors.green;
@@ -123,21 +155,13 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           children: [
             Container(
               padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: statusColor.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
               child: Icon(statusIcon, color: statusColor, size: 24),
             ),
             SizedBox(width: 12),
             Text(
               statusText,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: statusColor,
-                letterSpacing: 0.5,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: statusColor, letterSpacing: 0.5),
             ),
           ],
         ),
@@ -145,10 +169,10 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     );
   }
 
-  Widget _buildAppointmentInfo(Map<String, dynamic> appointment, DateTime appointmentDate) {
-    final duration = appointment['duration'] ?? 60; // Default 60 minutes
+  Widget _buildAppointmentInfo(AppointmentData appointment, DateTime appointmentDate) {
+    final duration = int.tryParse(appointment.duration ?? '60') ?? 60; // Default 60 minutes
     final endTime = appointmentDate.add(Duration(minutes: duration));
-    
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -158,12 +182,8 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              appointment['subject'] ?? 'Không có tiêu đề',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
+              appointment.subject ?? 'Không có tiêu đề',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey[800]),
             ),
             SizedBox(height: 16),
             _buildInfoRow(
@@ -178,16 +198,62 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
               '${DateFormat('HH:mm').format(appointmentDate)} - ${DateFormat('HH:mm').format(endTime)}',
             ),
             SizedBox(height: 12),
-            _buildInfoRow(
-              Icons.hourglass_empty,
-              'Thời lượng',
-              '${duration} phút',
-            ),
+            _buildInfoRow(Icons.hourglass_empty, 'Thời lượng', '$duration phút'),
             SizedBox(height: 12),
-            _buildInfoRow(
-              Icons.category,
-              'Loại hẹn',
-              appointment['appointmentType']?.toString().toUpperCase() ?? 'KHÔNG XÁC ĐỊNH',
+            _buildInfoRow(Icons.category, 'Loại hẹn', appointment.appointmentType?.toUpperCase() ?? 'KHÔNG XÁC ĐỊNH'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationCard(appointment) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Row
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
+                  child: Icon(Icons.location_on, color: Colors.red[400], size: 20),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'Địa điểm',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800]),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+
+            // Location text
+            Text(
+              appointment.location ?? 'Chưa xác định địa điểm',
+              style: TextStyle(fontSize: 15, color: Colors.grey[900], height: 1.4),
+            ),
+            SizedBox(height: 14),
+
+            // Directions button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _openMap(appointment.location),
+                icon: Icon(Icons.directions, size: 18),
+                label: Text('Chỉ đường', style: TextStyle(fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[600],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
             ),
           ],
         ),
@@ -195,77 +261,9 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     );
   }
 
-Widget _buildLocationCard(Map<String, dynamic> appointment) {
-  return Card(
-    elevation: 2,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-    child: Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.location_on, color: Colors.red[400], size: 20),
-              ),
-              SizedBox(width: 10),
-              Text(
-                'Địa điểm',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
-
-          // Location text
-          Text(
-            appointment['location'] ?? 'Chưa xác định địa điểm',
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey[900],
-              height: 1.4,
-            ),
-          ),
-          SizedBox(height: 14),
-
-          // Directions button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _openMap(appointment['location']),
-              icon: Icon(Icons.directions, size: 18),
-              label: Text('Chỉ đường', style: TextStyle(fontWeight: FontWeight.w600)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[600],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-
-  Widget _buildDescriptionCard(Map<String, dynamic> appointment) {
-    final description = appointment['description'];
-    if (description == null || description.toString().isEmpty) {
+  Widget _buildDescriptionCard(appointment) {
+    final description = appointment.description;
+    if (description == null || description.isEmpty) {
       return SizedBox.shrink();
     }
 
@@ -283,40 +281,26 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
                 SizedBox(width: 8),
                 Text(
                   'Mô tả',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey[700]),
                 ),
               ],
             ),
             SizedBox(height: 8),
-            Text(
-              description.toString(),
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[800],
-                height: 1.4,
-              ),
-            ),
+            Text(description, style: TextStyle(fontSize: 15, color: Colors.grey[800], height: 1.4)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCancellationInfo(Map<String, dynamic> appointment) {
+  Widget _buildCancellationInfo(appointment, AppointmentDetailController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Colors.red[50],
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.red[50]),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -326,30 +310,20 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
                 SizedBox(width: 8),
                 Text(
                   'Thông tin hủy lịch',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red[700],
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.red[700]),
                 ),
               ],
             ),
             SizedBox(height: 12),
-            _buildCancellationRow(
-              'Người hủy:',
-              appointment['cancelledBy']?.toString() == 'retailer' ? 'Nhà bán lẻ' : 'Thợ làm vườn',
-            ),
+            _buildCancellationRow('Người hủy:', controller.getCancelledByDisplayText()),
             SizedBox(height: 8),
-            _buildCancellationRow(
-              'Lý do hủy:',
-              appointment['cancellationReason']?.toString() ?? 'Không có lý do',
-            ),
+            _buildCancellationRow('Lý do hủy:', appointment.cancellationReason ?? 'Không có lý do'),
             SizedBox(height: 8),
             _buildCancellationRow(
               'Thời gian hủy:',
-              DateFormat('dd/MM/yyyy HH:mm').format(
-                DateTime.parse(appointment['updatedAt']),
-              ),
+              appointment.updatedAt != null
+                  ? DateFormat('dd/MM/yyyy HH:mm').format(appointment.updatedAt!)
+                  : 'Không xác định',
             ),
           ],
         ),
@@ -365,21 +339,11 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
           width: 100,
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Colors.red[600],
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.red[600]),
           ),
         ),
         Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.red[700],
-            ),
-          ),
+          child: Text(value, style: TextStyle(fontSize: 14, color: Colors.red[700])),
         ),
       ],
     );
@@ -394,33 +358,25 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
           width: 80,
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[800],
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[800], fontWeight: FontWeight.w500),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildActionButtons(String status, DateTime appointmentDate) {
+  Widget _buildActionButtons(String status, DateTime appointmentDate, AppointmentDetailController controller) {
     switch (status) {
       case 'pending':
-        return _buildCancelButton();
+        return _buildCancelButton(controller);
       case 'confirmed':
-        return _buildConfirmedActions(appointmentDate);
+        return _buildConfirmedActions(appointmentDate, controller);
       case 'cancelled':
         return _buildNewAppointmentButton();
       default:
@@ -428,50 +384,44 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
     }
   }
 
-  Widget _buildCancelButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: isLoading ? null : () => _showCancellationReasons(),
-        icon: isLoading 
-          ? SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            )
-          : Icon(Icons.cancel_outlined),
-        label: Text(isLoading ? 'Đang xử lý...' : 'Hủy lịch hẹn'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red[600],
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildCancelButton(AppointmentDetailController controller) {
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: controller.isUpdating.value ? null : () => _showCancellationReasons(controller),
+          icon: controller.isUpdating.value
+              ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Icon(Icons.cancel_outlined),
+          label: Text(controller.isUpdating.value ? 'Đang xử lý...' : 'Hủy lịch hẹn'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[600],
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildConfirmedActions(DateTime appointmentDate) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: isLoading ? null : () => _handleConfirmedCancellation(appointmentDate),
-        icon: isLoading 
-          ? SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-            )
-          : Icon(Icons.cancel_outlined),
-        label: Text(isLoading ? 'Đang xử lý...' : 'Hủy lịch hẹn'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red[600],
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildConfirmedActions(DateTime appointmentDate, AppointmentDetailController controller) {
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: controller.isUpdating.value
+              ? null
+              : () => _showCancellationReasons(controller),
+          icon: controller.isUpdating.value
+              ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Icon(Icons.cancel_outlined),
+          label: Text(controller.isUpdating.value ? 'Đang xử lý...' : 'Hủy lịch hẹn'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[600],
+            foregroundColor: Colors.white,
+            padding: EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
@@ -489,58 +439,26 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
           backgroundColor: Colors.green[600],
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
     );
   }
 
-  void _handleConfirmedCancellation(DateTime appointmentDate) {
-    final now = DateTime.now();
-    final timeDifference = appointmentDate.difference(now);
-    
-    if (timeDifference.inHours > 6) {
-      _showCancellationReasons();
-    } else {
-      _showCancellationTimeError();
-    }
-  }
+  void _showCancellationReasons(AppointmentDetailController controller) {
+    final List<String> cancellationReasons = [
+      'Bận việc đột xuất',
+      'Thay đổi kế hoạch',
+      'Vấn đề sức khỏe',
+      'Thời tiết không thuận lợi',
+      'Lý do cá nhân',
+      'Khác',
+    ];
 
-  void _showCancellationTimeError() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.warning, color: Colors.orange[600]),
-            SizedBox(width: 8),
-            Text('Không thể hủy'),
-          ],
-        ),
-        content: Text(
-          'Bạn chỉ có thể huỷ lịch hẹn trước giờ hẹn 6 tiếng.',
-          style: TextStyle(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Đã hiểu'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showCancellationReasons() {
     showModalBottomSheet(
-      context: context,
+      context: Get.context!,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => Container(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -551,31 +469,22 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
               ),
             ),
             SizedBox(height: 20),
-            Text(
-              'Chọn lý do hủy lịch',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            Text('Chọn lý do hủy lịch', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+            ...cancellationReasons.map(
+              (reason) => ListTile(
+                title: Text(reason),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmCancellation(reason, controller);
+                },
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
-            SizedBox(height: 20),
-            ...cancellationReasons.map((reason) => ListTile(
-              title: Text(reason),
-              onTap: () {
-                Navigator.pop(context);
-                _confirmCancellation(reason);
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            )).toList(),
             SizedBox(height: 20),
           ],
         ),
@@ -583,22 +492,19 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
     );
   }
 
-  void _confirmCancellation(String reason) {
+  void _confirmCancellation(String reason, AppointmentDetailController controller) {
     showDialog(
-      context: context,
+      context: Get.context!,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text('Xác nhận hủy lịch'),
         content: Text('Bạn có chắc chắn muốn hủy lịch hẹn này?\n\nLý do: $reason'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Không'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('Không')),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _processCancellation(reason);
+              _processCancellation(reason, controller);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600]),
             child: Text('Hủy lịch', style: TextStyle(color: Colors.white)),
@@ -608,57 +514,73 @@ Widget _buildLocationCard(Map<String, dynamic> appointment) {
     );
   }
 
-  void _processCancellation(String reason) async {
-    setState(() {
-      isLoading = true;
-    });
+  void _processCancellation(String reason, AppointmentDetailController controller) async {
+    final success = await controller.cancelAppointment(
+      cancellationReason: reason,
+    );
 
-    // Simulate API call
-    await Future.delayed(Duration(seconds: 2));
-
-    setState(() {
-      isLoading = false;
-    });
-
-    // Show success message and go back
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Đã hủy lịch hẹn thành công'),
+    if (success) {
+      // Show success message
+      Get.snackbar(
+        'Thành công',
+        controller.successMessage.value,
         backgroundColor: Colors.green[600],
-      ),
-    );
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: Duration(seconds: 3),
+      );
 
-    Navigator.pop(context, true); // Return true to indicate cancellation
-  }
-
-  void _createNewAppointment() {
-    // Navigate to create appointment screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Chuyển đến trang đặt lịch mới'),
-        backgroundColor: Colors.blue[600],
-      ),
-    );
-  }
-
-  void _openMap(String? location) {
-    if (location != null) {
-      // Open map application
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Mở bản đồ: $location'),
-          backgroundColor: Colors.blue[600],
-        ),
+      // Go back to previous screen
+      Get.back(result: true); // Return true to indicate cancellation
+    } else {
+      // Show error message
+      Get.snackbar(
+        'Lỗi',
+        controller.errorMessage.value,
+        backgroundColor: Colors.red[600],
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: Duration(seconds: 3),
       );
     }
   }
 
-  void _showMoreOptions() {
+  void _createNewAppointment() {
+    // Navigate to create appointment screen
+    Get.snackbar(
+      'Thông báo',
+      'Chuyển đến trang đặt lịch mới',
+      backgroundColor: Colors.blue[600],
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+      duration: Duration(seconds: 2),
+    );
+  }
+
+  Future<void> _openMap(String? location) async {
+    if (location != null) {
+      // Open map application
+      // Launch Google Maps with the location
+      final url = 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(location)}';
+      if (await canLaunchUrl(Uri.parse(url))) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } else {
+        Get.snackbar(
+          'Lỗi',
+          'Không thể mở Google Maps',
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+          duration: Duration(seconds: 2),
+        );
+      }
+    }
+  }
+
+  void _showMoreOptions(AppointmentDetailController controller) {
     showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      context: Get.context!,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => Container(
         padding: EdgeInsets.all(20),
         child: Column(

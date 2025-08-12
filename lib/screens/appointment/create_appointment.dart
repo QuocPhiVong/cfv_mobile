@@ -1,8 +1,21 @@
+import 'package:cfv_mobile/data/services/storage_service.dart';
 import 'package:cfv_mobile/screens/appointment/appointment_success.dart';
+import 'package:cfv_mobile/controller/appointment_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+class GardenerData {
+  final String name;
+  final String phone;
+  final String address;
+  final String gardenerId;
+
+  GardenerData({required this.name, required this.phone, required this.address, required this.gardenerId});
+}
 
 class CreateAppointmentScreen extends StatefulWidget {
-  const CreateAppointmentScreen({Key? key}) : super(key: key);
+  final GardenerData? gardenerData;
+  const CreateAppointmentScreen({super.key, this.gardenerData});
 
   @override
   State<CreateAppointmentScreen> createState() =>
@@ -12,11 +25,12 @@ class CreateAppointmentScreen extends StatefulWidget {
 class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final AppointmentController _appointmentController = Get.put(AppointmentController());
 
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String _selectedDuration = '30 phút';
-  String _selectedMethod = 'Trực tuyến'; // ✅ New field
+  String _selectedMethod = 'Trực tiếp';
   bool _showSubjectSuggestions = false;
 
   final List<String> _subjectSuggestions = [
@@ -39,7 +53,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     '3 tiếng',
   ];
 
-  final List<String> _methodOptions = ['Trực tuyến', 'Trực tiếp'];
+  final List<String> _methodOptions = ['Trực tiếp', 'Trực tuyến'];
 
   @override
   Widget build(BuildContext context) {
@@ -145,11 +159,11 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                   const SizedBox(height: 20),
 
                   // Garden information
-                  _buildInfoRow('Tên vườn', 'Vườn Xanh Miền Tây'),
-                  _buildInfoRow('Số điện thoại', '0901 234 567'),
+                  _buildInfoRow('Tên vườn', widget.gardenerData?.name ?? 'Vườn Xanh Miền Tây'),
+                  _buildInfoRow('Số điện thoại', widget.gardenerData?.phone ?? '0901 234 567'),
                   _buildInfoRow(
                     'Địa chỉ cụ thể',
-                    '123 Đường Cần Thơ, An Giang',
+                    widget.gardenerData?.address ?? '123 Đường Cần Thơ, An Giang' ,
                   ),
 
                   const SizedBox(height: 32),
@@ -451,23 +465,79 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                 ),
               ],
             ),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _createAppointment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade600,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+            child: Column(
+              children: [
+                // Error message
+                Obx(() {
+                  if (_appointmentController.errorMessage.value.isNotEmpty) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _appointmentController.errorMessage.value,
+                              style: TextStyle(color: Colors.red.shade700, fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
+                
+                // Create button
+                SizedBox(
+                  width: double.infinity,
+                  child: Obx(() {
+                    return ElevatedButton(
+                      onPressed: _appointmentController.isCreating.value ? null : _createAppointment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        disabledBackgroundColor: Colors.grey.shade400,
+                      ),
+                      child: _appointmentController.isCreating.value
+                          ? const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Đang tạo...',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            )
+                          : const Text(
+                              'Tạo lịch hẹn',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                    );
+                  }),
                 ),
-                child: const Text(
-                  'Tạo lịch hẹn',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
+              ],
             ),
           ),
         ],
@@ -533,59 +603,103 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     }
   }
 
-  void _createAppointment() {
+  Future<String?> _getAccountId() async {
+    final userData = await StorageService.getUserData();
+    final accountId = userData?['accountId'];
+    if (accountId == null) {
+      debugPrint('AccountId not found in user data');
+    }
+    return accountId;
+  }
+
+  Future<void> _createAppointment() async {
     // Validate required fields
     if (_subjectController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng nhập chủ đề'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _appointmentController.errorMessage.value = 'Vui lòng nhập chủ đề';
       return;
     }
 
     if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng chọn ngày'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _appointmentController.errorMessage.value = 'Vui lòng chọn ngày';
       return;
     }
 
     if (_selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Vui lòng chọn thời gian'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _appointmentController.errorMessage.value = 'Vui lòng chọn thời gian';
       return;
     }
 
-    final appointmentData = {
-      'subject': _subjectController.text,
-      'gardenName': 'Vườn Xanh Miền Tây',
-      'phone': '0901 234 567',
-      'address': '123 Đường Cần Thơ, An Giang',
-      'date':
-          '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-      'startTime':
-          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
-      'duration': _selectedDuration,
-      'method': _selectedMethod, // ✅ Added
-      'description': _descriptionController.text,
-    };
-
-    // Navigate to success screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            AppointmentSuccessScreen(appointmentData: appointmentData),
-      ),
+    // Combine date and time
+    final appointmentDateTime = DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _selectedTime!.hour,
+      _selectedTime!.minute,
     );
+
+    // Convert duration from Vietnamese to minutes
+    int durationMinutes = _convertDurationToSeconds(_selectedDuration);
+
+    try {
+      final retailerId = await _getAccountId();
+      final success = await _appointmentController.createAppointment(
+        subject: _subjectController.text,
+        description: _descriptionController.text,
+        appointmentDate: appointmentDateTime,
+        duration: durationMinutes,
+        appointmentType: _selectedMethod,
+        gardenerId: widget.gardenerData?.gardenerId ?? '',
+        retailerId: retailerId ?? '',
+        location: widget.gardenerData?.address ?? '',
+      );
+
+      if (success) {
+        // Create appointment data for success screen
+        final appointmentData = {
+          'subject': _subjectController.text,
+          'gardenName': 'Vườn Xanh Miền Tây',
+          'phone': '0901 234 567',
+          'address': '123 Đường Cần Thơ, An Giang',
+          'date': '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+          'startTime': '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
+          'duration': _selectedDuration,
+          'method': _selectedMethod,
+          'description': _descriptionController.text,
+          'appointmentId':
+                          _appointmentController.currentAppointment.value?.appointmentId,
+        };
+
+        // Navigate to success screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AppointmentSuccessScreen(appointmentData: appointmentData),
+          ),
+        );
+      }
+    } catch (e) {
+      _appointmentController.errorMessage.value = 'Có lỗi xảy ra khi tạo lịch hẹn. Vui lòng thử lại.';
+    }
+  }
+
+  /// Convert Vietnamese duration string to minutes
+  int _convertDurationToSeconds(String duration) {
+    switch (duration) {
+      case '30 phút':
+        return 1800;
+      case '1 tiếng':
+        return 3600;
+      case '1 tiếng 30 phút':
+        return 5400;
+      case '2 tiếng':
+        return 7200;
+      case '2 tiếng 30 phút':
+        return 9000;
+      case '3 tiếng':
+        return 10800;
+      default:
+        return 1800;
+    }
   }
 }

@@ -1,72 +1,27 @@
 import 'package:cfv_mobile/screens/appointment/appointment_detail.dart';
+import 'package:cfv_mobile/controller/appointment_controller.dart';
+import 'package:cfv_mobile/data/responses/appointment_response.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-class AppointmentListScreen extends StatefulWidget {
-  @override
-  _AppointmentListScreenState createState() => _AppointmentListScreenState();
-}
+class AppointmentListScreen extends GetView<AppointmentController> {
+  final RxString selectedFilterRx = 'All'.obs;
 
-class _AppointmentListScreenState extends State<AppointmentListScreen> {
-  String selectedFilter = 'All';
-  
-  // Fake data matching your API schema
-  final List<Map<String, dynamic>> appointments = [
-    {
-      "appointmentId": {"random": "apt_003", "time": "2025-08-12T12:00:48.951Z"},
-      "gardenerId": {"random": "grd_003", "time": "2025-08-12T12:00:48.951Z"},
-      "retailerId": {"random": "ret_003", "time": "2025-08-12T12:00:48.951Z"},
-      "appointmentDate": "2025-08-14T09:00:00.000Z",
-      "subject": "Gặp nhau cuối tuần",
-      "location": "789 Maple Drive, Greenfield",
-      "status": "confirmed",
-      "appointmentType": "Trực tuyến",
-      "createdAt": "2025-08-12T12:00:48.951Z",
-      "updatedAt": "2025-08-12T12:00:48.951Z",
-      "duration": 60,
-      "description": "UIA Skibidi Dop Dop Yes Yes"
-    },
-    {
-      "appointmentId": {"random": "apt_003", "time": "2025-08-12T12:00:48.951Z"},
-      "gardenerId": {"random": "grd_003", "time": "2025-08-12T12:00:48.951Z"},
-      "retailerId": {"random": "ret_003", "time": "2025-08-12T12:00:48.951Z"},
-      "appointmentDate": "2025-08-14T09:00:00.000Z",
-      "subject": "Gặp nhau cuối tuần",
-      "location": "789 Maple Drive, Greenfield",
-      "status": "pending",
-      "appointmentType": "Trực tuyến",
-      "createdAt": "2025-08-12T12:00:48.951Z",
-      "updatedAt": "2025-08-12T12:00:48.951Z",
-      "duration": 60,
-      "description": "UIA Skibidi Dop Dop Yes Yes"
-    },
-    {
-      "appointmentId": {"random": "apt_003", "time": "2025-08-12T12:00:48.951Z"},
-      "gardenerId": {"random": "grd_003", "time": "2025-08-12T12:00:48.951Z"},
-      "retailerId": {"random": "ret_003", "time": "2025-08-12T12:00:48.951Z"},
-      "appointmentDate": "2025-08-14T09:00:00.000Z",
-      "subject": "Gặp nhau cuối tuần",
-      "location": "789 Maple Drive, Greenfield",
-      "status": "cancelled",
-      "appointmentType": "Trực tuyến",
-      "createdAt": "2025-08-12T12:00:48.951Z",
-      "updatedAt": "2025-08-12T12:00:48.951Z",
-      "cancelledBy": "Vòng Quốc Phi",
-      "cancellationReason": "Bận đột xuất",
-      "duration": 60,
-      "description": "UIA Skibidi Dop Dop Yes Yes"
-    },
-  ];
-
-  List<Map<String, dynamic>> get filteredAppointments {
-    if (selectedFilter == 'All') return appointments;
-    return appointments.where((apt) => 
-      apt['status'].toString().toLowerCase() == selectedFilter.toLowerCase()
-    ).toList();
-  }
+  AppointmentListScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Initialize controller if not already initialized
+    Get.put(AppointmentController());
+    
+    // Load appointments on first build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (controller.appointments.isEmpty) {
+        controller.getAppointments(refresh: true);
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -85,14 +40,41 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
         children: [
           _buildFilterChips(),
           Expanded(
-            child: filteredAppointments.isEmpty
-                ? _buildEmptyState()
-                : _buildAppointmentList(),
+            child: Obx(() => _buildBody()),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildBody() {
+    if (controller.isLoading.value && controller.appointments.isEmpty) {
+      return _buildLoadingState();
+    }
+    
+    if (controller.errorMessage.isNotEmpty && controller.appointments.isEmpty) {
+      return _buildErrorState();
+    }
+    
+    final filteredAppointments = _getFilteredAppointments();
+    
+    if (filteredAppointments.isEmpty) {
+      return _buildEmptyState();
+    }
+    
+    return _buildAppointmentList(filteredAppointments);
+  }
+
+  List<AppointmentData> _getFilteredAppointments() {
+    if (selectedFilterRx.value == 'All') {
+      return controller.appointments;
+    }
+    return controller.appointments.where((apt) => 
+      apt.status?.toLowerCase() == selectedFilterRx.value.toLowerCase()
+    ).toList();
+  }
+
+
 
   Widget _buildFilterChips() {
     final filters = ['All', 'Confirmed', 'Pending', 'Cancelled'];
@@ -105,45 +87,58 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
         itemCount: filters.length,
         itemBuilder: (context, index) {
           final filter = filters[index];
-          final isSelected = selectedFilter == filter;
           
           return Padding(
             padding: EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(filter),
-              selected: isSelected,
-              onSelected: (selected) {
-                setState(() {
-                  selectedFilter = filter;
-                });
-              },
-              backgroundColor: Colors.white,
-              selectedColor: Colors.green[100],
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.green[700] : Colors.grey[600],
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
+            child: Obx(() {
+              final isSelected = selectedFilterRx.value == filter;
+              return FilterChip(
+                label: Text(filter),
+                selected: isSelected,
+                onSelected: (selected) {
+                  selectedFilterRx.value = filter;
+                },
+                backgroundColor: Colors.white,
+                selectedColor: Colors.green[100],
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.green[700] : Colors.grey[600],
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              );
+            }),
           );
         },
       ),
     );
   }
 
-  Widget _buildAppointmentList() {
-    return ListView.builder(
-      padding: EdgeInsets.all(16),
-      itemCount: filteredAppointments.length,
-      itemBuilder: (context, index) {
-        final appointment = filteredAppointments[index];
-        return _buildAppointmentCard(appointment);
+  Widget _buildAppointmentList(List<AppointmentData> appointments) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        await controller.getAppointments(refresh: true);
       },
+      child: ListView.builder(
+        padding: EdgeInsets.all(16),
+        itemCount: appointments.length + (controller.isLoading.value ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == appointments.length) {
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          final appointment = appointments[index];
+          return _buildAppointmentCard(appointment);
+        },
+      ),
     );
   }
 
-  Widget _buildAppointmentCard(Map<String, dynamic> appointment) {
-    final appointmentDate = DateTime.parse(appointment['appointmentDate']);
-    final status = appointment['status'].toString();
+  Widget _buildAppointmentCard(AppointmentData appointment) {
+    final appointmentDate = appointment.appointmentDate ?? DateTime.now();
+    final status = appointment.status ?? 'unknown';
     
     Color statusColor;
     IconData statusIcon;
@@ -172,31 +167,22 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () async {
-          // Navigate to appointment detail screen
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AppointmentDetailScreen(
-                appointment: appointment,
-              ),
-            ),
-          );
+          final result = await Get.to(() => AppointmentDetailScreen(
+            appointmentId: appointment.appointmentId ?? '',
+          ));
           
           // Handle result if appointment was cancelled or updated
           if (result == true) {
             // Refresh the appointment list
-            setState(() {
-              // In a real app, you would fetch updated data from API
-              // For now, we'll just trigger a rebuild
-            });
+            await controller.getAppointments(refresh: true);
             
             // Show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Lịch hẹn đã được cập nhật'),
-                backgroundColor: Colors.green[600],
-                duration: Duration(seconds: 2),
-              ),
+            Get.snackbar(
+              'Thành công',
+              'Lịch hẹn đã được cập nhật',
+              backgroundColor: Colors.green[600],
+              colorText: Colors.white,
+              duration: Duration(seconds: 2),
             );
           }
         },
@@ -210,7 +196,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      appointment['subject'],
+                      appointment.subject ?? 'No subject',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -264,7 +250,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      appointment['location'],
+                      appointment.location ?? appointment.address ?? 'No location',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -279,7 +265,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                   Icon(Icons.category, size: 16, color: Colors.grey[600]),
                   SizedBox(width: 8),
                   Text(
-                    appointment['appointmentType'].toString().toUpperCase(),
+                    (appointment.appointmentType ?? 'Unknown').toUpperCase(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -289,7 +275,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                   ),
                 ],
               ),
-              if (appointment['cancellationReason'] != null) ...[
+              if (appointment.cancellationReason != null) ...[
                 SizedBox(height: 8),
                 Container(
                   padding: EdgeInsets.all(8),
@@ -303,7 +289,7 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Cancelled: ${appointment['cancellationReason']}',
+                          'Cancelled: ${appointment.cancellationReason}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.red[600],
@@ -317,6 +303,72 @@ class _AppointmentListScreenState extends State<AppointmentListScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text(
+            'Đang tải lịch hẹn...',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Colors.red[400],
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Có lỗi xảy ra',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[600],
+            ),
+          ),
+          SizedBox(height: 8),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              controller.errorMessage.value,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              controller.getAppointments(refresh: true);
+            },
+            child: Text('Thử lại'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[600],
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -102,6 +102,25 @@ class ApiService {
       throw _handleDioError(e);
     }
   }
+  
+  // Generic PATCH request
+  Future<Response<T>> patch<T>(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    try {
+      return await _dio.patch<T>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
 
   // Generic DELETE request
   Future<Response<T>> delete<T>(

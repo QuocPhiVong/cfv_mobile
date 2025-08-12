@@ -366,7 +366,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           onPressed: () {
                                             Navigator.push(
                                               context, 
-                                              MaterialPageRoute(builder: (context) => CreateAppointmentScreen())
+                                              MaterialPageRoute(
+                                                builder: (context) => CreateAppointmentScreen(
+                                                  gardenerData: GardenerData(
+                                                    gardenerId: productController.product.value?.gardenerId ?? '',
+                                                    name: productController.product.value?.gardenerName ?? '',
+                                                    // TODO: Fix later
+                                                    phone: '0901 234 567',
+                                                    address: '123 Đường Cần Thơ, An Giang',
+                                                    // phone: productController.product.value?.gardenerPhone ?? '',
+                                                    // address: productController.product.value?.gardenerAddress ?? '',
+                                                  ),
+                                                ),
+                                              )
                                             );
                                           },
                                           icon: const Icon(Icons.calendar_today, size: 18),
