@@ -1,5 +1,6 @@
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/data/responses/home_response.dart';
+import 'package:cfv_mobile/screens/posts/post_detail.dart';
 import 'package:cfv_mobile/screens/product/product_details.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:flutter/material.dart';
@@ -776,43 +777,72 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 16),
 
-          // Like button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isLiked) {
-                        likedPosts.remove(index);
-                      } else {
-                        likedPosts.add(index);
-                      }
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey.shade500,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Yêu thích',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          // Like & Details buttons row
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      // Yêu thích button (left)
+      GestureDetector(
+        onTap: () {
+          setState(() {
+            if (isLiked) {
+              likedPosts.remove(index);
+            } else {
+              likedPosts.add(index);
+            }
+          });
+        },
+        child: Row(
+          children: [
+            Icon(
+              isLiked ? Icons.favorite : Icons.favorite_border,
+              color: isLiked ? Colors.red : Colors.grey.shade500,
+              size: 20,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Yêu thích',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      // Chi tiết button (right)
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetailScreen(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.green.shade600,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Text(
+            'Chi tiết',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
+        ),
+      ),
+    ],
+  ),
+),
+
 
           // FIXED: Functional Message box at the bottom of each post
           Container(
