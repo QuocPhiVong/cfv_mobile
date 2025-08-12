@@ -95,10 +95,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Xin chào!', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+                            Text(
+                              'Xin chào!',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
                             const Text(
                               'Vòng Quốc Phi',
-                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
                             ),
                           ],
                         ),
@@ -108,22 +118,39 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const CartInfoScreen()),
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const CartInfoScreen(),
+                                  ),
                                 );
                               },
                               child: Container(
                                 width: 50,
                                 height: 50,
-                                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.blue.shade100),
-                                child: Icon(Icons.shopping_cart_outlined, color: Colors.blue.shade600, size: 24),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.blue.shade100,
+                                ),
+                                child: Icon(
+                                  Icons.shopping_cart_outlined,
+                                  color: Colors.blue.shade600,
+                                  size: 24,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Container(
                               width: 50,
                               height: 50,
-                              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
-                              child: Icon(Icons.notifications_outlined, color: Colors.green.shade600, size: 24),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.green.shade100,
+                              ),
+                              child: Icon(
+                                Icons.notifications_outlined,
+                                color: Colors.green.shade600,
+                                size: 24,
+                              ),
                             ),
                           ],
                         ),
@@ -132,7 +159,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(25)),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(25),
+                      ),
                       child: TextField(
                         decoration: InputDecoration(
                           hintText: 'Tìm kiếm...',
@@ -161,7 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             scrollDirection: Axis.horizontal,
                             itemBuilder: (BuildContext context, int index) {
                               return _buildCategoryItem(
-                                imagePath: '/placeholder.svg?height=60&width=60',
+                                imagePath:
+                                    '/placeholder.svg?height=60&width=60',
                                 label: homeController.categories[index].name,
                               );
                             },
@@ -188,11 +219,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: Colors.grey.shade600,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Gần Tôi',
-                              style: TextStyle(fontSize: 14, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
@@ -210,11 +249,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.location_on, size: 16, color: Colors.grey.shade600),
+                            Icon(
+                              Icons.location_on,
+                              size: 16,
+                              color: Colors.grey.shade600,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Lọc Theo Vị Trí',
-                              style: TextStyle(fontSize: 14, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
@@ -236,11 +283,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Text(
                           'Danh Sách Vườn',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                         Text(
                           'Xem Thêm',
-                          style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.w600, fontSize: 16),
+                          style: TextStyle(
+                            color: Colors.green.shade600,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
@@ -279,48 +334,80 @@ class _HomeScreenState extends State<HomeScreen> {
                                         height: 50,
                                         decoration: BoxDecoration(
                                           color: Colors.green.shade100,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            25,
+                                          ),
                                         ),
-                                        child: Icon(Icons.agriculture, color: Colors.green.shade600, size: 24),
+                                        child: CircleAvatar(
+                                          radius: 25,
+                                          backgroundImage:
+                                              garden.avatar != null &&
+                                                  garden.avatar!.isNotEmpty
+                                              ? NetworkImage(garden.avatar!)
+                                              : null,
+                                          child:
+                                              garden.avatar == null ||
+                                                  garden.avatar!.isEmpty
+                                              ? Icon(
+                                                  Icons.person,
+                                                  size: 30,
+                                                  color: Colors.grey,
+                                                )
+                                              : null,
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              garden.name ?? 'Vườn Không Tên',
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black87,
-                                              ),
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    garden.name ??
+                                                        'Vườn Không Tên',
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: Colors.black87,
+                                                    ),
+                                                    overflow: TextOverflow
+                                                        .ellipsis, // Truncate long text
+                                                  ),
+                                                ),
+                                                if (garden.isVerified ==
+                                                    true) ...[
+                                                  const SizedBox(width: 4),
+                                                  Icon(
+                                                    Icons.check_circle,
+                                                    color: Colors
+                                                        .green, // Changed to green
+                                                    size: 16,
+                                                  ),
+                                                ],
+                                              ],
                                             ),
+
                                             const SizedBox(height: 4),
                                             Text(
                                               "${garden.addresses?[0].city}, ${garden.addresses?[0].country}",
-                                              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.grey.shade600,
+                                              ),
                                             ),
                                             const SizedBox(height: 8),
                                             Row(
                                               children: [
-                                                Icon(Icons.star, size: 16, color: Colors.orange),
-                                                const SizedBox(width: 4),
-                                                // Text(
-                                                //   garden.rating ?? 'Chưa có đánh giá',
-                                                //   style: const TextStyle(
-                                                //     fontSize: 14,
-                                                //     fontWeight: FontWeight.w600,
-                                                //     color: Colors.black87,
-                                                //   ),
-                                                // ),
-                                                const SizedBox(width: 16),
                                                 Text(
-                                                  DateFormat(
-                                                    "MMMM, y",
-                                                    "vi",
-                                                  ).format(garden.createAt?.toLocal() ?? DateTime.now()),
-                                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                                  "Đã tham gia vào: ${DateFormat("MMMM, y", "vi").format(garden.createAt?.toLocal() ?? DateTime.now())}",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey.shade500,
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -349,11 +436,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Text(
                           'Bài Đăng',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                         Text(
                           'Xem thêm',
-                          style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.w600, fontSize: 16),
+                          style: TextStyle(
+                            color: Colors.green.shade600,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
@@ -375,10 +470,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                 // Initialize controller for this post if not exists
                                 if (!messageControllers.containsKey(index)) {
-                                  messageControllers[index] = TextEditingController();
+                                  messageControllers[index] =
+                                      TextEditingController();
                                 }
 
-                                return postItem(post, isExpanded, index, context, isLiked);
+                                return postItem(
+                                  post,
+                                  isExpanded,
+                                  index,
+                                  context,
+                                  isLiked,
+                                );
                               },
                             ),
                     ),
@@ -394,12 +496,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Container postItem(PostModel post, bool isExpanded, int index, BuildContext context, bool isLiked) {
+  Container postItem(
+    PostModel post,
+    bool isExpanded,
+    int index,
+    BuildContext context,
+    bool isLiked,
+  ) {
     // Video player logic
     Widget? videoWidget;
     if (post.thumbNail != null && post.thumbNail!.endsWith('.mp4')) {
       if (!_videoControllers.containsKey(index)) {
-        final controller = VideoPlayerController.networkUrl(Uri.parse(post.thumbNail!));
+        final controller = VideoPlayerController.networkUrl(
+          Uri.parse(post.thumbNail!),
+        );
         controller.setLooping(true);
         controller.initialize().then((_) {
           if (mounted) {
@@ -410,7 +520,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _videoControllers[index] = controller;
       } else {
         final vidController = _videoControllers[index]!;
-        if (vidController.value.isInitialized && !vidController.value.isPlaying) {
+        if (vidController.value.isInitialized &&
+            !vidController.value.isPlaying) {
           vidController.play();
         }
       }
@@ -418,11 +529,17 @@ class _HomeScreenState extends State<HomeScreen> {
       videoWidget = vidController != null && vidController.value.isInitialized
           ? ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: AspectRatio(aspectRatio: vidController.value.aspectRatio, child: VideoPlayer(vidController)),
+              child: AspectRatio(
+                aspectRatio: vidController.value.aspectRatio,
+                child: VideoPlayer(vidController),
+              ),
             )
           : Container(
               height: 200,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.black12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.black12,
+              ),
               child: const Center(child: CircularProgressIndicator()),
             );
     }
@@ -432,7 +549,12 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(
@@ -446,8 +568,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   width: 50,
                   height: 50,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
-                  child: Icon(Icons.person, color: Colors.green.shade600, size: 24),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.green.shade100,
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.green.shade600,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -456,12 +585,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(
                         post.gardenerName ?? "",
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
                       ),
                       Text(
-                        '091231231 • '
+                        '0982912617 • '
                         '${post.createdAt != null ? timeAgoSinceDate(post.createdAt!) : 'Chưa có ngày'}',
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ],
                   ),
@@ -475,7 +611,11 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               post.title ?? 'Bài đăng không có tiêu đề',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
           ),
 
@@ -490,8 +630,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(
                   isExpanded
                       ? post.content ?? ""
-                      : post.content?.substring(0, post.content!.length > 30 ? 30 : post.content!.length) ?? "",
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.4),
+                      : post.content?.substring(
+                              0,
+                              post.content!.length > 30
+                                  ? 30
+                                  : post.content!.length,
+                            ) ??
+                            "",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 GestureDetector(
@@ -506,38 +656,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: Text(
                     isExpanded ? 'Thu gọn' : 'Xem thêm',
-                    style: TextStyle(fontSize: 14, color: Colors.green.shade600, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Season info
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green.shade200),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.calendar_today, size: 16, color: Colors.green.shade600),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Thông tin mùa vụ:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.green.shade700),
-                      ),
-                      Text("post.seasonInfo", style: TextStyle(fontSize: 12, color: Colors.green.shade600)),
-                    ],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.green.shade600,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -547,7 +670,10 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
 
           if (post.thumbNail != null && post.thumbNail!.endsWith('.mp4'))
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: videoWidget ?? const SizedBox.shrink())
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: videoWidget ?? const SizedBox.shrink(),
+            )
           else if (post.thumbNail != null && post.thumbNail!.isNotEmpty)
             Container(
               width: double.infinity,
@@ -555,9 +681,13 @@ class _HomeScreenState extends State<HomeScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(image: NetworkImage(post.thumbNail ?? ""), fit: BoxFit.cover),
+                image: DecorationImage(
+                  image: NetworkImage(post.thumbNail ?? ""),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
+            SizedBox(height: 16),
 
           // Product attachment - UPDATED with navigation
           Padding(
@@ -567,7 +697,11 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Text(
                   'Sản phẩm đính kèm',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 GestureDetector(
@@ -581,7 +715,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     };
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => ProductDetailScreen(productId: post.productId ?? '')),
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailScreen(
+                          productId: post.productId ?? '',
+                        ),
+                      ),
                     );
                   },
                   child: Row(
@@ -594,7 +732,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.green.shade200),
                         ),
-                        child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
+                        child: Icon(
+                          Icons.eco,
+                          color: Colors.green.shade600,
+                          size: 30,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -603,16 +745,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text(
                               post.title ?? "",
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
                             ),
                             Text(
-                              '${post.price} ${post.weightUnit ?? "VNĐ/kg"}',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green.shade600),
+                              '${post.price} ${post.currency}/${post.weightUnit ?? "VNĐ/kg"}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green.shade600,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey.shade400,
+                      ),
                     ],
                   ),
                 ),
@@ -646,7 +800,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 4),
-                      Text('Yêu thích', style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+                      Text(
+                        'Yêu thích',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -671,7 +831,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 8),
                     const Text(
                       'Gửi tin nhắn cho Gardener',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
                     ),
                   ],
                 ),
@@ -680,14 +844,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: TextField(
                           controller: messageControllers[index],
                           decoration: InputDecoration(
                             hintText: 'Nhập tin nhắn...',
-                            hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                            hintStyle: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade500,
+                            ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                           ),
                           maxLines: null,
                           textInputAction: TextInputAction.send,
@@ -705,8 +878,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         width: 40,
                         height: 40,
-                        decoration: BoxDecoration(color: Colors.green.shade600, shape: BoxShape.circle),
-                        child: const Icon(Icons.send, color: Colors.white, size: 18),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade600,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.send,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -744,7 +924,10 @@ class _HomeScreenState extends State<HomeScreen> {
   //   ...unused code...
   // }
 
-  Widget _buildCategoryItem({required String imagePath, required String label}) {
+  Widget _buildCategoryItem({
+    required String imagePath,
+    required String label,
+  }) {
     return Container(
       margin: const EdgeInsets.only(right: 16),
       child: Column(
@@ -776,7 +959,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 70,
                     height: 70,
                     color: Colors.green.shade100,
-                    child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
+                    child: Icon(
+                      Icons.eco,
+                      color: Colors.green.shade600,
+                      size: 30,
+                    ),
                   );
                 },
               ),
@@ -787,7 +974,11 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 70,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
