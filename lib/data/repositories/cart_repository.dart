@@ -42,4 +42,13 @@ class CartRepository extends GetxController {
       return null;
     }
   }
+
+  Future<bool> deleteCart(String retailerId) async {
+    try {
+      await _apiService.dio.delete('/retailer/$retailerId/carts');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

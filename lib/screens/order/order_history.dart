@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'order_detail.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({Key? key}) : super(key: key);
+  const OrderHistoryScreen({super.key});
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
-class _OrderHistoryScreenState extends State<OrderHistoryScreen>
-    with SingleTickerProviderStateMixin {
+class _OrderHistoryScreenState extends State<OrderHistoryScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -45,12 +44,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           'statusColor': Colors.orange,
           'deliveryDate': '16/12/2024',
           'items': [
-            {
-              'productName': 'Xà lách xoong tươi',
-              'deliveredQuantity': 0,
-              'remainingQuantity': 2,
-              'price': 50000,
-            },
+            {'productName': 'Xà lách xoong tươi', 'deliveredQuantity': 0, 'remainingQuantity': 2, 'price': 50000},
           ],
         },
       ],
@@ -74,12 +68,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           'statusColor': Colors.blue,
           'deliveryDate': '16/12/2024',
           'items': [
-            {
-              'productName': 'Rau muống hữu cơ',
-              'deliveredQuantity': 0,
-              'remainingQuantity': 3,
-              'price': 60000,
-            },
+            {'productName': 'Rau muống hữu cơ', 'deliveredQuantity': 0, 'remainingQuantity': 3, 'price': 60000},
           ],
         },
       ],
@@ -103,12 +92,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           'statusColor': Colors.purple,
           'deliveryDate': '16/12/2024',
           'items': [
-            {
-              'productName': 'Cải thìa baby',
-              'deliveredQuantity': 0,
-              'remainingQuantity': 1,
-              'price': 35000,
-            },
+            {'productName': 'Cải thìa baby', 'deliveredQuantity': 0, 'remainingQuantity': 1, 'price': 35000},
           ],
         },
       ],
@@ -132,12 +116,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           'statusColor': Colors.teal,
           'deliveryDate': '15/12/2024',
           'items': [
-            {
-              'productName': 'Rau cải ngọt',
-              'deliveredQuantity': 2,
-              'remainingQuantity': 0,
-              'price': 40000,
-            },
+            {'productName': 'Rau cải ngọt', 'deliveredQuantity': 2, 'remainingQuantity': 0, 'price': 40000},
           ],
         },
       ],
@@ -161,12 +140,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           'statusColor': Colors.green,
           'deliveryDate': '14/12/2024',
           'items': [
-            {
-              'productName': 'Xà lách lolo',
-              'deliveredQuantity': 3,
-              'remainingQuantity': 0,
-              'price': 75000,
-            },
+            {'productName': 'Xà lách lolo', 'deliveredQuantity': 3, 'remainingQuantity': 0, 'price': 75000},
           ],
         },
       ],
@@ -181,12 +155,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
   }
 
   void _navigateToOrderDetail() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const OrderDetailScreen(),
-      ),
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (context) => const OrderDetailScreen()));
   }
 
   void _cancelOrder(String orderId) {
@@ -197,18 +166,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           title: const Text('Hủy đơn hàng'),
           content: Text('Bạn có chắc chắn muốn hủy đơn hàng $orderId?'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Không'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Không')),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Đã hủy đơn hàng $orderId'),
-                    backgroundColor: Colors.red.shade600,
-                  ),
+                  SnackBar(content: Text('Đã hủy đơn hàng $orderId'), backgroundColor: Colors.red.shade600),
                 );
               },
               child: const Text('Có'),
@@ -232,11 +195,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         ),
         title: const Text(
           'Lịch sử đơn hàng',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
         bottom: TabBar(
@@ -245,14 +204,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           labelColor: Colors.green.shade600,
           unselectedLabelColor: Colors.grey.shade600,
           indicatorColor: Colors.green.shade600,
-          labelStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-          ),
+          labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
           tabs: const [
             Tab(text: 'Tất cả'),
             Tab(text: 'Chờ xác nhận'),
@@ -285,19 +238,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.shopping_bag_outlined,
-              size: 80,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 16),
-            Text(
-              'Không có đơn hàng nào',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
+            Text('Không có đơn hàng nào', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
           ],
         ),
       );
@@ -320,12 +263,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -336,21 +274,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
-              ),
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Mã đơn hàng: ${order['orderId']}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -360,11 +291,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                   ),
                   child: Text(
                     order['status'],
-                    style: TextStyle(
-                      color: order['statusColor'],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: order['statusColor'], fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -383,15 +310,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                     Container(
                       width: 50,
                       height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.eco,
-                        color: Colors.green.shade600,
-                        size: 24,
-                      ),
+                      decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
+                      child: Icon(Icons.eco, color: Colors.green.shade600, size: 24),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -400,30 +320,19 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                         children: [
                           Text(
                             order['productName'],
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Số lượng: ${order['quantity']} kg',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           ),
                         ],
                       ),
                     ),
                     Text(
                       '${order['price'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                     ),
                   ],
                 ),
@@ -437,20 +346,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Ngày tạo:',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
+                          Text('Ngày tạo:', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                           Text(
                             order['createdDate'],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -459,20 +358,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Ngày cập nhật:',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
+                          Text('Ngày cập nhật:', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                           Text(
                             order['updatedDate'],
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
                           ),
                         ],
                       ),
@@ -492,14 +381,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red,
                             side: const BorderSide(color: Colors.red),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          child: const Text(
-                            'Hủy đơn',
-                            style: TextStyle(fontSize: 12),
-                          ),
+                          child: const Text('Hủy đơn', style: TextStyle(fontSize: 12)),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -511,14 +395,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
                           backgroundColor: Colors.green.shade600,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        child: const Text(
-                          'Xem chi tiết',
-                          style: TextStyle(fontSize: 12),
-                        ),
+                        child: const Text('Xem chi tiết', style: TextStyle(fontSize: 12)),
                       ),
                     ),
                   ],

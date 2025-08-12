@@ -60,4 +60,13 @@ class HomeController extends GetxController {
       debugPrint('Failed to load posts data.');
     }
   }
+
+  Future<bool?> favPost(String retailerId, String postId) async {
+    try {
+      final response = await _homeRepository.favPost(retailerId, postId);
+      return response;
+    } catch (e) {
+      return false;
+    }
+  }
 }

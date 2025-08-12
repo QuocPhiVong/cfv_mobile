@@ -49,13 +49,14 @@ class CartController extends GetxController {
     }
   }
 
-  Future<void> loadCarts(String userId) async {
+  Future<List<CartResponse>> loadCarts(String userId) async {
     isLoading.value = true;
     try {
       final data = await _cartRepository.fetchCartDetails(userId);
       if (data != null) {
         cartItems.value = data ?? [];
         debugPrint('Cart details loaded successfully controller: ${data.length}');
+        return data;
       } else {
         debugPrint('Failed to load cart details for user ID: $userId');
       }
@@ -64,6 +65,7 @@ class CartController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+    return [];
   }
 
   void updateQuantity(String? cartId, String? cartItemId, int i) {
@@ -78,6 +80,18 @@ class CartController extends GetxController {
           cartItems: cartItems.value,
         );
       }
+    }
+    var temp = cartItems.value;
+    cartItems.value = [];
+    cartItems.value = temp;
+  }
+
+  Future<bool> deleteCart(String retailerId) async {
+    try {
+      await _cartRepository.deleteCart(retailerId);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }
