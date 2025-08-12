@@ -1,4 +1,5 @@
 import 'package:cfv_mobile/controller/auth_controller.dart';
+import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/oder_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/cart/address_selection.dart';
@@ -27,6 +28,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
   final AuthenticationController _authController = Get.find<AuthenticationController>();
   final OderController _oderController = Get.find<OderController>();
+  final CartController _cartController = Get.find<CartController>();
 
   // Delivery fee
   final int deliveryFee = 15000;
@@ -377,6 +379,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         .createOder(_authController.currentUser?.accountId ?? '', selectedDeliveryMethod, widget.orderItems)
         .then((value) {
           if (value == true) {
+            _cartController.deleteCart(_authController.currentUser?.accountId ?? '');
             _navigateToSuccessScreen();
           } else {
             _showErrorMessage('Đặt hàng thất bại');

@@ -49,4 +49,13 @@ class HomeRepository extends GetxController {
       return null; // Return null to indicate failure
     }
   }
+
+  Future<bool?> favPost(String retailerId, String postId) async {
+    try {
+      final response = await _apiService.dio.post('/retailer/$retailerId/fav-posts/$postId');
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
 }
