@@ -195,56 +195,73 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
     );
   }
 
-  Widget _buildLocationCard(Map<String, dynamic> appointment) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.location_on, color: Colors.red[400], size: 20),
-                SizedBox(width: 8),
-                Text(
-                  'Địa điểm',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[700],
-                  ),
+Widget _buildLocationCard(Map<String, dynamic> appointment) {
+  return Card(
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    child: Padding(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-            ),
-            SizedBox(height: 8),
-            Text(
-              appointment['location'] ?? 'Chưa xác định địa điểm',
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[800],
-                height: 1.4,
+                child: Icon(Icons.location_on, color: Colors.red[400], size: 20),
               ),
+              SizedBox(width: 10),
+              Text(
+                'Địa điểm',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+
+          // Location text
+          Text(
+            appointment['location'] ?? 'Chưa xác định địa điểm',
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey[900],
+              height: 1.4,
             ),
-            SizedBox(height: 12),
-            ElevatedButton.icon(
+          ),
+          SizedBox(height: 14),
+
+          // Directions button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
               onPressed: () => _openMap(appointment['location']),
               icon: Icon(Icons.directions, size: 18),
-              label: Text('Chỉ đường'),
+              label: Text('Chỉ đường', style: TextStyle(fontWeight: FontWeight.w600)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue[600],
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                padding: EdgeInsets.symmetric(vertical: 12),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildDescriptionCard(Map<String, dynamic> appointment) {
     final description = appointment['description'];

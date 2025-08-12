@@ -162,6 +162,14 @@ class AppointmentSuccessScreen extends StatelessWidget {
                                     color: Colors.black87,
                                   ),
                                 ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Hình thức: ${appointmentData['method'] ?? ''}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                ),
                               ],
                             ),
                           ),

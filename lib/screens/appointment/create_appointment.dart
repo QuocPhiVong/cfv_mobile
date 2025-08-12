@@ -2,22 +2,21 @@ import 'package:cfv_mobile/screens/appointment/appointment_success.dart';
 import 'package:flutter/material.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
-
-  const CreateAppointmentScreen({
-    Key? key,
-  }) : super(key: key);
+  const CreateAppointmentScreen({Key? key}) : super(key: key);
 
   @override
-  State<CreateAppointmentScreen> createState() => _CreateAppointmentScreenState();
+  State<CreateAppointmentScreen> createState() =>
+      _CreateAppointmentScreenState();
 }
 
 class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  
+
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String _selectedDuration = '30 phút';
+  String _selectedMethod = 'Trực tuyến'; // ✅ New field
   bool _showSubjectSuggestions = false;
 
   final List<String> _subjectSuggestions = [
@@ -39,6 +38,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     '2 tiếng 30 phút',
     '3 tiếng',
   ];
+
+  final List<String> _methodOptions = ['Trực tuyến', 'Trực tiếp'];
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +80,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Subject field with suggestions
                   Column(
                     children: [
@@ -140,16 +141,19 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                       ],
                     ],
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Garden information
-                  _buildInfoRow('Tên vườn','Vườn Xanh Miền Tây'),
-                  _buildInfoRow('Số điện thoại','0901 234 567'),
-                  _buildInfoRow('Địa chỉ cụ thể', '123 Đường Cần Thơ, An Giang'),
-                  
+                  _buildInfoRow('Tên vườn', 'Vườn Xanh Miền Tây'),
+                  _buildInfoRow('Số điện thoại', '0901 234 567'),
+                  _buildInfoRow(
+                    'Địa chỉ cụ thể',
+                    '123 Đường Cần Thơ, An Giang',
+                  ),
+
                   const SizedBox(height: 32),
-                  
+
                   // Time Section
                   const Text(
                     'Thời gian',
@@ -160,7 +164,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Date field
                   GestureDetector(
                     onTap: _selectDate,
@@ -197,7 +201,9 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                                       : 'Chọn ngày',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: _selectedDate != null ? Colors.black87 : Colors.grey.shade500,
+                                    color: _selectedDate != null
+                                        ? Colors.black87
+                                        : Colors.grey.shade500,
                                   ),
                                 ),
                               ],
@@ -212,9 +218,9 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Start time field
                   GestureDetector(
                     onTap: _selectTime,
@@ -251,7 +257,9 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                                       : 'Chọn giờ',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: _selectedTime != null ? Colors.black87 : Colors.grey.shade500,
+                                    color: _selectedTime != null
+                                        ? Colors.black87
+                                        : Colors.grey.shade500,
                                   ),
                                 ),
                               ],
@@ -266,9 +274,9 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Duration dropdown
                   Container(
                     width: double.infinity,
@@ -329,9 +337,72 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                       ],
                     ),
                   ),
-                  
+
+                  const SizedBox(height: 12),
+
+                  // Hình thức dropdown
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.video_call,
+                          color: Colors.grey.shade600,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              Text(
+                                'Hình thức',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _selectedMethod,
+                                  isExpanded: true,
+                                  items: _methodOptions.map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(
+                                        value,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    if (newValue != null) {
+                                      setState(() {
+                                        _selectedMethod = newValue;
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 32),
-                  
+
                   // Description Section
                   const Text(
                     'Mô tả chi tiết',
@@ -342,7 +413,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -359,13 +430,13 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 100),
                 ],
               ),
             ),
           ),
-          
+
           // Create appointment button
           Container(
             padding: const EdgeInsets.all(20),
@@ -394,10 +465,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                 ),
                 child: const Text(
                   'Tạo lịch hẹn',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -417,18 +485,12 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
             width: 120,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
             ),
           ),
           const Text(
             ': ',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.black87),
           ),
           Expanded(
             child: Text(
@@ -503,15 +565,17 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       return;
     }
 
-    // Create appointment data
     final appointmentData = {
       'subject': _subjectController.text,
       'gardenName': 'Vườn Xanh Miền Tây',
       'phone': '0901 234 567',
       'address': '123 Đường Cần Thơ, An Giang',
-      'date': '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-      'startTime': '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
+      'date':
+          '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+      'startTime':
+          '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
       'duration': _selectedDuration,
+      'method': _selectedMethod, // ✅ Added
       'description': _descriptionController.text,
     };
 
@@ -519,9 +583,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AppointmentSuccessScreen(
-          appointmentData: appointmentData,
-        ),
+        builder: (context) =>
+            AppointmentSuccessScreen(appointmentData: appointmentData),
       ),
     );
   }
