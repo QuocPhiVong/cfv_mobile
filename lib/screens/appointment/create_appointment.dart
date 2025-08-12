@@ -2,11 +2,9 @@ import 'package:cfv_mobile/screens/appointment/appointment_success.dart';
 import 'package:flutter/material.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
-  final Map<String, String> gardenerData;
 
   const CreateAppointmentScreen({
     Key? key,
-    required this.gardenerData,
   }) : super(key: key);
 
   @override
@@ -146,8 +144,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                   const SizedBox(height: 20),
                   
                   // Garden information
-                  _buildInfoRow('Tên vườn', widget.gardenerData['garden'] ?? 'Vườn Xanh Miền Tây'),
-                  _buildInfoRow('Số điện thoại', widget.gardenerData['phone'] ?? '0901 234 567'),
+                  _buildInfoRow('Tên vườn','Vườn Xanh Miền Tây'),
+                  _buildInfoRow('Số điện thoại','0901 234 567'),
                   _buildInfoRow('Địa chỉ cụ thể', '123 Đường Cần Thơ, An Giang'),
                   
                   const SizedBox(height: 32),
@@ -508,8 +506,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     // Create appointment data
     final appointmentData = {
       'subject': _subjectController.text,
-      'gardenName': widget.gardenerData['garden'] ?? 'Vườn Xanh Miền Tây',
-      'phone': widget.gardenerData['phone'] ?? '0901 234 567',
+      'gardenName': 'Vườn Xanh Miền Tây',
+      'phone': '0901 234 567',
       'address': '123 Đường Cần Thơ, An Giang',
       'date': '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
       'startTime': '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',

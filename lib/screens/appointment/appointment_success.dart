@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/screens/appointment/appointment_list.dart';
 import 'package:flutter/material.dart';
 
 class AppointmentSuccessScreen extends StatelessWidget {
@@ -12,23 +13,6 @@ class AppointmentSuccessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Tạo lịch hẹn thành công',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -205,14 +189,7 @@ class AppointmentSuccessScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Navigate to appointment details screen
-                      // You can implement this later
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Chức năng xem chi tiết sẽ được cập nhật'),
-                          backgroundColor: Colors.blue,
-                        ),
-                      );
+                      
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade600,
