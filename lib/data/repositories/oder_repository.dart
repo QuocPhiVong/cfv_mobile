@@ -38,4 +38,16 @@ class OderRepository extends GetxController {
       return false;
     }
   }
+
+  Future<OrderResponse> getOrders(String accountId, int page, int size) async {
+    try {
+      final response = await _apiService.get(
+        '/accounts/$accountId/orders',
+        queryParameters: {"page": page, "size": size},
+      );
+      return OrderResponse.fromJson(response.data);
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
 }

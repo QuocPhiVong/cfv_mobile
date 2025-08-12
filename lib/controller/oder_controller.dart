@@ -7,8 +7,10 @@ import 'package:get/get.dart';
 class OderController extends GetxController {
   final OderRepository oderRepository = OderRepository();
 
-  Rx<bool> isLoading = true.obs;
+  Rx<bool> isLoadingAddress = true.obs;
   RxList<AddressModel> addresses = RxList<AddressModel>();
+  Rx<bool> isLoadingOrders = true.obs;
+  RxList<OrderModel> orders = RxList<OrderModel>();
 
   @override
   void onReady() {
@@ -17,13 +19,13 @@ class OderController extends GetxController {
   }
 
   Future<void> getAddress(String id) async {
-    isLoading.value = true;
+    isLoadingAddress.value = true;
     try {
       final response = await oderRepository.getAddress(id);
-      isLoading.value = false;
+      isLoadingAddress.value = false;
       addresses.value = response?.addresses ?? [];
     } catch (e) {
-      isLoading.value = false;
+      isLoadingAddress.value = false;
       throw Exception(e);
     }
   }
@@ -34,6 +36,19 @@ class OderController extends GetxController {
       return response;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<OrderResponse> getOrders(String accountId, int page, int size) async {
+    isLoadingOrders.value = true;
+    try {
+      final response = await oderRepository.getOrders(accountId, page, size);
+      isLoadingOrders.value = false;
+      orders.value = response.orders ?? [];
+      return response;
+    } catch (e) {
+      isLoadingOrders.value = false;
+      throw Exception(e);
     }
   }
 }

@@ -39,7 +39,7 @@ class _AddressListScreenState extends State<AddressListScreen> {
         centerTitle: true,
       ),
       body: Obx(
-        () => (oderController.isLoading.value)
+        () => (oderController.isLoadingAddress.value)
             ? const Center(child: CircularProgressIndicator())
             : Column(
                 children: [
