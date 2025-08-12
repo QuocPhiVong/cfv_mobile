@@ -1,7 +1,10 @@
+import 'package:cfv_mobile/controller/auth_controller.dart';
+import 'package:cfv_mobile/controller/oder_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/cart/address_selection.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'order_success.dart';
 
 class OrderSummaryScreen extends StatefulWidget {
@@ -22,16 +25,22 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
 
+  final AuthenticationController _authController = Get.find<AuthenticationController>();
+  final OderController _oderController = Get.find<OderController>();
+
   // Delivery fee
   final int deliveryFee = 15000;
 
   @override
   void initState() {
     super.initState();
+    _oderController.getAddress(_authController.currentUser?.accountId ?? '').then((value) {
+      _addressController.text = _oderController.addresses.first.addressLine ?? '';
+      setState(() {});
+    });
     // Pre-fill some default values
-    _nameController.text = 'Vòng Quốc Phi';
-    _phoneController.text = '0901 234 567';
-    _addressController.text = '123 Đường Cần Thơ, An Giang';
+    _nameController.text = _authController.currentUser?.name ?? '';
+    _phoneController.text = _authController.currentUser?.phoneNumber ?? '';
   }
 
   @override
@@ -363,16 +372,17 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       },
     );
 
-    // Simulate order processing
-    Future.delayed(const Duration(seconds: 2), () {
-      Navigator.of(context).pop(); // Close loading dialog
-
-      // Clear cart
-      CartService().clearCart();
-
-      // Navigate to success screen
-      _navigateToSuccessScreen();
-    });
+    // Clear cart
+    _oderController
+        .createOder(_authController.currentUser?.accountId ?? '', selectedDeliveryMethod, widget.orderItems)
+        .then((value) {
+          if (value == true) {
+            _navigateToSuccessScreen();
+          } else {
+            _showErrorMessage('Đặt hàng thất bại');
+            Navigator.of(context).pop();
+          }
+        });
   }
 
   void _navigateToSuccessScreen() {

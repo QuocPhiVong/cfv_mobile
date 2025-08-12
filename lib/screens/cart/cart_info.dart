@@ -179,7 +179,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
         ),
 
         // Bottom create order button - only show when not in edit mode
-        if (!_isEditMode)
+        if (_isEditMode)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -325,7 +325,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                 ),
                 const SizedBox(height: 8),
                 // Total price - only show when not in edit mode
-                if (!_isEditMode)
+                if (_isEditMode)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
