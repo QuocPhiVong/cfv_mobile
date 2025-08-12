@@ -27,7 +27,10 @@ class OderRepository extends GetxController {
     try {
       final response = await _apiService.post(
         '/orders/$id',
-        queryParameters: {'paymentMethod': paymentMethod.toUpperCase()},
+        queryParameters: {
+          'paymentMethod': paymentMethod.toUpperCase(),
+          "shippingAddress": "01JZ5RNPN3XX47MT6SJ7ZFX6AN",
+        },
         data: data.map((e) => e.toJson()).toList(),
       );
       return response.statusCode == 200 || response.statusCode == 201;
