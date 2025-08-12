@@ -67,12 +67,12 @@ class CartController extends GetxController {
   }
 
   void updateQuantity(String? cartId, String? cartItemId, int i) {
+    debugPrint('Updating quantity for item $cartItemId in cart $cartId to $i');
     final cart = cartItems.value.firstWhereOrNull((cart) => cart.cartId == cartId);
     if (cart != null) {
       final item = cart.cartItems?.firstWhereOrNull((item) => item.cartItemId == cartItemId);
       if (item != null) {
         item.quantity = i;
-        debugPrint('Updated quantity for item $cartItemId in cart $cartId to $i');
         _cartRepository.updateCart(
           retailerId: Get.find<AuthenticationController>().currentUser?.accountId ?? '',
           cartItems: cartItems.value,
