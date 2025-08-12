@@ -159,7 +159,7 @@ class _GardenerProfileScreenState extends State<GardenerProfileScreen> with Sing
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            CreateAppointmentScreen(gardenerData: widget.gardenerData),
+                                            CreateAppointmentScreen(),
                                       ),
                                     );
                                   },

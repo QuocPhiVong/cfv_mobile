@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/screens/appointment/appointment_list.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import GetX
 import 'package:cfv_mobile/controller/auth_controller.dart'; // Import your AuthController
@@ -111,8 +112,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.receipt_long_outlined,
                     title: 'Đơn hàng của bạn',
                     onTap: () {
-                      print('Orders tapped');
-                      // Example: Get.to(() => OrdersScreen());
+                      Get.to(() => OrderHistoryScreen()); // Use Get.to for navigation
                     },
                   ),
                   _buildDivider(),
@@ -120,16 +120,15 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.calendar_today_outlined,
                     title: 'Quản lý lịch hẹn',
                     onTap: () {
-                      print('Manage appointments tapped');
-                      // Example: Get.to(() => AppointmentsScreen());
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> AppointmentListScreen()));
                     },
                   ),
                   _buildDivider(),
                   _buildMenuItem(
-                    icon: Icons.history,
-                    title: 'Lịch sử đặt hàng',
+                    icon: Icons.location_pin,
+                    title: 'Địa chỉ',
                     onTap: () {
-                      Get.to(() => OrderHistoryScreen()); // Use Get.to for navigation
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> AppointmentListScreen()));
                     },
                   ),
                   _buildDivider(),

@@ -2,6 +2,7 @@ import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
+import 'package:cfv_mobile/screens/appointment/create_appointment.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:cfv_mobile/screens/gardener/gardener_profile.dart';
@@ -362,7 +363,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: ElevatedButton.icon(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context, 
+                                              MaterialPageRoute(builder: (context) => CreateAppointmentScreen())
+                                            );
+                                          },
                                           icon: const Icon(Icons.calendar_today, size: 18),
                                           label: const Text('Đặt lịch hẹn'),
                                           style: ElevatedButton.styleFrom(
