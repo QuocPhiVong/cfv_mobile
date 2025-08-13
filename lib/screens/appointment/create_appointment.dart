@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/controller/create_appointment_controller.dart';
 import 'package:cfv_mobile/data/services/storage_service.dart';
 import 'package:cfv_mobile/screens/appointment/appointment_success.dart';
 import 'package:cfv_mobile/controller/appointment_controller.dart';
@@ -25,7 +26,7 @@ class CreateAppointmentScreen extends StatefulWidget {
 class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final AppointmentController _appointmentController = Get.put(AppointmentController());
+  final CreateAppointmentController _appointmentController = Get.put(CreateAppointmentController());
 
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
@@ -658,16 +659,15 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         // Create appointment data for success screen
         final appointmentData = {
           'subject': _subjectController.text,
-          'gardenName': 'Vườn Xanh Miền Tây',
-          'phone': '0901 234 567',
-          'address': '123 Đường Cần Thơ, An Giang',
+          'gardenName': widget.gardenerData?.name ?? '',
+          'phone': widget.gardenerData?.phone ?? '',
+          'address': widget.gardenerData?.address ?? '',
           'date': '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
           'startTime': '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
           'duration': _selectedDuration,
           'method': _selectedMethod,
           'description': _descriptionController.text,
-          'appointmentId':
-                          _appointmentController.currentAppointment.value?.appointmentId,
+          'appointmentId': '',
         };
 
         // Navigate to success screen
@@ -687,19 +687,19 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   int _convertDurationToSeconds(String duration) {
     switch (duration) {
       case '30 phút':
-        return 1800;
+        return 30;
       case '1 tiếng':
-        return 3600;
+        return 60;
       case '1 tiếng 30 phút':
-        return 5400;
+        return 90;
       case '2 tiếng':
-        return 7200;
+        return 120;
       case '2 tiếng 30 phút':
-        return 9000;
+        return 150;
       case '3 tiếng':
-        return 10800;
+        return 180;
       default:
-        return 1800;
+        return 30;
     }
   }
 }

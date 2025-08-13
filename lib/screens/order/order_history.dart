@@ -1,5 +1,9 @@
 import 'package:cfv_mobile/screens/order/order_detail.dart';
+import 'package:cfv_mobile/controller/oder_controller.dart';
+import 'package:cfv_mobile/controller/auth_controller.dart';
+import 'package:cfv_mobile/data/responses/oder_response.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class OrderListScreen extends StatefulWidget {
@@ -8,56 +12,66 @@ class OrderListScreen extends StatefulWidget {
 }
 
 class _OrderListScreenState extends State<OrderListScreen> {
-  String selectedFilter = 'Tất cả';
+  late final OderController orderController;
+  int currentPage = 1;
+  final int pageSize = 10;
 
-  // Fake data matching your schema
-  final List<Map<String, dynamic>> orders = [
-    {
-      "orderId": "01K21VPXEMPRC8280CHVYX0GAQ",
-      "retailerId": "01JZ5PP990PVMQQZM5HPMFN2TA",
-      "retailerName": "Organik Dalat",
-      "gardenerId": "01JZ5PP9920ZWCRDHMW82MVHYS",
-      "status": "DELIVERED",
-      "totalAmount": 13200000,
-      "shippingCost": 210000,
-      "createdAt": "2025-08-01T07:32:29",
-      "productTypeAmount": 2,
-    },
-    {
-      "orderId": "01K13RRW4X9DZPPAB7XPJHXFD5",
-      "retailerId": "01JZ5PP990PVMQQZM5HPMFN2TA",
-      "retailerName": "Organik Dalat",
-      "gardenerId": "01JZ5PP9920ZWCRDHMW82MVHYS",
-      "status": "DELIVERED",
-      "totalAmount": 8400000,
-      "shippingCost": 100000,
-      "createdAt": "2025-07-26T07:32:29",
-      "productTypeAmount": 1,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    orderController = Get.put(OderController());
+    _initializeData();
+  }
 
-  List<Map<String, dynamic>> get filteredOrders {
-    if (selectedFilter == 'Tất cả') return orders;
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed
+    Get.delete<OderController>();
+    super.dispose();
+  }
 
-    String filterStatus;
-    switch (selectedFilter) {
-      case 'Đã giao':
-        filterStatus = 'DELIVERED';
-        break;
-      case 'Chờ xử lý':
-        filterStatus = 'PENDING';
-        break;
-      case 'Đang xử lý':
-        filterStatus = 'PROCESSING';
-        break;
-      case 'Đã hủy':
-        filterStatus = 'CANCELLED';
-        break;
-      default:
-        return orders;
+  Future<void> _initializeData() async {
+    final accountId = _getAccountId();
+    if (accountId.isNotEmpty) {
+      await _loadOrders();
+    } else {
+      debugPrint('AccountId not found - user not authenticated');
+      Get.snackbar(
+        'Lỗi xác thực',
+        'Vui lòng đăng nhập lại',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[800],
+      );
     }
+  }
 
-    return orders.where((order) => order['status'].toString() == filterStatus).toList();
+  String _getAccountId() {
+    return Get.find<AuthenticationController>().currentUser?.accountId ?? '';
+  }
+
+  Future<void> _loadOrders({bool refresh = false}) async {
+    final accountId = _getAccountId();
+    if (accountId.isEmpty) {
+      debugPrint('AccountId not available');
+      return;
+    }
+    
+    try {
+      if (refresh) {
+        currentPage = 1;
+      }
+      await orderController.getOrders(accountId, currentPage, pageSize);
+    } catch (e) {
+      debugPrint('Error loading orders: $e');
+      Get.snackbar(
+        'Lỗi',
+        'Không thể tải danh sách đơn hàng',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[800],
+      );
+    }
   }
 
   @override
@@ -71,26 +85,76 @@ class _OrderListScreenState extends State<OrderListScreen> {
           'Danh sách đơn hàng',
           style: TextStyle(color: Colors.grey[800], fontSize: 22, fontWeight: FontWeight.bold),
         ),
-        actions: [],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh, color: Colors.grey[800]),
+            onPressed: () => _loadOrders(refresh: true),
+          ),
+        ],
       ),
-      body: Column(children: [Expanded(child: filteredOrders.isEmpty ? _buildEmptyState() : _buildOrderList())]),
+      body: Column(
+        children: [
+          Expanded(
+            child: Obx(() {
+              if (orderController.isLoadingOrders.value && orderController.orders.isEmpty) {
+                return _buildLoadingState();
+              }
+              
+              return _buildOrderList();
+            }),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildOrderList() {
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      itemCount: filteredOrders.length,
-      itemBuilder: (context, index) {
-        final order = filteredOrders[index];
-        return _buildOrderCard(order);
-      },
+    return RefreshIndicator(
+      onRefresh: () => _loadOrders(refresh: true),
+      color: Colors.blue[700],
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        itemCount: orderController.orders.length + (orderController.isLoadingOrders.value ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == orderController.orders.length && orderController.isLoadingOrders.value) {
+            return Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
+                ),
+              ),
+            );
+          }
+          
+          final order = orderController.orders[index];
+          return _buildOrderCard(order);
+        },
+      ),
     );
   }
 
-  Widget _buildOrderCard(Map<String, dynamic> order) {
-    final createdAt = DateTime.parse(order['createdAt']);
-    final status = order['status'].toString();
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Đang tải danh sách đơn hàng...',
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderCard(OrderModel order) {
+    final createdAt = order.createdAt;
+    final status = order.status ?? '';
 
     Color statusColor;
     IconData statusIcon;
@@ -117,6 +181,16 @@ class _OrderListScreenState extends State<OrderListScreen> {
         statusIcon = Icons.cancel;
         statusText = 'ĐÃ HỦY';
         break;
+      case 'DELIVERING':
+        statusColor = Colors.blue;
+        statusIcon = Icons.local_shipping;
+        statusText = 'ĐANG GIAO';
+        break;
+      case 'COMPLETED':
+        statusColor = Colors.green;
+        statusIcon = Icons.check_circle;
+        statusText = 'ĐÃ HOÀN THÀNH';
+        break;
       default:
         statusColor = Colors.grey;
         statusIcon = Icons.help;
@@ -129,7 +203,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => OrderDetailScreen()));
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (context) => OrderDetailScreen(),
+              settings: RouteSettings(arguments: {'orderId': order.orderId}),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -145,12 +225,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Đơn hàng #${order['orderId'].toString().substring(0, 8)}...',
+                          'Đơn hàng #${(order.orderId ?? '').length > 8 ? (order.orderId ?? '').substring(0, 8) + '...' : order.orderId ?? ''}',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800]),
                         ),
                         SizedBox(height: 4),
                         Text(
-                          DateFormat('dd/MM/yyyy HH:mm').format(createdAt),
+                          createdAt != null ? DateFormat('dd/MM/yyyy HH:mm').format(createdAt) : 'N/A',
                           style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                         ),
                       ],
@@ -186,7 +266,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      order['retailerName'],
+                      order.retailerName ?? 'N/A',
                       style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
                     ),
                   ),
@@ -201,7 +281,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   Icon(Icons.inventory, size: 16, color: Colors.grey[600]),
                   SizedBox(width: 8),
                   Text(
-                    '${order['productTypeAmount']} loại sản phẩm',
+                    '${order.productTypeAmount ?? 0} loại sản phẩm',
                     style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
@@ -223,7 +303,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     children: [
                       Text('Phí vận chuyển', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                       Text(
-                        _formatCurrency(order['shippingCost'].toDouble()),
+                        _formatCurrency((order.shippingCost ?? 0).toDouble()),
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
                       ),
                     ],
@@ -233,7 +313,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     children: [
                       Text('Tổng tiền', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                       Text(
-                        _formatCurrency(order['totalAmount'].toDouble()),
+                        _formatCurrency((order.totalAmount ?? 0).toDouble()),
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue[700]),
                       ),
                     ],
@@ -269,7 +349,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
     );
   }
 
-  void _showOrderDetails(Map<String, dynamic> order) {
+  void _showOrderDetails(OrderModel order) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -295,15 +375,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   SizedBox(height: 20),
                   Text('Chi tiết đơn hàng', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   SizedBox(height: 20),
-                  Text('Mã đơn hàng: ${order['orderId']}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('Mã đơn hàng: ${order.orderId ?? 'N/A'}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   SizedBox(height: 8),
-                  Text('Nhà bán lẻ: ${order['retailerName']}', style: TextStyle(fontSize: 14)),
+                  Text('Nhà bán lẻ: ${order.retailerName ?? 'N/A'}', style: TextStyle(fontSize: 14)),
                   SizedBox(height: 8),
                   Text(
-                    'Tổng tiền: ${_formatCurrency(order['totalAmount'].toDouble())}',
+                    'Tổng tiền: ${_formatCurrency((order.totalAmount ?? 0).toDouble())}',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue[700]),
                   ),
-                  // Add more details as needed
                 ],
               ),
             );

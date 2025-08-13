@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 import 'package:cfv_mobile/controller/appointment_detail_controller.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:maps_launcher/maps_launcher.dart';
+
 
 class AppointmentDetailScreen extends StatelessWidget {
   final String appointmentId;
@@ -207,7 +208,7 @@ class AppointmentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationCard(appointment) {
+  Widget _buildLocationCard(AppointmentData appointment) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -261,7 +262,7 @@ class AppointmentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDescriptionCard(appointment) {
+  Widget _buildDescriptionCard(AppointmentData appointment) {
     final description = appointment.description;
     if (description == null || description.isEmpty) {
       return SizedBox.shrink();
@@ -293,7 +294,7 @@ class AppointmentDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCancellationInfo(appointment, AppointmentDetailController controller) {
+  Widget _buildCancellationInfo(AppointmentData appointment, AppointmentDetailController controller) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -529,9 +530,6 @@ class AppointmentDetailScreen extends StatelessWidget {
         snackPosition: SnackPosition.BOTTOM,
         duration: Duration(seconds: 3),
       );
-
-      // Go back to previous screen
-      Get.back(result: true); // Return true to indicate cancellation
     } else {
       // Show error message
       Get.snackbar(
@@ -559,12 +557,8 @@ class AppointmentDetailScreen extends StatelessWidget {
 
   Future<void> _openMap(String? location) async {
     if (location != null) {
-      // Open map application
-      // Launch Google Maps with the location
-      final url = 'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(location)}';
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      } else {
+      final result = await MapsLauncher.launchQuery(location);
+      if (!result) {
         Get.snackbar(
           'Lỗi',
           'Không thể mở Google Maps',

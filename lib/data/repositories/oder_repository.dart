@@ -14,6 +14,15 @@ class OderRepository extends GetxController {
     debugPrint('OderRepository onReady: Initialized successfully.');
   }
 
+  Future<bool> updateStatusOrder(String id, String status) async {
+    try {
+      final response = await _apiService.patch('/orders/$id', data: {'status': status});
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<AddressResponse?> getAddress(String id) async {
     try {
       final response = await _apiService.get('/accounts/$id/addresses');

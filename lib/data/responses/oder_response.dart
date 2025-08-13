@@ -1,3 +1,5 @@
+import 'package:cfv_mobile/map_parser.dart';
+
 class AddressResponse {
   final List<AddressModel>? addresses;
 
@@ -41,8 +43,9 @@ class OrderResponse {
 
   OrderResponse({this.orders});
 
-  factory OrderResponse.fromJson(Map<String, dynamic> json) =>
-      OrderResponse(orders: List<OrderModel>.from(json["items"].map((x) => OrderModel.fromJson(x))));
+  factory OrderResponse.fromJson(Map<String, dynamic> json) {
+    return OrderResponse(orders: List<OrderModel>.from(json["items"].map((x) => OrderModel.fromJson(x))));
+  }
 }
 
 class OrderModel {
@@ -68,17 +71,19 @@ class OrderModel {
     this.productTypeAmount,
   });
 
-  factory OrderModel.fromJson(Map<String, dynamic> json) => OrderModel(
+  factory OrderModel.fromJson(Map<String, dynamic> json) {
+    return OrderModel(
     orderId: json["orderId"],
     retailerId: json["retailerId"],
     retailerName: json["retailerName"],
     gardenerId: json["gardenerId"],
     status: json["status"],
-    totalAmount: json["totalAmount"],
-    shippingCost: json["shippingCost"],
+    totalAmount: json.parseDouble("totalAmount").toInt(),
+    shippingCost: json.parseDouble("shippingCost").toInt(),
     createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
     productTypeAmount: json["productTypeAmount"],
   );
+  }
 
   Map<String, dynamic> toJson() => {
     "orderId": orderId,

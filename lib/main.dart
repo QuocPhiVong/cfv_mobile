@@ -1,4 +1,5 @@
 import 'package:cfv_mobile/controller/cart_controller.dart';
+import 'package:cfv_mobile/controller/create_appointment_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/controller/oder_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
@@ -40,6 +41,7 @@ void main() async {
   Get.put(ProductController());
   Get.put(CartController());
   Get.put(AppointmentController());
+  Get.put(CreateAppointmentController());
   Get.put(OderController());
 
   runApp(const MyApp());

@@ -15,29 +15,6 @@ class AppointmentRepository extends GetxController {
     super.onReady();
   }
 
-  /// Helper method to get accountId from stored user data
-  /// Returns the accountId or null if not found
-  Future<String?> _getAccountId() async {
-    final userData = await StorageService.getUserData();
-    final accountId = userData?['accountId'];
-    if (accountId == null) {
-      debugPrint('AccountId not found in user data');
-    }
-    return accountId;
-  }
-
-  /// Helper method to setup authentication and validate accountId
-  /// Returns accountId if valid, throws exception if invalid
-  Future<String> _setupAuthAndGetAccountId() async {
-    // Get accountId from stored user data
-    final accountId = await _getAccountId();
-    if (accountId == null) {
-      throw Exception('Không tìm thấy thông tin tài khoản. Vui lòng đăng nhập lại.');
-    }
-
-    return accountId;
-  }
-
   /// Create a new appointment
   /// Returns AppointmentResponse with created appointment data
   Future<bool> createAppointment(CreateAppointmentRequest request) async {
@@ -59,9 +36,8 @@ class AppointmentRepository extends GetxController {
 
   /// Get appointments list for the current user
   /// Returns AppointmentResponse with list of appointments
-  Future<AppointmentsResponse> getAppointments() async {
+  Future<AppointmentsResponse> getAppointments(String accountId) async {
     try {
-      final accountId = await _setupAuthAndGetAccountId();
 
       final response = await _apiService.get(
         '/accounts/$accountId/appointments',
@@ -104,7 +80,7 @@ class AppointmentRepository extends GetxController {
 
   /// Cancel an appointment
   /// Returns AppointmentDetailResponse indicating success or failure
-  Future<AppointmentDetailResponse> cancelAppointment(
+  Future<bool> cancelAppointment(
     String appointmentId,
     {required String cancellationReason, required String cancelledBy}
   ) async {
@@ -120,15 +96,10 @@ class AppointmentRepository extends GetxController {
       );
 
       debugPrint('Cancel appointment response: ${response.data}');
-      return AppointmentDetailResponse.fromJson(response.data);
+      return true;
     } catch (e) {
       debugPrint('Cancel appointment error: $e');
-      return AppointmentDetailResponse(
-        success: false,
-        message: e.toString().contains('Exception: ') 
-            ? e.toString().replaceFirst('Exception: ', '')
-            : 'Không thể hủy lịch hẹn.',
-      );
+      return false;
     }
   }
 }

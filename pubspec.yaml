@@ -43,6 +43,7 @@ dependencies:
   video_player: ^2.10.0
   shared_preferences_foundation: ^2.5.4
   url_launcher: ^6.3.2
+  maps_launcher: ^3.0.0+1
 
 dev_dependencies:
   flutter_test:

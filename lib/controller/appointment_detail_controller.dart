@@ -122,28 +122,20 @@ class AppointmentDetailController extends GetxController {
       clearMessages();
       isUpdating.value = true;
       
-      final response = await _appointmentRepository.cancelAppointment(
+      final isSuccess = await _appointmentRepository.cancelAppointment(
         _appointmentId!,
         cancellationReason: cancellationReason,
         cancelledBy: 'retailer',
       );
 
-      if (response.success) {
-        // Update local appointment data
-        // if (appointment.value != null) {
-        //   appointment.value = appointment.value!.copyWith(
-        //     status: 'cancelled',
-        //     cancellationReason: cancellationReason,
-        //     updatedAt: DateTime.now(),
-        //   );
-        // }
-        
+      if (isSuccess) {
         successMessage.value = 'Lịch hẹn đã được hủy thành công!';
         debugPrint('Appointment cancelled successfully');
+        refreshAppointmentDetail();
         return true;
       } else {
-        errorMessage.value = response.message;
-        debugPrint('Failed to cancel appointment: ${response.message}');
+        errorMessage.value = 'Có lỗi xảy ra khi hủy lịch hẹn. Vui lòng thử lại.';
+        debugPrint('Failed to cancel appointment: ${isSuccess}');
         return false;
       }
     } catch (e) {
