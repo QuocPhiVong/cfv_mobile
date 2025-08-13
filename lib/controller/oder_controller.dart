@@ -11,7 +11,8 @@ class OderController extends GetxController {
   RxList<AddressModel> addresses = RxList<AddressModel>();
   Rx<bool> isLoadingOrders = true.obs;
   RxList<OrderModel> orders = RxList<OrderModel>();
-  Rx<bool> isLoadingUpdateStatusOrder = false.obs;
+
+  Rx<String> updatingStatusOrderId = ''.obs;
 
   @override
   void onReady() {
@@ -54,13 +55,13 @@ class OderController extends GetxController {
   }
 
   Future<bool> updateStatusOrder(String id, String status) async {
-    isLoadingUpdateStatusOrder.value = true;
+    updatingStatusOrderId.value = id;
     try {
       final response = await oderRepository.updateStatusOrder(id, status);
-      isLoadingUpdateStatusOrder.value = false;
+      updatingStatusOrderId.value = '';
       return response;
     } catch (e) {
-      isLoadingUpdateStatusOrder.value = false;
+      updatingStatusOrderId.value = '';
       return false;
     }
   }

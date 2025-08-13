@@ -1,6 +1,7 @@
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/data/responses/oder_response.dart';
+import 'package:cfv_mobile/data/responses/order_detail_response.dart';
 import 'package:cfv_mobile/data/services/api_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,7 +17,7 @@ class OderRepository extends GetxController {
 
   Future<bool> updateStatusOrder(String id, String status) async {
     try {
-      final response = await _apiService.patch('/orders/$id', data: {'status': status});
+      await _apiService.patch('/orders/$id', queryParameters: {'status': status});
       return true;
     } catch (e) {
       return false;
@@ -55,6 +56,15 @@ class OderRepository extends GetxController {
         queryParameters: {"page": page, "size": size},
       );
       return OrderResponse.fromJson(response.data);
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<OrderDetailResponse> getOrderDetail(String accountId, String id) async {
+    try {
+      final response = await _apiService.get('/accounts/$accountId/orders/$id');
+      return OrderDetailResponse.fromJson(response.data);
     } catch (e) {
       throw Exception(e);
     }

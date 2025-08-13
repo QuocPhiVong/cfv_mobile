@@ -206,7 +206,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
           Navigator.push(
             context, 
             MaterialPageRoute(
-              builder: (context) => OrderDetailScreen(),
+              builder: (context) => OrderDetailScreen(orderId: order.orderId ?? ''),
               settings: RouteSettings(arguments: {'orderId': order.orderId}),
             ),
           );
@@ -320,12 +320,112 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   ),
                 ],
               ),
-            ],
+              if (order.status == 'PENDING') ...[
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Obx(
+                    () {
+                      final updatingStatusOrderId = orderController.updatingStatusOrderId.value;
+                      final isUpdating = updatingStatusOrderId == order.orderId;
+                      return OutlinedButton(
+                      onPressed: () {
+                        if(!isUpdating) {
+                        _cancelOrder(order.orderId ?? '');
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: const BorderSide(color: Colors.red),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: isUpdating ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(color: Colors.blue[700]!, strokeWidth: 2)) : Text('Hủy đơn', style: TextStyle(fontSize: 12)),
+                    );
+                    },
+                  ),
+                ),
+              ],
+                if (order.status == 'DELIVERED') ...[
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Obx(
+                    () {
+                      final updatingStatusOrderId = orderController.updatingStatusOrderId.value;
+                      final isUpdating = updatingStatusOrderId == order.orderId;
+                      return OutlinedButton(
+                      onPressed: () {
+                        if(!isUpdating) {
+                        _completeOrder(order.orderId ?? '');
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.green,
+                        side: const BorderSide(color: Colors.green),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: isUpdating ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(color: Colors.blue[700]!, strokeWidth: 2)) : Text('Hoàn thành', style: TextStyle(fontSize: 12)),
+                    );
+                    },
+                  ),
+                ),
+                ]
+                                              ],
           ),
         ),
       ),
     );
   }
+
+  void _cancelOrder(String orderId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hủy đơn hàng'),
+          content: Text('Bạn có chắc chắn muốn hủy đơn hàng $orderId?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Không')),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await orderController.updateStatusOrder(orderId, 'CANCELLED');
+                _loadOrders();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Đã hủy đơn hàng $orderId'), backgroundColor: Colors.red.shade600),
+                );
+              },
+              child: const Text('Có'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void _completeOrder(String orderId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Hoàn thành đơn hàng'),
+          content: Text('Bạn có chắc chắn muốn hoàn thành đơn hàng $orderId?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Không')),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await orderController.updateStatusOrder(orderId, 'COMPLETED');
+                _loadOrders();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Đã hoàn thành đơn hàng $orderId'), backgroundColor: Colors.green.shade600),
+                );
+              },
+              child: const Text('Có'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   Widget _buildEmptyState() {
     return Center(

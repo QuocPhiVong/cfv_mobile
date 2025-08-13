@@ -18,35 +18,6 @@ class AppointmentDetailController extends GetxController {
   // Appointment detail data
   final Rx<AppointmentData?> appointment = Rx<AppointmentData?>(null);
 
-  Future<String?> _getAccountId() async {
-    final userData = await StorageService.getUserData();
-    final accountId = userData?['accountId'];
-    if (accountId == null) {
-      debugPrint('AccountId not found in user data');
-    }
-    return accountId;
-  }
-  
-  Future<String> getCurrentRole() async {
-    final appointmentValue = appointment.value;
-    if (appointmentValue == null) {
-      return '';
-    }
-
-    final accountId = await _getAccountId();
-    if (accountId?.isEmpty ?? true) {
-      return '';
-    }
-
-    if (accountId == appointmentValue.retailerId) {
-      return 'retailer';
-    } else if (accountId == appointmentValue.gardenerId) {
-      return 'gardener';
-    }
-
-    return '';
-  }
-
   // Appointment ID
   String? _appointmentId;
 
