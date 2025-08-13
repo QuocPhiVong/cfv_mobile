@@ -20,9 +20,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     'statusColor': Colors.blue,
     'createdDate': '15/12/2024',
     'updatedDate': '16/12/2024',
-    'customerName': 'Vòng Quốc Phi',
+    'gardenName': 'Vườn Rau Sạch Phi',
     'customerPhone': '0982912617',
     'customerAddress': '123 Đường ABC, Quận 1, TP.HCM',
+    'paymentMethod': 'Chuyển khoản',
+    'shippingCost': 15000,
+    'shippingAddress': '456 Đường XYZ, Quận 2, TP.HCM',
     'totalAmount': 125000,
     'products': [
       {
@@ -30,57 +33,64 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         'quantity': 2,
         'price': 25000,
         'image': 'eco',
+        'totalQuantity': 2,
+        'deliveredQuantity': 2,
+        'remainingQuantity': 0,
       },
       {
         'name': 'Rau muống hữu cơ',
         'quantity': 3,
         'price': 20000,
         'image': 'eco',
+        'totalQuantity': 3,
+        'deliveredQuantity': 1,
+        'remainingQuantity': 2,
       },
       {
         'name': 'Cải thìa baby',
         'quantity': 1,
         'price': 35000,
         'image': 'eco',
+        'totalQuantity': 1,
+        'deliveredQuantity': 1,
+        'remainingQuantity': 0,
       },
     ],
     'deliveries': [
       {
-        'deliveryNumber': 1,
+        'deliveryCode': 'GH001',
+        'notes': 'Giao hàng buổi sáng',
         'status': 'Đã giao',
         'statusColor': Colors.green,
         'deliveryDate': '16/12/2024',
         'items': [
           {
             'productName': 'Xà lách xoong tươi',
-            'deliveredQuantity': 2,
-            'remainingQuantity': 0,
+            'quantity': 2,
             'price': 50000,
           },
           {
             'productName': 'Rau muống hữu cơ',
-            'deliveredQuantity': 1,
-            'remainingQuantity': 2,
+            'quantity': 1,
             'price': 20000,
           },
         ],
       },
       {
-        'deliveryNumber': 2,
+        'deliveryCode': 'GH002',
+        'notes': 'Giao hàng buổi chiều',
         'status': 'Đang giao',
         'statusColor': Colors.blue,
         'deliveryDate': '17/12/2024',
         'items': [
           {
             'productName': 'Rau muống hữu cơ',
-            'deliveredQuantity': 2,
-            'remainingQuantity': 0,
+            'quantity': 2,
             'price': 40000,
           },
           {
             'productName': 'Cải thìa baby',
-            'deliveredQuantity': 1,
-            'remainingQuantity': 0,
+            'quantity': 1,
             'price': 35000,
           },
         ],
@@ -197,6 +207,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           _buildInfoRow('Ngày tạo:', orderData['createdDate']),
           const SizedBox(height: 8),
           _buildInfoRow('Ngày cập nhật:', orderData['updatedDate']),
+          const SizedBox(height: 8),
+          _buildInfoRow('Phương thức thanh toán:', orderData['paymentMethod']),
+          const SizedBox(height: 8),
+          _buildInfoRow('Chi phí vận chuyển:', '${orderData['shippingCost'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ'),
+          const SizedBox(height: 8),
+          _buildInfoRow('Địa chỉ vận chuyển:', orderData['shippingAddress']),
         ],
       ),
     );
@@ -222,7 +238,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Thông tin khách hàng',
+            'Thông tin chủ vườn',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -230,11 +246,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildInfoRow('Tên khách hàng:', orderData['customerName']),
+          _buildInfoRow('Tên vườn:', orderData['gardenName']),
           const SizedBox(height: 8),
           _buildInfoRow('Số điện thoại:', orderData['customerPhone']),
-          const SizedBox(height: 8),
-          _buildInfoRow('Địa chỉ:', orderData['customerAddress']),
         ],
       ),
     );
@@ -301,7 +315,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Số lượng: ${product['quantity']} kg',
+                          '${product['price'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ/kg',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade600,
@@ -310,13 +324,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ],
                     ),
                   ),
-                  Text(
-                    '${(product['price'] * product['quantity']).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Tổng: ${product['totalQuantity']} kg',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Đã giao: ${product['deliveredQuantity']} kg',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.green.shade600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Còn lại: ${product['remainingQuantity']} kg',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.orange.shade600,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -379,45 +413,71 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      child: Row(
+                      child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: delivery['statusColor'].withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              delivery['status'],
-                              style: TextStyle(
-                                color: delivery['statusColor'],
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: delivery['statusColor'].withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  delivery['status'],
+                                  style: TextStyle(
+                                    color: delivery['statusColor'],
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Giao ${delivery['deliveryNumber']}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Mã giao hàng: ${delivery['deliveryCode']}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
                               ),
-                            ),
+                              Text(
+                                delivery['deliveryDate'],
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(
+                                isExpanded ? Icons.expand_less : Icons.expand_more,
+                                color: Colors.grey.shade600,
+                              ),
+                            ],
                           ),
-                          Text(
-                            delivery['deliveryDate'],
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            isExpanded ? Icons.expand_less : Icons.expand_more,
-                            color: Colors.grey.shade600,
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(
+                                'Ghi chú: ',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  delivery['notes'],
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -449,35 +509,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Expanded(
-                                      child: Text(
-                                        'Đã giao: ${item['deliveredQuantity']} kg',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade700,
-                                        ),
+                                    Text(
+                                      'Số lượng: ${item['quantity']} kg',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade700,
                                       ),
                                     ),
-                                    Expanded(
-                                      child: Text(
-                                        'Còn lại: ${item['remainingQuantity']} kg',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: Colors.grey.shade700,
-                                        ),
+                                    Text(
+                                      '${item['price'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.green,
                                       ),
                                     ),
                                   ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Giá tiền: ${item['price'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.green,
-                                  ),
                                 ),
                               ],
                             ),

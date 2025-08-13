@@ -1,6 +1,7 @@
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/data/responses/home_response.dart';
+import 'package:cfv_mobile/screens/posts/post_detail.dart';
 import 'package:cfv_mobile/screens/product/product_details.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:flutter/material.dart';
@@ -636,6 +637,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    ],
+  ),
+),
+
 
           // FIXED: Functional Message box at the bottom of each post
           Container(

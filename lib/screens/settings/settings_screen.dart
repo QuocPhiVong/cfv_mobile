@@ -112,7 +112,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.receipt_long_outlined,
                     title: 'Đơn hàng của bạn',
                     onTap: () {
-                      Get.to(() => OrderHistoryScreen()); // Use Get.to for navigation
+                      Get.to(() => OrderListScreen()); // Use Get.to for navigation
                     },
                   ),
                   _buildDivider(),
