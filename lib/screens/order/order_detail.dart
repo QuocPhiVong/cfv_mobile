@@ -323,6 +323,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
       final deliveries = controller.orderDeliveries.value!.deliveries;
 
+      if (deliveries.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
