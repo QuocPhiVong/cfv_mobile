@@ -1,5 +1,6 @@
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/data/repositories/oder_repository.dart';
+import 'package:cfv_mobile/data/responses/order_deliveries_response.dart';
 import 'package:cfv_mobile/data/responses/order_detail_response.dart';
 import 'package:cfv_mobile/data/services/storage_service.dart';
 import 'package:get/get.dart';
@@ -16,24 +17,14 @@ class OrderDetailController extends GetxController {
   final RxString errorMessage = ''.obs;
   final RxString successMessage = ''.obs;
 
+  final RxBool isLoadingDeliveries = false.obs;
+
   // Order detail data
   final Rx<OrderDetailResponse?> order = Rx<OrderDetailResponse?>(null);
+  final Rx<OrderDeliveriesResponse?> orderDeliveries = Rx<OrderDeliveriesResponse?>(null);
 
   // Order ID
   String? _orderId;
-
-  @override
-  void onInit() {
-    super.onInit();
-    // Get orderId from arguments if available
-    final args = Get.arguments;
-    if (args != null && args is Map<String, dynamic>) {
-      _orderId = args['orderId']?.toString();
-      if (_orderId != null) {
-        loadOrderDetail(_orderId!);
-      }
-    }
-  }
 
   @override
   void onReady() {
@@ -67,6 +58,19 @@ class OrderDetailController extends GetxController {
       return false;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<bool> loadOrderDeliveries(String orderId) async {
+    try {
+      isLoadingDeliveries.value = true;
+      final response = await _orderRepository.getOrderDeliveries(orderId);
+      orderDeliveries.value = response;
+      isLoadingDeliveries.value = false;
+      return true;
+    } catch (e) {
+      isLoadingDeliveries.value = false;
+      return false;
     }
   }
 

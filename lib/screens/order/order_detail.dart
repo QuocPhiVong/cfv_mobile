@@ -20,6 +20,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   void initState() {
     super.initState();
     controller.loadOrderDetail(widget.orderId);
+    controller.loadOrderDeliveries(widget.orderId);
   }
 
   // Track which delivery items are expanded
@@ -145,7 +146,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               // const SizedBox(height: 16),
 
               // Order tracking section
-              // _buildOrderTrackingCard(),
+              _buildOrderTrackingCard(),
 
               const SizedBox(height: 16),
 
@@ -289,10 +290,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        'Tổng: ${product.quantity} kg',
-                        style: const TextStyle(fontSize: 11, color: Colors.black87),
-                      ),
+                      Text('Tổng: ${product.quantity} kg', style: const TextStyle(fontSize: 11, color: Colors.black87)),
                       const SizedBox(height: 2),
                       Text(
                         'Đã giao: ${product.deliveredQuantity} kg',
@@ -314,167 +312,178 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  // Widget _buildOrderTrackingCard() {
-  //   return Container(
-  //     margin: const EdgeInsets.symmetric(horizontal: 16),
-  //     padding: const EdgeInsets.all(16),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(12),
-  //       boxShadow: [
-  //         BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
-  //       ],
-  //     ),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         const Text(
-  //           'Theo dõi đơn hàng',
-  //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-  //         ),
-  //         const SizedBox(height: 16),
-  //         ...orderData['deliveries'].map<Widget>((delivery) {
-  //           int deliveryIndex = orderData['deliveries'].indexOf(delivery);
-  //           bool isExpanded = expandedDeliveries.contains(deliveryIndex);
+  Widget _buildOrderTrackingCard() {
+    return Obx(() {
+      if (controller.isLoadingDeliveries.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (controller.orderDeliveries.value == null) {
+        return const SizedBox.shrink();
+      }
 
-  //           return Container(
-  //             margin: const EdgeInsets.only(bottom: 12),
-  //             decoration: BoxDecoration(
-  //               border: Border.all(color: Colors.grey.shade300),
-  //               borderRadius: BorderRadius.circular(8),
-  //             ),
-  //             child: Column(
-  //               children: [
-  //                 InkWell(
-  //                   onTap: () {
-  //                     setState(() {
-  //                       if (isExpanded) {
-  //                         expandedDeliveries.remove(deliveryIndex);
-  //                       } else {
-  //                         expandedDeliveries.add(deliveryIndex);
-  //                       }
-  //                     });
-  //                   },
-  //                   child: Container(
-  //                     padding: const EdgeInsets.all(12),
-  //                     child: Column(
-  //                       children: [
-  //                         Row(
-  //                           children: [
-  //                             Container(
-  //                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-  //                               decoration: BoxDecoration(
-  //                                 color: delivery['statusColor'].withOpacity(0.1),
-  //                                 borderRadius: BorderRadius.circular(12),
-  //                               ),
-  //                               child: Text(
-  //                                 delivery['status'],
-  //                                 style: TextStyle(
-  //                                   color: delivery['statusColor'],
-  //                                   fontSize: 10,
-  //                                   fontWeight: FontWeight.w600,
-  //                                 ),
-  //                               ),
-  //                             ),
-  //                             const SizedBox(width: 12),
-  //                             Expanded(
-  //                               child: Text(
-  //                                 'Mã giao hàng: ${delivery['deliveryCode']}',
-  //                                 style: const TextStyle(
-  //                                   fontSize: 14,
-  //                                   fontWeight: FontWeight.w600,
-  //                                   color: Colors.black87,
-  //                                 ),
-  //                               ),
-  //                             ),
-  //                             Text(
-  //                               delivery['deliveryDate'],
-  //                               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-  //                             ),
-  //                             const SizedBox(width: 8),
-  //                             Icon(isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey.shade600),
-  //                           ],
-  //                         ),
-  //                         const SizedBox(height: 8),
-  //                         Row(
-  //                           children: [
-  //                             Text(
-  //                               'Ghi chú: ',
-  //                               style: TextStyle(
-  //                                 fontSize: 12,
-  //                                 color: Colors.grey.shade600,
-  //                                 fontWeight: FontWeight.w500,
-  //                               ),
-  //                             ),
-  //                             Expanded(
-  //                               child: Text(
-  //                                 delivery['notes'],
-  //                                 style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-  //                               ),
-  //                             ),
-  //                           ],
-  //                         ),
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ),
-  //                 if (isExpanded) ...[
-  //                   const Divider(height: 1),
-  //                   Container(
-  //                     padding: const EdgeInsets.all(12),
-  //                     child: Column(
-  //                       children: delivery['items'].map<Widget>((item) {
-  //                         return Container(
-  //                           margin: const EdgeInsets.only(bottom: 8),
-  //                           padding: const EdgeInsets.all(8),
-  //                           decoration: BoxDecoration(
-  //                             color: Colors.grey.shade50,
-  //                             borderRadius: BorderRadius.circular(6),
-  //                           ),
-  //                           child: Column(
-  //                             crossAxisAlignment: CrossAxisAlignment.start,
-  //                             children: [
-  //                               Text(
-  //                                 item['productName'],
-  //                                 style: const TextStyle(
-  //                                   fontSize: 13,
-  //                                   fontWeight: FontWeight.w600,
-  //                                   color: Colors.black87,
-  //                                 ),
-  //                               ),
-  //                               const SizedBox(height: 6),
-  //                               Row(
-  //                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                                 children: [
-  //                                   Text(
-  //                                     'Số lượng: ${item['quantity']} kg',
-  //                                     style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
-  //                                   ),
-  //                                   Text(
-  //                                     '${item['price'].toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ',
-  //                                     style: const TextStyle(
-  //                                       fontSize: 11,
-  //                                       fontWeight: FontWeight.w600,
-  //                                       color: Colors.green,
-  //                                     ),
-  //                                   ),
-  //                                 ],
-  //                               ),
-  //                             ],
-  //                           ),
-  //                         );
-  //                       }).toList(),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ],
-  //             ),
-  //           );
-  //         }).toList(),
-  //       ],
-  //     ),
-  //   );
-  // }
+      final deliveries = controller.orderDeliveries.value!.deliveries;
+
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Theo dõi đơn hàng',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            const SizedBox(height: 16),
+            ...deliveries.map<Widget>((delivery) {
+              int deliveryIndex = deliveries.indexOf(delivery);
+              bool isExpanded = expandedDeliveries.contains(deliveryIndex);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (isExpanded) {
+                            expandedDeliveries.remove(deliveryIndex);
+                          } else {
+                            expandedDeliveries.add(deliveryIndex);
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: delivery.deliveryStatusColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    delivery.deliveryStatus,
+                                    style: TextStyle(
+                                      color: delivery.deliveryStatusColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Mã GH: ${delivery.orderDeliveryId}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  DateFormat('dd/MM/yyyy').format(DateTime.parse(delivery.deliveryDate)),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(isExpanded ? Icons.expand_less : Icons.expand_more, color: Colors.grey.shade600),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Text(
+                                  'Ghi chú: ',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    delivery.note ?? '',
+                                    style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (isExpanded) ...[
+                      const Divider(height: 1),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          children: delivery.orderDeliveryDetails.map<Widget>((item) {
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.productName,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Số lượng: ${item.quantity} ${item.productUnit}',
+                                        style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                                      ),
+                                      Text(
+                                        '${item.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      );
+    });
+  }
 
   Widget _buildOrderSummaryCard(OrderDetailResponse order) {
     return Container(

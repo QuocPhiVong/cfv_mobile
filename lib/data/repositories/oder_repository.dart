@@ -1,5 +1,6 @@
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
+import 'package:cfv_mobile/data/responses/order_deliveries_response.dart';
 import 'package:cfv_mobile/data/responses/oder_response.dart';
 import 'package:cfv_mobile/data/responses/order_detail_response.dart';
 import 'package:cfv_mobile/data/services/api_services.dart';
@@ -65,6 +66,15 @@ class OderRepository extends GetxController {
     try {
       final response = await _apiService.get('/accounts/$accountId/orders/$id');
       return OrderDetailResponse.fromJson(response.data);
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+  
+  Future<OrderDeliveriesResponse> getOrderDeliveries(String id) async {
+    try {
+      final response = await _apiService.get('/orders/$id/order-deliveries');
+      return OrderDeliveriesResponse.fromJson(response.data);
     } catch (e) {
       throw Exception(e);
     }
