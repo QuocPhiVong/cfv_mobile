@@ -1,4 +1,5 @@
 import 'package:cfv_mobile/data/services/sendbird_service.dart';
+import 'package:cfv_mobile/data/responses/sendbird_response.dart';
 
 abstract class ISendbirdRepository {
   Future<void> initialize();
@@ -15,8 +16,6 @@ abstract class ISendbirdRepository {
   Future<bool> forceReconnect();
   void dispose();
   void stopPolling(String channelUrl);
-  // Add test method for debugging
-  Future<Map<String, dynamic>> testMessageOrdering(String channelUrl);
 }
 
 class SendbirdRepository implements ISendbirdRepository {
@@ -91,10 +90,5 @@ class SendbirdRepository implements ISendbirdRepository {
   @override
   void stopPolling(String channelUrl) {
     _sendbirdService.stopPolling(channelUrl);
-  }
-
-  @override
-  Future<Map<String, dynamic>> testMessageOrdering(String channelUrl) async {
-    return await _sendbirdService.testMessageOrdering(channelUrl);
   }
 }

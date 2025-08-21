@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:cfv_mobile/data/services/sendbird_service.dart';
-import 'dart:async'; // Added for Timer
+import 'dart:async';
+
+import '../../data/responses/sendbird_response.dart'; // Added for Timer
 
 class SendbirdChatScreen extends StatefulWidget {
   final String? conversationId;
@@ -559,7 +561,7 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
+        preferredSize: Size.fromHeight(60),
         child: Container(
           padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
           color: Colors.white,
@@ -663,21 +665,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
       body: Column(
         children: [
           // Conversation info header
-          if (_hasCurrentConversation && _currentConversationLastMessage != null)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.white,
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.grey[600]),
-                  SizedBox(width: 8),
-                  Text(
-                    'Cuộc trò chuyện bắt đầu ${_formatDate(DateTime.now())}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
           Expanded(child: _buildMessageList()),
           _buildMessageInput(),
         ],

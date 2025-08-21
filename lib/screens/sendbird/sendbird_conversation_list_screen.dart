@@ -1,6 +1,6 @@
 import 'package:cfv_mobile/screens/sendbird/index.dart';
 import 'package:cfv_mobile/controller/sendbird_controller.dart';
-import 'package:cfv_mobile/data/services/sendbird_service.dart';
+import 'package:cfv_mobile/data/responses/sendbird_response.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,13 +23,10 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
 
   Future<void> _initializeAndLoad() async {
     try {
-      // Initialize Sendbird
       await _sendbirdController.initialize();
 
-      // Connect user
       final connected = await _sendbirdController.connectUser();
       if (connected) {
-        // Load conversations
         await _sendbirdController.loadConversations();
       }
     } catch (e) {
@@ -47,13 +44,10 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
 
   Future<void> _startNewChat() async {
     try {
-      // Show dialog to input conversation title
       final title = await _showNewChatDialog();
       if (title != null && title.isNotEmpty) {
-        // Create new conversation using controller
         final newConversation = await _sendbirdController.createNewConversation(title);
 
-        // Navigate to chat screen with new conversation
         if (mounted) {
           Navigator.push(
             context,
@@ -98,171 +92,116 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
       backgroundColor: Colors.white,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(100),
-        child: Container(
-          padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-          child: Column(
-            children: [
-              Container(
-                height: 60,
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        "Tin nhắn",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black87),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Text(
+            'Tin nhắn',
+            style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
           ),
+          actions: [
+            IconButton(
+              onPressed: _startNewChat,
+              icon: Icon(Icons.add_circle_outline, color: Colors.black, size: 28),
+            ),
+          ],
         ),
       ),
-      body: Expanded(
-        child: Obx(() {
-          if (_sendbirdController.isLoading.value) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50))),
-                  SizedBox(height: 16),
-                  Text('Đang tải...', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-                ],
-              ),
-            );
-          }
+      body: Obx(() {
+        if (_sendbirdController.isLoading.value) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-          if (_sendbirdController.conversations.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: _refreshConversations,
-              color: Color(0xFF4CAF50),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-                      child: Icon(Icons.chat_bubble_outline, size: 40, color: Colors.grey[400]),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Chưa có cuộc trò chuyện nào',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[700]),
-                    ),
-                    SizedBox(height: 8),
-                    Text('Bắt đầu cuộc trò chuyện đầu tiên', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
-                    SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _startNewChat,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4CAF50),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: Text('Bắt đầu ngay'),
-                    ),
-                  ],
+        if (_sendbirdController.conversations.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text('Chưa có cuộc trò chuyện nào', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                SizedBox(height: 8),
+                Text('Bắt đầu cuộc trò chuyện mới để kết nối', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _startNewChat,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  child: Text('Bắt đầu cuộc trò chuyện'),
                 ),
-              ),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: _refreshConversations,
-            color: Color(0xFF4CAF50),
-            child: ListView.builder(
-              itemCount: _sendbirdController.conversations.length,
-              itemBuilder: (context, index) {
-                return _buildConversationTile(_sendbirdController.conversations[index]);
-              },
+              ],
             ),
           );
-        }),
-      ),
+        }
+
+        return RefreshIndicator(
+          onRefresh: _refreshConversations,
+          child: ListView.builder(
+            itemCount: _sendbirdController.conversations.length,
+            itemBuilder: (context, index) {
+              final conversation = _sendbirdController.conversations[index];
+              return _buildConversationTile(conversation);
+            },
+          ),
+        );
+      }),
     );
   }
 
   Widget _buildConversationTile(Conversation conversation) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey[200]!, width: 0.5)),
+    return ListTile(
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: CircleAvatar(
+        backgroundColor: Colors.green,
+        child: Text(
+          conversation.title.isNotEmpty ? conversation.title[0].toUpperCase() : 'C',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Stack(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.person, color: Colors.white, size: 24),
+      title: Text(
+        conversation.title,
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (conversation.lastMessage != null)
+            Text(
+              conversation.lastMessage!,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            if (conversation.isOnline)
-              Positioned(
-                bottom: 2,
-                right: 2,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Color(0xFF4CAF50),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+          SizedBox(height: 4),
+          Row(
+            children: [
+              if (conversation.lastMessageTime != null)
+                Text(conversation.timeString, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+              Spacer(),
+              if (conversation.unreadCount > 0)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
+                  child: Text(
+                    conversation.unreadCount.toString(),
+                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
-          ],
-        ),
-        title: Text(
-          conversation.title,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 4),
-            if (conversation.lastMessage != null)
-              Text(
-                conversation.lastMessage!,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            SizedBox(height: 4),
-            Text(conversation.timeString, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-          ],
-        ),
-        trailing: conversation.unreadCount > 0
-            ? Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: Color(0xFF4CAF50), borderRadius: BorderRadius.circular(12)),
-                child: Text(
-                  conversation.unreadCount.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
-                ),
-              )
-            : null,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => SendbirdChatScreen(conversation: conversation)),
-          );
-        },
+            ],
+          ),
+        ],
       ),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SendbirdChatScreen(conversation: conversation)),
+        );
+      },
     );
   }
 }
