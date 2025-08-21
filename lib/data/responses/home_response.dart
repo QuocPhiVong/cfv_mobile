@@ -222,7 +222,7 @@ class PostModel {
   final String? weightUnit;
   final bool? hasProductCertificate;
   final String? productId;
-
+  final String? gardenerId;
   PostModel({
     this.postId,
     this.title,
@@ -238,6 +238,7 @@ class PostModel {
     this.weightUnit,
     this.hasProductCertificate,
     this.productId,
+    this.gardenerId,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) => PostModel(
@@ -255,6 +256,7 @@ class PostModel {
     weightUnit: json["weightUnit"],
     hasProductCertificate: json["hasProductCertificate"],
     productId: json["productId"],
+    gardenerId: json["gardenerId"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -272,5 +274,6 @@ class PostModel {
     "weightUnit": weightUnit,
     "hasProductCertificate": hasProductCertificate,
     "productId": productId,
+    "gardenerId": gardenerId,
   };
 }

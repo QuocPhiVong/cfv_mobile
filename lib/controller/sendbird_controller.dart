@@ -658,7 +658,12 @@ class SendbirdController extends GetxController {
     }
   }
 
-  Future<Conversation> createNewConversation(String title, {String? initialMessage}) async {
+  Future<Conversation> createNewConversation(
+    String title, {
+    String? initialMessage,
+    String? postId,
+    String? gardenerId,
+  }) async {
     try {
       Future.microtask(() {
         isLoading.value = true;
@@ -674,7 +679,12 @@ class SendbirdController extends GetxController {
         }
       }
 
-      final channelUrl = await _repository.createConversation(title, initialMessage: initialMessage);
+      final channelUrl = await _repository.createConversation(
+        title,
+        initialMessage: initialMessage,
+        postId: postId,
+        gardenerId: gardenerId,
+      );
 
       if (channelUrl.isEmpty) {
         throw Exception('Failed to create channel: empty channel URL returned');

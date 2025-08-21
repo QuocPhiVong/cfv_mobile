@@ -42,50 +42,6 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
     await _sendbirdController.loadConversations();
   }
 
-  Future<void> _startNewChat() async {
-    try {
-      final title = await _showNewChatDialog();
-      if (title != null && title.isNotEmpty) {
-        final newConversation = await _sendbirdController.createNewConversation(title);
-
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => SendbirdChatScreen(conversation: newConversation)),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Không thể tạo cuộc trò chuyện mới: $e'), backgroundColor: Colors.red));
-      }
-    }
-  }
-
-  Future<String?> _showNewChatDialog() async {
-    String title = '';
-    return showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Cuộc trò chuyện mới'),
-          content: TextField(
-            decoration: InputDecoration(hintText: 'Nhập tiêu đề cuộc trò chuyện', border: OutlineInputBorder()),
-            onChanged: (value) {
-              title = value;
-            },
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text('Hủy')),
-            ElevatedButton(onPressed: () => Navigator.of(context).pop(title), child: Text('Tạo')),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,12 +55,6 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
             'Tin nhắn',
             style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
           ),
-          actions: [
-            IconButton(
-              onPressed: _startNewChat,
-              icon: Icon(Icons.add_circle_outline, color: Colors.black, size: 28),
-            ),
-          ],
         ),
       ),
       body: Obx(() {
@@ -121,17 +71,6 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
                 SizedBox(height: 16),
                 Text('Chưa có cuộc trò chuyện nào', style: TextStyle(fontSize: 18, color: Colors.grey)),
                 SizedBox(height: 8),
-                Text('Bắt đầu cuộc trò chuyện mới để kết nối', style: TextStyle(fontSize: 14, color: Colors.grey)),
-                SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _startNewChat,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                  child: Text('Bắt đầu cuộc trò chuyện'),
-                ),
               ],
             ),
           );

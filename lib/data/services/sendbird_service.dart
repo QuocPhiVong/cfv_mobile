@@ -584,7 +584,7 @@ class SendbirdService {
     }
   }
 
-  Future<String> createConversation(String title, {String? initialMessage}) async {
+  Future<String> createConversation(String title, {String? initialMessage, String? postId, String? gardenerId}) async {
     if (!_isInitialized) await initialize();
     if (!await _ensureUserConnected()) throw Exception('User not connected');
 
@@ -600,30 +600,37 @@ class SendbirdService {
 
       debugPrint('🆕 Creating conversation: $title');
 
-      final params = GroupChannelCreateParams()
-        ..name = title.trim()
-        ..userIds = [currentUserId]
-        ..isDistinct = false
-        ..isPublic = false;
+      final channelUrl = 'channel_${postId}_$currentUserId';
 
-      final channel = await GroupChannel.createChannel(params);
+      // check if channel already exists
+      try {
+        final channel = await GroupChannel.getChannel(channelUrl);
+      } catch (e) {
+        final params = GroupChannelCreateParams()
+          ..name = title.trim()
+          ..userIds = [currentUserId, gardenerId ?? '']
+          ..isDistinct = false
+          ..isPublic = false
+          ..channelUrl = channelUrl;
 
-      if (channel.channelUrl.isEmpty) {
-        throw Exception('Failed to create channel');
+        final newChannel = await GroupChannel.createChannel(params);
+        if (newChannel.channelUrl.isEmpty) {
+          throw Exception('Failed to create channel');
+        }
       }
 
-      _lastMessageTimestamps[channel.channelUrl] = DateTime.now().millisecondsSinceEpoch;
+      _lastMessageTimestamps[channelUrl] = DateTime.now().millisecondsSinceEpoch;
 
       if (initialMessage != null && initialMessage.trim().isNotEmpty) {
         try {
-          await sendMessage(channel.channelUrl, initialMessage.trim());
+          await sendMessage(channelUrl, initialMessage.trim());
         } catch (e) {
           debugPrint('⚠️ Failed to send initial message: $e');
         }
       }
 
-      debugPrint('✅ Created conversation: ${channel.channelUrl}');
-      return channel.channelUrl;
+      debugPrint('✅ Created conversation: $channelUrl');
+      return channelUrl;
     } catch (e) {
       debugPrint('❌ Failed to create conversation: $e');
       rethrow;

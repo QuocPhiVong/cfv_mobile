@@ -8,7 +8,7 @@ abstract class ISendbirdRepository {
   Future<List<ChatMessage>> loadMoreMessages(String channelUrl, {int limit});
   Future<void> sendMessage(String channelUrl, String text);
   Future<List<Conversation>> getConversations();
-  Future<String> createConversation(String title, {String? initialMessage});
+  Future<String> createConversation(String title, {String? initialMessage, String? postId, String? gardenerId});
   Future<void> joinChannel(String channelUrl);
   Stream<ChatMessage> getMessageStream(String channelUrl);
   bool get isUserConnected;
@@ -55,8 +55,13 @@ class SendbirdRepository implements ISendbirdRepository {
   }
 
   @override
-  Future<String> createConversation(String title, {String? initialMessage}) async {
-    return await _sendbirdService.createConversation(title, initialMessage: initialMessage);
+  Future<String> createConversation(String title, {String? initialMessage, String? postId, String? gardenerId}) async {
+    return await _sendbirdService.createConversation(
+      title,
+      initialMessage: initialMessage,
+      postId: postId,
+      gardenerId: gardenerId,
+    );
   }
 
   @override

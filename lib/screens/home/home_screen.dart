@@ -704,13 +704,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // Method to handle sending messages
   void _sendMessage(int postIndex, String message) {
     if (message.trim().isNotEmpty) {
-      // Here you would typically send the message to your backend
-      print('Sending message for post $postIndex: $message');
+      String channelID = 'channel_${DateTime.now().millisecondsSinceEpoch}';
+      // Create or get channel and send message with sendbird service
 
-      // Clear the input field
-      messageControllers[postIndex]?.clear();
-
-      // Show a confirmation (optional)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Tin nhắn đã được gửi!'),
