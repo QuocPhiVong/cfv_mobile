@@ -215,6 +215,8 @@ class SendbirdController extends GetxController {
         }
       }
 
+      debugPrint('📚 Loading chat history for channel: $channelUrl');
+
       final history = await _repository.getChatHistory(channelUrl);
 
       // Check if controller is still active before updating state
@@ -234,13 +236,17 @@ class SendbirdController extends GetxController {
 
             // Update messages observable
             messages.value = List.from(history);
+
+            debugPrint('📚 Loaded ${history.length} messages. Latest: ${history.last.timestamp}');
           } else {
             messages.value = [];
             _processedMessageIds.clear();
+            debugPrint('📚 No messages found in history');
           }
         }
       });
     } catch (e) {
+      debugPrint('❌ Error loading chat history: $e');
       // Check if controller is still active before updating state
       if (isClosed) return;
 
@@ -312,6 +318,8 @@ class SendbirdController extends GetxController {
       // Cancel existing subscription
       _messageSubscription?.cancel();
 
+      debugPrint('📡 Subscribing to messages for channel: $channelUrl');
+
       // Subscribe to new messages
       _messageSubscription = _repository
           .getMessageStream(channelUrl)
@@ -367,6 +375,8 @@ class SendbirdController extends GetxController {
               debugPrint('📨 Message stream closed for channel: $channelUrl');
             },
           );
+
+      debugPrint('✅ Successfully subscribed to messages for channel: $channelUrl');
     } catch (e) {
       debugPrint('❌ Failed to subscribe to messages: $e');
     }
@@ -431,7 +441,7 @@ class SendbirdController extends GetxController {
       await _repository.sendMessage(currentConversationId.value, text);
 
       // Remove optimistic message after a short delay to let real message come through
-      Future.delayed(Duration(milliseconds: 1000), () {
+      Future.delayed(Duration(milliseconds: 500), () {
         if (!isClosed) {
           Future.microtask(() {
             if (!isClosed) {
@@ -439,6 +449,7 @@ class SendbirdController extends GetxController {
               if (_optimisticMessageIds.contains(optimisticMessage.id)) {
                 messages.removeWhere((msg) => msg.id == optimisticMessage.id);
                 _optimisticMessageIds.remove(optimisticMessage.id);
+                debugPrint('📤 Removed optimistic message after real message sent');
               }
               isSending.value = false;
             }
@@ -457,7 +468,10 @@ class SendbirdController extends GetxController {
           }
         });
       }
+
+      debugPrint('📤 Message sent successfully: $text');
     } catch (e) {
+      debugPrint('❌ Failed to send message: $e');
       // Check if controller is still active before updating state
       if (isClosed) return;
 
@@ -526,10 +540,41 @@ class SendbirdController extends GetxController {
         return;
       }
 
-      // Reload chat history
+      debugPrint('🔄 Force refreshing messages for channel: ${currentConversationId.value}');
+
+      // Reload chat history to get latest messages
       await loadChatHistory(currentConversationId.value);
+
+      // Also check for any very recent messages that might have been missed
+      try {
+        final veryRecentMessages = await _repository.loadMoreMessages(currentConversationId.value, limit: 5);
+        if (veryRecentMessages.isNotEmpty && !isClosed) {
+          Future.microtask(() {
+            if (!isClosed) {
+              // Add any new messages that weren't in the history
+              final existingIds = messages.map((m) => m.id).toSet();
+              final newMessages = veryRecentMessages.where((m) => !existingIds.contains(m.id)).toList();
+
+              if (newMessages.isNotEmpty) {
+                debugPrint('🔄 Found ${newMessages.length} additional recent messages');
+                messages.addAll(newMessages);
+                _sortMessages();
+
+                // Add to processed set
+                for (final message in newMessages) {
+                  _processedMessageIds.add(message.id);
+                }
+              }
+            }
+          });
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error checking very recent messages: $e');
+      }
+
+      debugPrint('✅ Force refresh completed');
     } catch (e) {
-      // Failed to refresh messages
+      debugPrint('❌ Error in force refresh: $e');
     }
   }
 
@@ -771,5 +816,55 @@ class SendbirdController extends GetxController {
       }
     }
     return true;
+  }
+
+  // Method to ensure latest messages are displayed
+  Future<void> ensureLatestMessages() async {
+    try {
+      if (isClosed || currentConversationId.value.isEmpty) {
+        return;
+      }
+
+      debugPrint('🔍 Ensuring latest messages are displayed');
+
+      // Check if we have messages
+      if (messages.isEmpty) {
+        debugPrint('🔍 No messages, loading chat history');
+        await loadChatHistory(currentConversationId.value);
+        return;
+      }
+
+      // Get the latest message timestamp we have
+      final latestTimestamp = messages.last.timestamp.millisecondsSinceEpoch;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+
+      // If our latest message is more than 1 minute old, refresh
+      if (currentTime - latestTimestamp > 60000) {
+        // 1 minute
+        debugPrint('🔍 Latest message is old (${currentTime - latestTimestamp}ms), refreshing');
+        await forceRefreshMessages();
+      } else {
+        debugPrint('🔍 Latest message is recent (${currentTime - latestTimestamp}ms), no refresh needed');
+      }
+    } catch (e) {
+      debugPrint('❌ Error ensuring latest messages: $e');
+    }
+  }
+
+  // Method to get message count and latest message info
+  Map<String, dynamic> getMessageInfo() {
+    if (messages.isEmpty) {
+      return {'count': 0, 'hasMessages': false, 'latestMessage': null, 'latestTimestamp': null};
+    }
+
+    final latestMessage = messages.last;
+    return {
+      'count': messages.length,
+      'hasMessages': true,
+      'latestMessage': latestMessage.text,
+      'latestTimestamp': latestMessage.timestamp.toString(),
+      'latestMessageId': latestMessage.id,
+      'isLatestFromMe': latestMessage.isMe,
+    };
   }
 }

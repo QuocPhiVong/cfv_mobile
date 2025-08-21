@@ -291,7 +291,7 @@ class SendbirdService {
         }
       }
 
-      // Load messages with correct parameters - use consistent approach
+      // Load messages with correct parameters - ensure we get the latest messages
       List<BaseMessage> messages = [];
 
       try {
@@ -307,6 +307,21 @@ class SendbirdService {
         // Load from current time to get recent messages
         final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
         messages = await channel.getMessagesByTimestamp(currentTimestamp, params);
+
+        // If we don't get enough messages, try loading from a more recent timestamp
+        if (messages.length < limit) {
+          debugPrint('📚 Got ${messages.length} messages, trying to get more recent ones...');
+
+          // Try loading from 1 hour ago to get more messages
+          final oneHourAgo = DateTime.now().subtract(Duration(hours: 1)).millisecondsSinceEpoch;
+          final moreMessages = await channel.getMessagesByTimestamp(oneHourAgo, params);
+
+          if (moreMessages.length > messages.length) {
+            messages = moreMessages;
+            debugPrint('📚 Loaded ${messages.length} messages from 1 hour ago');
+          }
+        }
+
         debugPrint('✅ Successfully loaded ${messages.length} recent messages');
       } catch (e) {
         debugPrint('⚠️ Failed to load recent messages: $e');
@@ -436,6 +451,16 @@ class SendbirdService {
 
       // Update timestamp for smart polling
       _lastMessageTimestamps[channelUrl] = userMessage.createdAt;
+
+      // Immediately add the sent message to the message stream if controller exists
+      if (_messageControllers.containsKey(channelUrl)) {
+        final controller = _messageControllers[channelUrl]!;
+        if (!controller.isClosed && controller.hasListener) {
+          final chatMessage = ChatMessage.fromSendbird(userMessage);
+          controller.add(chatMessage);
+          debugPrint('📤 Added sent message to stream immediately: ${chatMessage.text}');
+        }
+      }
     } catch (e) {
       debugPrint('❌ Failed to send message: $e');
 
@@ -600,6 +625,34 @@ class SendbirdService {
         } else {
           debugPrint('📨 No truly new messages found (all were duplicates)');
         }
+      }
+
+      // Also check if there are any messages newer than our current timestamp
+      // This ensures we don't miss any messages that might have been sent while we were processing
+      try {
+        final currentTime = DateTime.now().millisecondsSinceEpoch;
+        final veryRecentParams = MessageListParams()
+          ..previousResultSize =
+              5 // Just check a few recent messages
+          ..reverse = false
+          ..includeReactions = false
+          ..includeThreadInfo = false
+          ..includeParentMessageInfo = false
+          ..includeMetaArray = false;
+
+        final veryRecentMessages = await channel.getMessagesByTimestamp(currentTime, veryRecentParams);
+
+        if (veryRecentMessages.isNotEmpty) {
+          final newestMessage = veryRecentMessages.first;
+          final currentLastTimestamp = _lastMessageTimestamps[channelUrl] ?? 0;
+
+          if (newestMessage.createdAt > currentLastTimestamp) {
+            debugPrint('📨 Found newer message while polling: ${newestMessage.createdAt} > $currentLastTimestamp');
+            _lastMessageTimestamps[channelUrl] = newestMessage.createdAt;
+          }
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error checking very recent messages: $e');
       }
     } catch (e) {
       debugPrint('❌ Error in smart polling: $e');

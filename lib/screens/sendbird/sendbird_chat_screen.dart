@@ -445,38 +445,30 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        if (_hasCurrentConversation && mounted) {
-          await _sendbirdController.forceRefreshMessages();
+    return ListView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.all(16),
+      itemCount: _messages.length + 1, // +1 for loading indicator
+      itemBuilder: (context, index) {
+        // Show loading indicator at the top for pagination
+        if (index == 0) {
+          return _buildLoadMoreButton();
         }
+
+        final messageIndex = index - 1;
+        final message = _messages[messageIndex];
+        final isFirstInGroup = messageIndex == 0 || _shouldShowMessageHeader(_messages[messageIndex - 1], message);
+
+        return Column(
+          children: [
+            // Date separator
+            if (isFirstInGroup && messageIndex > 0) _buildDateSeparator(message.timestamp),
+
+            // Message bubble
+            _buildMessageBubble(message),
+          ],
+        );
       },
-      color: Color(0xFF4CAF50),
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: EdgeInsets.all(16),
-        itemCount: _messages.length + 1, // +1 for loading indicator
-        itemBuilder: (context, index) {
-          // Show loading indicator at the top for pagination
-          if (index == 0) {
-            return _buildLoadMoreButton();
-          }
-
-          final messageIndex = index - 1;
-          final message = _messages[messageIndex];
-          final isFirstInGroup = messageIndex == 0 || _shouldShowMessageHeader(_messages[messageIndex - 1], message);
-
-          return Column(
-            children: [
-              // Date separator
-              if (isFirstInGroup && messageIndex > 0) _buildDateSeparator(message.timestamp),
-
-              // Message bubble
-              _buildMessageBubble(message),
-            ],
-          );
-        },
-      ),
     );
   }
 
@@ -597,11 +589,7 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
                             ),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
-                            _currentConversationTitle.contains('AI') ? Icons.smart_toy : Icons.chat,
-                            color: Colors.white,
-                            size: 20,
-                          ),
+                          child: Icon(Icons.chat, color: Colors.white, size: 20),
                         ),
                       ],
                     ),
@@ -665,22 +653,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
                         },
                         tooltip: 'Thử kết nối lại',
                       ),
-                    // Refresh messages button (always visible for testing)
-                    IconButton(
-                      icon: Icon(Icons.refresh, size: 20, color: Color(0xFF4CAF50)),
-                      onPressed: () async {
-                        try {
-                          await _sendbirdController.forceRefreshMessages();
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Không thể refresh tin nhắn: $e'), backgroundColor: Colors.red),
-                            );
-                          }
-                        }
-                      },
-                      tooltip: 'Refresh tin nhắn',
-                    ),
                   ],
                 ),
               ),
