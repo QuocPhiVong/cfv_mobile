@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
-  const OrderDetailScreen({Key? key, required this.orderId}) : super(key: key);
+  const OrderDetailScreen({super.key, required this.orderId});
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -306,7 +306,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -482,7 +482,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       );

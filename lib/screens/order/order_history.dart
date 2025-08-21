@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class OrderListScreen extends StatefulWidget {
+  const OrderListScreen({super.key});
+
   @override
   _OrderListScreenState createState() => _OrderListScreenState();
 }
@@ -56,7 +58,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       debugPrint('AccountId not available');
       return;
     }
-    
+
     try {
       if (refresh) {
         currentPage = 1;
@@ -99,7 +101,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
               if (orderController.isLoadingOrders.value && orderController.orders.isEmpty) {
                 return _buildLoadingState();
               }
-              
+
               return _buildOrderList();
             }),
           ),
@@ -120,13 +122,11 @@ class _OrderListScreenState extends State<OrderListScreen> {
             return Padding(
               padding: EdgeInsets.all(16),
               child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
-                ),
+                child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!)),
               ),
             );
           }
-          
+
           final order = orderController.orders[index];
           return _buildOrderCard(order);
         },
@@ -139,14 +139,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
-          ),
+          CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!)),
           SizedBox(height: 16),
-          Text(
-            'Đang tải danh sách đơn hàng...',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
+          Text('Đang tải danh sách đơn hàng...', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
         ],
       ),
     );
@@ -204,7 +199,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       child: InkWell(
         onTap: () {
           Navigator.push(
-            context, 
+            context,
             MaterialPageRoute(
               builder: (context) => OrderDetailScreen(orderId: order.orderId ?? ''),
               settings: RouteSettings(arguments: {'orderId': order.orderId}),
@@ -225,7 +220,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Đơn hàng #${(order.orderId ?? '').length > 8 ? (order.orderId ?? '').substring(0, 8) + '...' : order.orderId ?? ''}',
+                          'Đơn hàng #${(order.orderId ?? '').length > 8 ? '${(order.orderId ?? '').substring(0, 8)}...' : order.orderId ?? ''}',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[800]),
                         ),
                         SizedBox(height: 4),
@@ -323,14 +318,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
               if (order.status == 'PENDING') ...[
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Obx(
-                    () {
-                      final updatingStatusOrderId = orderController.updatingStatusOrderId.value;
-                      final isUpdating = updatingStatusOrderId == order.orderId;
-                      return OutlinedButton(
+                  child: Obx(() {
+                    final updatingStatusOrderId = orderController.updatingStatusOrderId.value;
+                    final isUpdating = updatingStatusOrderId == order.orderId;
+                    return OutlinedButton(
                       onPressed: () {
-                        if(!isUpdating) {
-                        _cancelOrder(order.orderId ?? '');
+                        if (!isUpdating) {
+                          _cancelOrder(order.orderId ?? '');
                         }
                       },
                       style: OutlinedButton.styleFrom(
@@ -338,23 +332,27 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         side: const BorderSide(color: Colors.red),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: isUpdating ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(color: Colors.blue[700]!, strokeWidth: 2)) : Text('Hủy đơn', style: TextStyle(fontSize: 12)),
+                      child: isUpdating
+                          ? SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(color: Colors.blue[700]!, strokeWidth: 2),
+                            )
+                          : Text('Hủy đơn', style: TextStyle(fontSize: 12)),
                     );
-                    },
-                  ),
+                  }),
                 ),
               ],
-                if (order.status == 'DELIVERED') ...[
+              if (order.status == 'DELIVERED') ...[
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Obx(
-                    () {
-                      final updatingStatusOrderId = orderController.updatingStatusOrderId.value;
-                      final isUpdating = updatingStatusOrderId == order.orderId;
-                      return OutlinedButton(
+                  child: Obx(() {
+                    final updatingStatusOrderId = orderController.updatingStatusOrderId.value;
+                    final isUpdating = updatingStatusOrderId == order.orderId;
+                    return OutlinedButton(
                       onPressed: () {
-                        if(!isUpdating) {
-                        _completeOrder(order.orderId ?? '');
+                        if (!isUpdating) {
+                          _completeOrder(order.orderId ?? '');
                         }
                       },
                       style: OutlinedButton.styleFrom(
@@ -362,13 +360,18 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         side: const BorderSide(color: Colors.green),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: isUpdating ? SizedBox(width: 12, height: 12, child: CircularProgressIndicator(color: Colors.blue[700]!, strokeWidth: 2)) : Text('Hoàn thành', style: TextStyle(fontSize: 12)),
+                      child: isUpdating
+                          ? SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(color: Colors.blue[700]!, strokeWidth: 2),
+                            )
+                          : Text('Hoàn thành', style: TextStyle(fontSize: 12)),
                     );
-                    },
-                  ),
+                  }),
                 ),
-                ]
-                                              ],
+              ],
+            ],
           ),
         ),
       ),
@@ -400,6 +403,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       },
     );
   }
+
   void _completeOrder(String orderId) {
     showDialog(
       context: context,
@@ -425,7 +429,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
       },
     );
   }
-
 
   Widget _buildEmptyState() {
     return Center(
@@ -475,7 +478,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   SizedBox(height: 20),
                   Text('Chi tiết đơn hàng', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   SizedBox(height: 20),
-                  Text('Mã đơn hàng: ${order.orderId ?? 'N/A'}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Mã đơn hàng: ${order.orderId ?? 'N/A'}',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                   SizedBox(height: 8),
                   Text('Nhà bán lẻ: ${order.retailerName ?? 'N/A'}', style: TextStyle(fontSize: 14)),
                   SizedBox(height: 8),

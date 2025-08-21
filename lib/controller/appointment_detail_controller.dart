@@ -81,9 +81,7 @@ class AppointmentDetailController extends GetxController {
   }
 
   /// Cancel appointment with reason
-  Future<bool> cancelAppointment({
-    required String cancellationReason,
-  }) async {
+  Future<bool> cancelAppointment({required String cancellationReason}) async {
     try {
       if (_appointmentId == null) {
         errorMessage.value = 'Không tìm thấy ID lịch hẹn.';
@@ -92,7 +90,7 @@ class AppointmentDetailController extends GetxController {
 
       clearMessages();
       isUpdating.value = true;
-      
+
       final isSuccess = await _appointmentRepository.cancelAppointment(
         _appointmentId!,
         cancellationReason: cancellationReason,
@@ -106,7 +104,7 @@ class AppointmentDetailController extends GetxController {
         return true;
       } else {
         errorMessage.value = 'Có lỗi xảy ra khi hủy lịch hẹn. Vui lòng thử lại.';
-        debugPrint('Failed to cancel appointment: ${isSuccess}');
+        debugPrint('Failed to cancel appointment: $isSuccess');
         return false;
       }
     } catch (e) {
@@ -166,5 +164,3 @@ class AppointmentDetailController extends GetxController {
     super.onClose();
   }
 }
-
-

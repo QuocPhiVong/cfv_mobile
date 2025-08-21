@@ -1,9 +1,7 @@
-import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/sendbird_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
-import 'package:cfv_mobile/data/services/sendbird_service.dart';
 import 'dart:async';
 
 import '../../data/responses/sendbird_response.dart'; // Added for Timer

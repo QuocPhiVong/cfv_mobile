@@ -1,5 +1,4 @@
 import 'package:cfv_mobile/data/responses/cart_response.dart';
-import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:flutter/material.dart';
 
 class OrderSuccessScreen extends StatelessWidget {

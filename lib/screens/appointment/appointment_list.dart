@@ -8,13 +8,13 @@ import 'package:intl/intl.dart';
 class AppointmentListScreen extends GetView<AppointmentController> {
   final RxString selectedFilterRx = 'All'.obs;
 
-  AppointmentListScreen({Key? key}) : super(key: key);
+  AppointmentListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     // Initialize controller if not already initialized
     Get.put(AppointmentController());
-    
+
     // Load appointments on first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (controller.appointments.isEmpty) {
@@ -29,19 +29,13 @@ class AppointmentListScreen extends GetView<AppointmentController> {
         backgroundColor: Colors.white,
         title: Text(
           'Quản lý lịch hẹn',
-          style: TextStyle(
-            color: Colors.grey[800],
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.grey[800], fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
         children: [
           _buildFilterChips(),
-          Expanded(
-            child: Obx(() => _buildBody()),
-          ),
+          Expanded(child: Obx(() => _buildBody())),
         ],
       ),
     );
@@ -51,17 +45,17 @@ class AppointmentListScreen extends GetView<AppointmentController> {
     if (controller.isLoading.value && controller.appointments.isEmpty) {
       return _buildLoadingState();
     }
-    
+
     if (controller.errorMessage.isNotEmpty && controller.appointments.isEmpty) {
       return _buildErrorState();
     }
-    
+
     final filteredAppointments = _getFilteredAppointments();
-    
+
     if (filteredAppointments.isEmpty) {
       return _buildEmptyState();
     }
-    
+
     return _buildAppointmentList(filteredAppointments);
   }
 
@@ -69,16 +63,14 @@ class AppointmentListScreen extends GetView<AppointmentController> {
     if (selectedFilterRx.value == 'All') {
       return controller.appointments;
     }
-    return controller.appointments.where((apt) => 
-      apt.status?.toLowerCase() == selectedFilterRx.value.toLowerCase()
-    ).toList();
+    return controller.appointments
+        .where((apt) => apt.status?.toLowerCase() == selectedFilterRx.value.toLowerCase())
+        .toList();
   }
-
-
 
   Widget _buildFilterChips() {
     final filters = ['All', 'Confirmed', 'Pending', 'Cancelled'];
-    
+
     return Container(
       height: 60,
       padding: EdgeInsets.symmetric(horizontal: 16),
@@ -87,7 +79,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
         itemCount: filters.length,
         itemBuilder: (context, index) {
           final filter = filters[index];
-          
+
           return Padding(
             padding: EdgeInsets.only(right: 8),
             child: Obx(() {
@@ -123,10 +115,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
         itemBuilder: (context, index) {
           if (index == appointments.length) {
             return Center(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
-              ),
+              child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
             );
           }
           final appointment = appointments[index];
@@ -139,10 +128,10 @@ class AppointmentListScreen extends GetView<AppointmentController> {
   Widget _buildAppointmentCard(AppointmentData appointment) {
     final appointmentDate = appointment.appointmentDate ?? DateTime.now();
     final status = appointment.status ?? 'unknown';
-    
+
     Color statusColor;
     IconData statusIcon;
-    
+
     switch (status.toLowerCase()) {
       case 'confirmed':
         statusColor = Colors.green;
@@ -167,15 +156,13 @@ class AppointmentListScreen extends GetView<AppointmentController> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () async {
-          final result = await Get.to(() => AppointmentDetailScreen(
-            appointmentId: appointment.appointmentId ?? '',
-          ));
-          
+          final result = await Get.to(() => AppointmentDetailScreen(appointmentId: appointment.appointmentId ?? ''));
+
           // Handle result if appointment was cancelled or updated
           if (result == true) {
             // Refresh the appointment list
             await controller.getAppointments(refresh: true);
-            
+
             // Show success message
             Get.snackbar(
               'Thành công',
@@ -197,11 +184,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
                   Expanded(
                     child: Text(
                       appointment.subject ?? 'No subject',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800]),
                     ),
                   ),
                   Container(
@@ -217,11 +200,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
                         SizedBox(width: 4),
                         Text(
                           status.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: statusColor,
-                          ),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: statusColor),
                         ),
                       ],
                     ),
@@ -235,11 +214,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
                   SizedBox(width: 8),
                   Text(
                     DateFormat('MMM dd, yyyy • hh:mm a').format(appointmentDate),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -251,10 +226,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
                   Expanded(
                     child: Text(
                       appointment.location ?? appointment.address ?? 'No location',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ),
                 ],
@@ -279,10 +251,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
                 SizedBox(height: 8),
                 Container(
                   padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  decoration: BoxDecoration(color: Colors.red[50], borderRadius: BorderRadius.circular(8)),
                   child: Row(
                     children: [
                       Icon(Icons.info, size: 16, color: Colors.red[600]),
@@ -290,10 +259,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
                       Expanded(
                         child: Text(
                           'Cancelled: ${appointment.cancellationReason}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.red[600],
-                          ),
+                          style: TextStyle(fontSize: 12, color: Colors.red[600]),
                         ),
                       ),
                     ],
@@ -314,13 +280,7 @@ class AppointmentListScreen extends GetView<AppointmentController> {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 16),
-          Text(
-            'Đang tải lịch hẹn...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text('Đang tải lịch hẹn...', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
         ],
       ),
     );
@@ -331,29 +291,18 @@ class AppointmentListScreen extends GetView<AppointmentController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[400],
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
           SizedBox(height: 16),
           Text(
             'Có lỗi xảy ra',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[600]),
           ),
           SizedBox(height: 8),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 32),
             child: Text(
               controller.errorMessage.value,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ),
@@ -362,11 +311,8 @@ class AppointmentListScreen extends GetView<AppointmentController> {
             onPressed: () {
               controller.getAppointments(refresh: true);
             },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[600], foregroundColor: Colors.white),
             child: Text('Thử lại'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[600],
-              foregroundColor: Colors.white,
-            ),
           ),
         ],
       ),
@@ -378,27 +324,16 @@ class AppointmentListScreen extends GetView<AppointmentController> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.event_busy,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
           SizedBox(height: 16),
           Text(
             'Không có lịch hẹn nào',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey[600]),
           ),
           SizedBox(height: 8),
           Text(
             'Thử điều chỉnh bộ lọc hoặc tạo lịch hẹn mới',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
         ],

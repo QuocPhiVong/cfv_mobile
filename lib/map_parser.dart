@@ -19,9 +19,9 @@ extension ParseModel on Map<String, dynamic> {
   }
 
   Map<String, dynamic> parseMap(String key) {
-    Map<String, dynamic> result = Map<String, dynamic>();
+    Map<String, dynamic> result = <String, dynamic>{};
     if (isNotEmpty && containsKey(key)) {
-      result = Map<String, dynamic>.from(this[key] ?? Map<String, dynamic>());
+      result = Map<String, dynamic>.from(this[key] ?? <String, dynamic>{});
     }
     return result;
   }

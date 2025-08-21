@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -9,16 +9,16 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isEditing = false;
-  
+
   // Controllers for editing
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  
+
   String? _selectedGender;
   final List<String> _genderOptions = ['Nam', 'Nữ'];
-  
+
   // Sample user data (would come from signup and finish profile screens)
   String _userName = 'Vòng Quốc Phi';
   String _userPhone = '0982912617';
@@ -61,10 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Cập nhật thông tin thành công!'),
-        backgroundColor: Colors.teal.shade600,
-      ),
+      SnackBar(content: const Text('Cập nhật thông tin thành công!'), backgroundColor: Colors.teal.shade600),
     );
   }
 
@@ -77,11 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 1,
         title: const Text(
           'Hồ sơ',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
         actions: [
@@ -89,23 +82,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onPressed: _isEditing ? _saveProfile : _toggleEdit,
             child: Text(
               _isEditing ? 'Lưu' : 'Sửa',
-              style: TextStyle(
-                color: Colors.teal.shade600,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: Colors.teal.shade600, fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           if (_isEditing)
             TextButton(
               onPressed: _toggleEdit,
-              child: Text(
-                'Hủy',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 16,
-                ),
-              ),
+              child: Text('Hủy', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
             ),
         ],
       ),
@@ -122,33 +105,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Container(
                     width: 80,
                     height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey.shade400,
-                    ),
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.grey.shade600,
-                      size: 40,
-                    ),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey.shade400),
+                    child: Icon(Icons.person, color: Colors.grey.shade600, size: 40),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     _userName,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    _userPhone,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
+                  Text(_userPhone, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
                 ],
               ),
             ),
@@ -177,11 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     const Text(
                       'Thông tin cá nhân',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
                     const SizedBox(height: 20),
 
@@ -254,11 +216,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade700,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
         ),
         const SizedBox(height: 8),
         if (isEditing)
@@ -279,10 +237,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.teal.shade600),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
           )
         else
@@ -294,13 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
-            ),
+            child: Text(value, style: const TextStyle(fontSize: 16, color: Colors.black87)),
           ),
       ],
     );
@@ -312,11 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Text(
           'Giới tính',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey.shade700,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
         ),
         const SizedBox(height: 8),
         if (_isEditing)
@@ -335,16 +280,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Colors.teal.shade600),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             items: _genderOptions.map((String gender) {
-              return DropdownMenuItem<String>(
-                value: gender,
-                child: Text(gender),
-              );
+              return DropdownMenuItem<String>(value: gender, child: Text(gender));
             }).toList(),
             onChanged: (String? newValue) {
               setState(() {
@@ -361,13 +300,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey.shade200),
             ),
-            child: Text(
-              _userGender,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
-            ),
+            child: Text(_userGender, style: const TextStyle(fontSize: 16, color: Colors.black87)),
           ),
       ],
     );

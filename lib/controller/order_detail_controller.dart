@@ -2,7 +2,6 @@ import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/data/repositories/oder_repository.dart';
 import 'package:cfv_mobile/data/responses/order_deliveries_response.dart';
 import 'package:cfv_mobile/data/responses/order_detail_response.dart';
-import 'package:cfv_mobile/data/services/storage_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
@@ -82,9 +81,7 @@ class OrderDetailController extends GetxController {
   }
 
   /// Cancel order with reason
-  Future<bool> cancelOrder({
-    required String cancellationReason,
-  }) async {
+  Future<bool> cancelOrder({required String cancellationReason}) async {
     try {
       if (_orderId == null) {
         errorMessage.value = 'Không tìm thấy ID đơn hàng.';
@@ -93,7 +90,7 @@ class OrderDetailController extends GetxController {
 
       clearMessages();
       isUpdating.value = true;
-      
+
       final isSuccess = await _orderRepository.updateStatusOrder(_orderId!, 'CANCELLED');
 
       if (isSuccess) {
@@ -125,7 +122,7 @@ class OrderDetailController extends GetxController {
 
       clearMessages();
       isUpdating.value = true;
-      
+
       final isSuccess = await _orderRepository.updateStatusOrder(_orderId!, status);
 
       if (isSuccess) {

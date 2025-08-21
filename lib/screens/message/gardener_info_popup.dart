@@ -12,7 +12,7 @@ class GardenerInfoPopup extends StatelessWidget {
   final VoidCallback? onClosePressed;
 
   const GardenerInfoPopup({
-    Key? key,
+    super.key,
     required this.gardenName,
     required this.phoneNumber,
     required this.rating,
@@ -22,7 +22,7 @@ class GardenerInfoPopup extends StatelessWidget {
     this.isOnline = true,
     this.onMoreInfoPressed,
     this.onClosePressed,
-  }) : super(key: key);
+  });
 
   /// Static method to show the gardener info popup
   static Future<void> show(
@@ -70,7 +70,8 @@ class GardenerInfoPopup extends StatelessWidget {
       rating: 4.8,
       joinDate: "Tham gia: Tháng 3/2023",
       address: "123 Đường Cần Thơ, An Giang",
-      certificationText: "Vườn chúng tôi đã được cấp chứng nhận an toàn thực phẩm từ Sở Y tế và các cơ quan có thẩm quyền.",
+      certificationText:
+          "Vườn chúng tôi đã được cấp chứng nhận an toàn thực phẩm từ Sở Y tế và các cơ quan có thẩm quyền.",
       isOnline: true,
       onMoreInfoPressed: onMoreInfoPressed,
       onClosePressed: onClosePressed,
@@ -90,13 +91,7 @@ class GardenerInfoPopup extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: Offset(0, 4))],
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -127,11 +122,7 @@ class GardenerInfoPopup extends StatelessWidget {
         children: [
           Text(
             "Thông tin vườn",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
           ),
           GestureDetector(
             onTap: () {
@@ -142,15 +133,8 @@ class GardenerInfoPopup extends StatelessWidget {
             },
             child: Container(
               padding: EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.close,
-                size: 20,
-                color: Colors.black54,
-              ),
+              decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(20)),
+              child: Icon(Icons.close, size: 20, color: Colors.black54),
             ),
           ),
         ],
@@ -172,11 +156,7 @@ class GardenerInfoPopup extends StatelessWidget {
               children: [
                 Text(
                   gardenName,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -200,16 +180,9 @@ class GardenerInfoPopup extends StatelessWidget {
           decoration: BoxDecoration(
             color: Color(0xFFB8E6B8),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 2,
-            ),
+            border: Border.all(color: Colors.white, width: 2),
           ),
-          child: Icon(
-            Icons.person,
-            color: Color(0xFF4CAF50),
-            size: 30,
-          ),
+          child: Icon(Icons.person, color: Color(0xFF4CAF50), size: 30),
         ),
         if (isOnline)
           Positioned(
@@ -233,28 +206,14 @@ class GardenerInfoPopup extends StatelessWidget {
   Widget _buildRating() {
     return Row(
       children: [
-        Icon(
-          Icons.star,
-          color: Colors.orange,
-          size: 16,
-        ),
+        Icon(Icons.star, color: Colors.orange, size: 16),
         SizedBox(width: 4),
         Text(
           rating.toStringAsFixed(1),
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
         ),
         SizedBox(width: 8),
-        Text(
-          "(Đánh giá)",
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text("(Đánh giá)", style: TextStyle(fontSize: 12, color: Colors.grey[600])),
       ],
     );
   }
@@ -267,29 +226,18 @@ class GardenerInfoPopup extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.contact_phone,
-                size: 18,
-                color: Color(0xFF4CAF50),
-              ),
+              Icon(Icons.contact_phone, size: 18, color: Color(0xFF4CAF50)),
               SizedBox(width: 8),
               Text(
                 "Thông tin liên lạc",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
               ),
             ],
           ),
@@ -314,30 +262,19 @@ class GardenerInfoPopup extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                Icons.verified,
-                size: 18,
-                color: Color(0xFF4CAF50),
-              ),
+              Icon(Icons.verified, size: 18, color: Color(0xFF4CAF50)),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
                   "Chứng nhận an toàn thực phẩm",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
               ),
             ],
@@ -345,11 +282,7 @@ class GardenerInfoPopup extends StatelessWidget {
           SizedBox(height: 12),
           Text(
             certificationText,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-              height: 1.5,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.5),
             textAlign: TextAlign.justify,
           ),
         ],
@@ -375,27 +308,16 @@ class GardenerInfoPopup extends StatelessWidget {
           backgroundColor: Color(0xFF81C4E8),
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           elevation: 2,
           shadowColor: Color(0xFF81C4E8).withOpacity(0.3),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.info_outline,
-              size: 18,
-            ),
+            Icon(Icons.info_outline, size: 18),
             SizedBox(width: 8),
-            Text(
-              "Xem thêm thông tin",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            Text("Xem thêm thông tin", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -411,28 +333,14 @@ class GardenerInfoPopup extends StatelessWidget {
           width: 100,
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
           ),
         ),
-        Text(
-          ": ",
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(": ", style: TextStyle(fontSize: 14, color: Colors.grey[600])),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500),
           ),
         ),
       ],
@@ -445,26 +353,15 @@ class GardenerInfoPopup extends StatelessWidget {
       SnackBar(
         content: Row(
           children: [
-            Icon(
-              Icons.info,
-              color: Colors.white,
-              size: 20,
-            ),
+            Icon(Icons.info, color: Colors.white, size: 20),
             SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                "Xem thêm thông tin về $gardenName",
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
+            Expanded(child: Text("Xem thêm thông tin về $gardenName", style: TextStyle(fontSize: 14))),
           ],
         ),
         backgroundColor: Color(0xFF4CAF50),
         duration: Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cfv_mobile/map_parser.dart';
 import 'package:flutter/material.dart';
 

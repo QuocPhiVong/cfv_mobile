@@ -5,11 +5,8 @@ import 'dart:async';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String phoneNumber;
-  
-  const OtpVerificationScreen({
-    Key? key,
-    required this.phoneNumber,
-  }) : super(key: key);
+
+  const OtpVerificationScreen({super.key, required this.phoneNumber});
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -73,23 +70,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       String otpCode = _getOtpCode();
       // TODO: Implement actual OTP verification logic
       print('Verifying OTP: $otpCode');
-      
+
       // Show success message and navigate to next screen
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Xác thực thành công!'),
-          backgroundColor: Colors.teal.shade600,
-        ),
-      );
-      
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text('Xác thực thành công!'), backgroundColor: Colors.teal.shade600));
+
       // Navigate to main app or login screen
       Navigator.push(context, MaterialPageRoute(builder: (context) => FinishProfileScreen()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Vui lòng nhập đầy đủ mã OTP'),
-          backgroundColor: Colors.red.shade600,
-        ),
+        SnackBar(content: const Text('Vui lòng nhập đầy đủ mã OTP'), backgroundColor: Colors.red.shade600),
       );
     }
   }
@@ -98,14 +89,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (_canResend) {
       // TODO: Implement actual resend OTP logic
       print('Resending OTP to ${widget.phoneNumber}');
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Mã OTP đã được gửi lại'),
-          backgroundColor: Colors.teal.shade600,
-        ),
-      );
-      
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: const Text('Mã OTP đã được gửi lại'), backgroundColor: Colors.teal.shade600));
+
       _startResendTimer();
     }
   }
@@ -123,11 +111,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         ),
         title: const Text(
           'Xác thực số điện thoại',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: false,
       ),
@@ -136,32 +120,24 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         child: Column(
           children: [
             const SizedBox(height: 60),
-            
+
             // Phone number display
             Text(
               widget.phoneNumber,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Description text
             Text(
               'Nhập mã OTP đã được gửi thông qua SMS để hoàn tất đăng ký tài khoản của bạn',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-                height: 1.4,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.4),
             ),
-            
+
             const SizedBox(height: 60),
-            
+
             // OTP input boxes
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -171,9 +147,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   height: 55,
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: _controllers[index].text.isNotEmpty 
-                          ? Colors.teal.shade600 
-                          : Colors.grey.shade300,
+                      color: _controllers[index].text.isNotEmpty ? Colors.teal.shade600 : Colors.grey.shade300,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(8),
@@ -184,17 +158,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     maxLength: 1,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      counterText: '',
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                    ],
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    decoration: const InputDecoration(border: InputBorder.none, counterText: ''),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     onChanged: (value) {
                       setState(() {
                         _onDigitChanged(value, index);
@@ -214,45 +180,32 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 );
               }),
             ),
-            
+
             const SizedBox(height: 40),
-            
+
             // Resend OTP text
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'Bạn vẫn chưa nhận được mã xác nhận? ',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                 ),
                 if (_canResend)
                   GestureDetector(
                     onTap: _resendOtp,
                     child: Text(
                       'Gửi lại',
-                      style: TextStyle(
-                        color: Colors.teal.shade600,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(color: Colors.teal.shade600, fontSize: 14, fontWeight: FontWeight.w600),
                     ),
                   )
                 else
-                  Text(
-                    'Gửi lại ($_resendTimer)',
-                    style: TextStyle(
-                      color: Colors.grey.shade400,
-                      fontSize: 14,
-                    ),
-                  ),
+                  Text('Gửi lại ($_resendTimer)', style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
               ],
             ),
-            
+
             const Spacer(),
-            
+
             // Verify button
             Padding(
               padding: const EdgeInsets.only(bottom: 40),
@@ -265,18 +218,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     backgroundColor: Colors.teal.shade600,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     disabledBackgroundColor: Colors.grey.shade300,
                   ),
-                  child: const Text(
-                    'Xác thực',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: const Text('Xác thực', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ),

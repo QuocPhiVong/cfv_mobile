@@ -5,7 +5,6 @@ import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/appointment/create_appointment.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
-import 'package:cfv_mobile/screens/gardener/gardener_profile.dart';
 import 'package:cfv_mobile/screens/product/review_list.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -365,7 +364,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                         child: ElevatedButton.icon(
                                           onPressed: () {
                                             Navigator.push(
-                                              context, 
+                                              context,
                                               MaterialPageRoute(
                                                 builder: (context) => CreateAppointmentScreen(
                                                   gardenerData: GardenerData(
@@ -378,7 +377,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                                     // address: productController.product.value?.gardenerAddress ?? '',
                                                   ),
                                                 ),
-                                              )
+                                              ),
                                             );
                                           },
                                           icon: const Icon(Icons.calendar_today, size: 18),

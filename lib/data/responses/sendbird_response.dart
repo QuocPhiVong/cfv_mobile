@@ -1,4 +1,4 @@
-import 'package:sendbird_sdk/sendbird_sdk.dart';
+import 'package:sendbird_chat_sdk/sendbird_chat_sdk.dart';
 
 class ChatMessage {
   final String id;
@@ -23,7 +23,7 @@ class ChatMessage {
     return ChatMessage(
       id: message.messageId.toString(),
       text: message is UserMessage ? message.message : '',
-      isMe: message.sender?.userId == SendbirdSdk().currentUser?.userId,
+      isMe: message.sender?.userId == SendbirdChat.currentUser?.userId,
       timestamp: DateTime.fromMillisecondsSinceEpoch(message.createdAt),
       senderId: message.sender?.userId,
       senderName: message.sender?.nickname,
@@ -72,7 +72,7 @@ class Conversation {
 
     return Conversation(
       id: channel.channelUrl,
-      title: (channel.name?.isNotEmpty ?? false) ? channel.name! : 'Cuộc trò chuyện',
+      title: channel.name.isNotEmpty ? channel.name : 'Cuộc trò chuyện',
       lastMessage: lastMessageText,
       lastMessageTime: channel.lastMessage != null
           ? DateTime.fromMillisecondsSinceEpoch(channel.lastMessage!.createdAt)

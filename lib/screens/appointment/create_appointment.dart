@@ -1,7 +1,6 @@
 import 'package:cfv_mobile/controller/create_appointment_controller.dart';
 import 'package:cfv_mobile/data/services/storage_service.dart';
 import 'package:cfv_mobile/screens/appointment/appointment_success.dart';
-import 'package:cfv_mobile/controller/appointment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,8 +18,7 @@ class CreateAppointmentScreen extends StatefulWidget {
   const CreateAppointmentScreen({super.key, this.gardenerData});
 
   @override
-  State<CreateAppointmentScreen> createState() =>
-      _CreateAppointmentScreenState();
+  State<CreateAppointmentScreen> createState() => _CreateAppointmentScreenState();
 }
 
 class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
@@ -69,11 +67,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         ),
         title: const Text(
           'Tạo lịch hẹn',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -88,11 +82,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                   // Appointment Information Section
                   const Text(
                     'Thông tin lịch hẹn',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
 
@@ -139,10 +129,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                             children: _subjectSuggestions.map((suggestion) {
                               return ListTile(
                                 dense: true,
-                                title: Text(
-                                  suggestion,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
+                                title: Text(suggestion, style: const TextStyle(fontSize: 14)),
                                 onTap: () {
                                   _subjectController.text = suggestion;
                                   setState(() {
@@ -162,21 +149,14 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                   // Garden information
                   _buildInfoRow('Tên vườn', widget.gardenerData?.name ?? 'Vườn Xanh Miền Tây'),
                   _buildInfoRow('Số điện thoại', widget.gardenerData?.phone ?? '0901 234 567'),
-                  _buildInfoRow(
-                    'Địa chỉ cụ thể',
-                    widget.gardenerData?.address ?? '123 Đường Cần Thơ, An Giang' ,
-                  ),
+                  _buildInfoRow('Địa chỉ cụ thể', widget.gardenerData?.address ?? '123 Đường Cần Thơ, An Giang'),
 
                   const SizedBox(height: 32),
 
                   // Time Section
                   const Text(
                     'Thời gian',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
 
@@ -193,42 +173,26 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.calendar_today,
-                            color: Colors.grey.shade600,
-                            size: 20,
-                          ),
+                          Icon(Icons.calendar_today, color: Colors.grey.shade600, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Ngày',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
+                                Text('Ngày', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                                 Text(
                                   _selectedDate != null
                                       ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
                                       : 'Chọn ngày',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: _selectedDate != null
-                                        ? Colors.black87
-                                        : Colors.grey.shade500,
+                                    color: _selectedDate != null ? Colors.black87 : Colors.grey.shade500,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.grey.shade400,
-                            size: 16,
-                          ),
+                          Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 16),
                         ],
                       ),
                     ),
@@ -249,42 +213,26 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.access_time,
-                            color: Colors.grey.shade600,
-                            size: 20,
-                          ),
+                          Icon(Icons.access_time, color: Colors.grey.shade600, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Thời gian bắt đầu',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
+                                Text('Thời gian bắt đầu', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                                 Text(
                                   _selectedTime != null
                                       ? '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}'
                                       : 'Chọn giờ',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: _selectedTime != null
-                                        ? Colors.black87
-                                        : Colors.grey.shade500,
+                                    color: _selectedTime != null ? Colors.black87 : Colors.grey.shade500,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.grey.shade400,
-                            size: 16,
-                          ),
+                          Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 16),
                         ],
                       ),
                     ),
@@ -303,24 +251,14 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.timer,
-                          color: Colors.grey.shade600,
-                          size: 20,
-                        ),
+                        Icon(Icons.timer, color: Colors.grey.shade600, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 8),
-                              Text(
-                                'Thời lượng',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
+                              Text('Thời lượng', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                               DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   value: _selectedDuration,
@@ -328,13 +266,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                                   items: _durationOptions.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(
-                                        value,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
+                                      child: Text(value, style: const TextStyle(fontSize: 16, color: Colors.black87)),
                                     );
                                   }).toList(),
                                   onChanged: (String? newValue) {
@@ -366,24 +298,14 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.video_call,
-                          color: Colors.grey.shade600,
-                          size: 20,
-                        ),
+                        Icon(Icons.video_call, color: Colors.grey.shade600, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 8),
-                              Text(
-                                'Hình thức',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
+                              Text('Hình thức', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                               DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   value: _selectedMethod,
@@ -391,13 +313,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                                   items: _methodOptions.map((String value) {
                                     return DropdownMenuItem<String>(
                                       value: value,
-                                      child: Text(
-                                        value,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
+                                      child: Text(value, style: const TextStyle(fontSize: 16, color: Colors.black87)),
                                     );
                                   }).toList(),
                                   onChanged: (String? newValue) {
@@ -421,11 +337,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                   // Description Section
                   const Text(
                     'Mô tả chi tiết',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   const SizedBox(height: 16),
 
@@ -496,7 +408,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                   }
                   return const SizedBox.shrink();
                 }),
-                
+
                 // Create button
                 SizedBox(
                   width: double.infinity,
@@ -507,9 +419,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                         backgroundColor: Colors.green.shade600,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         disabledBackgroundColor: Colors.grey.shade400,
                       ),
                       child: _appointmentController.isCreating.value
@@ -525,16 +435,10 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
                                   ),
                                 ),
                                 SizedBox(width: 8),
-                                Text(
-                                  'Đang tạo...',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                ),
+                                Text('Đang tạo...', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                               ],
                             )
-                          : const Text(
-                              'Tạo lịch hẹn',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
+                          : const Text('Tạo lịch hẹn', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     );
                   }),
                 ),
@@ -554,23 +458,13 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         children: [
           SizedBox(
             width: 120,
-            child: Text(
-              label,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-            ),
+            child: Text(label, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
           ),
-          const Text(
-            ': ',
-            style: TextStyle(fontSize: 14, color: Colors.black87),
-          ),
+          const Text(': ', style: TextStyle(fontSize: 14, color: Colors.black87)),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -593,10 +487,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   }
 
   Future<void> _selectTime() async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
+    final TimeOfDay? picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
     if (picked != null && picked != _selectedTime) {
       setState(() {
         _selectedTime = picked;
@@ -663,7 +554,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
           'phone': widget.gardenerData?.phone ?? '',
           'address': widget.gardenerData?.address ?? '',
           'date': '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-          'startTime': '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
+          'startTime':
+              '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}',
           'duration': _selectedDuration,
           'method': _selectedMethod,
           'description': _descriptionController.text,
@@ -673,9 +565,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         // Navigate to success screen
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => AppointmentSuccessScreen(appointmentData: appointmentData),
-          ),
+          MaterialPageRoute(builder: (context) => AppointmentSuccessScreen(appointmentData: appointmentData)),
         );
       }
     } catch (e) {

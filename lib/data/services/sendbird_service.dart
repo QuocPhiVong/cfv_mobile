@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:sendbird_sdk/sendbird_sdk.dart';
+import 'package:sendbird_chat_sdk/sendbird_chat_sdk.dart';
 
 import '../../controller/auth_controller.dart';
 import '../responses/sendbird_response.dart';
@@ -13,8 +13,6 @@ class SendbirdService {
   SendbirdService._();
 
   static const String _applicationId = '76B840AB-32EE-4792-B6C7-98FC3101C9D7';
-  static const String _apiToken = 'e4287fa793034582f027ac596bf2e1848faaec17';
-  static const String _apiHost = 'api-76B840AB-32EE-4792-B6C7-98FC3101C9D7.sendbird.com';
 
   static const int _pollingIntervalSeconds = 3;
   static const int _maxMessagesPerRequest = 50;
@@ -35,10 +33,10 @@ class SendbirdService {
     if (_isInitialized) return;
 
     try {
-      debugPrint('🚀 Initializing Sendbird SDK...');
-      SendbirdSdk(appId: _applicationId, apiToken: _apiToken);
+      debugPrint('🚀 Initializing Sendbird Chat SDK...');
+      await SendbirdChat.init(appId: _applicationId);
       _isInitialized = true;
-      debugPrint('✅ Sendbird SDK initialized successfully!');
+      debugPrint('✅ Sendbird Chat SDK initialized successfully!');
     } catch (e) {
       debugPrint('❌ Failed to initialize Sendbird: $e');
       rethrow;
@@ -49,16 +47,16 @@ class SendbirdService {
     if (!_isInitialized) await initialize();
 
     try {
-      if (_isUserConnected && SendbirdSdk().currentUser?.userId == userId) {
+      if (_isUserConnected && SendbirdChat.currentUser?.userId == userId) {
         debugPrint('✅ User already connected: $userId');
         return true;
       }
 
       debugPrint('🔄 Connecting user: $userId...');
-      await SendbirdSdk().connect(userId, nickname: nickname, apiHost: _apiHost);
+      await SendbirdChat.connect(userId, nickname: nickname);
       _isUserConnected = true;
 
-      final currentUser = SendbirdSdk().currentUser;
+      final currentUser = SendbirdChat.currentUser;
       debugPrint('✅ User connected: ${currentUser?.userId} (${currentUser?.nickname})');
       return true;
     } catch (e) {
@@ -84,7 +82,7 @@ class SendbirdService {
         return await _ensureUserConnected();
       }
 
-      final currentUser = SendbirdSdk().currentUser;
+      final currentUser = SendbirdChat.currentUser;
       if (currentUser == null || currentUser.userId.isEmpty) {
         debugPrint('🔄 Current user invalid, reconnecting...');
         _isUserConnected = false;
@@ -156,7 +154,10 @@ class SendbirdService {
     } catch (e) {
       try {
         debugPrint('📝 Creating new channel: $channelUrl');
-        return await GroupChannel.createChannel(GroupChannelParams()..channelUrl = channelUrl);
+        final params = GroupChannelCreateParams()
+          ..channelUrl = channelUrl
+          ..name = 'Chat Channel';
+        return await GroupChannel.createChannel(params);
       } catch (createError) {
         debugPrint('❌ Failed to create channel: $createError');
         return null;
@@ -171,23 +172,28 @@ class SendbirdService {
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
       var messages = await channel.getMessagesByTimestamp(currentTimestamp, params);
 
-      if (messages.length < limit * 0.5) {
+      // Convert to BaseMessage list safely
+      final baseMessages = messages.whereType<BaseMessage>().toList();
+
+      if (baseMessages.length < limit * 0.5) {
         final timeRanges = [Duration(minutes: 30), Duration(hours: 2), Duration(hours: 24)];
 
         for (final range in timeRanges) {
           final timestamp = DateTime.now().subtract(range).millisecondsSinceEpoch;
           final moreMessages = await channel.getMessagesByTimestamp(timestamp, params);
 
-          if (moreMessages.length > messages.length) {
-            messages = moreMessages;
-            debugPrint('📚 Loaded ${messages.length} messages from ${range.inHours}h ago');
+          final moreBaseMessages = moreMessages.whereType<BaseMessage>().toList();
+          if (moreBaseMessages.length > baseMessages.length) {
+            baseMessages.clear();
+            baseMessages.addAll(moreBaseMessages);
+            debugPrint('📚 Loaded ${baseMessages.length} messages from ${range.inHours}h ago');
           }
 
-          if (messages.length >= limit * 0.8) break;
+          if (baseMessages.length >= limit * 0.8) break;
         }
       }
 
-      return messages;
+      return baseMessages;
     } catch (e) {
       debugPrint('❌ Failed to load messages: $e');
       return [];
@@ -225,9 +231,10 @@ class SendbirdService {
       final params = _createMessageParams(limit);
       final olderMessages = await channel.getMessagesByTimestamp(oldestTimestamp, params);
 
-      if (olderMessages.isEmpty) return [];
+      final baseMessages = olderMessages.whereType<BaseMessage>().toList();
+      if (baseMessages.isEmpty) return [];
 
-      final chatMessages = _convertToChatMessages(olderMessages);
+      final chatMessages = _convertToChatMessages(baseMessages);
       _sortMessages(chatMessages);
 
       if (chatMessages.isNotEmpty) {
@@ -252,7 +259,7 @@ class SendbirdService {
 
       debugPrint('📤 Sending message to: $channelUrl');
       final channel = await GroupChannel.getChannel(channelUrl);
-      final params = UserMessageParams(message: text.trim());
+      final params = UserMessageCreateParams(message: text.trim());
       final userMessage = channel.sendUserMessage(params);
 
       debugPrint('✅ Message sent: ${userMessage.messageId}');
@@ -281,11 +288,12 @@ class SendbirdService {
     try {
       debugPrint('🔄 Loading conversations...');
       final query = GroupChannelListQuery()..limit = 20;
-      final channels = await query.loadNext();
+      final channels = await query.next();
 
-      final conversations = channels.map((channel) => Conversation.fromSendbird(channel)).toList();
+      // Handle different possible return types from the new SDK
+      final groupChannels = channels.whereType<GroupChannel>().toList();
+      final conversations = groupChannels.map((channel) => Conversation.fromSendbird(channel)).toList();
       conversations.sort((a, b) => _compareConversationTime(a, b));
-
       debugPrint('✅ Loaded ${conversations.length} conversations');
       return conversations;
     } catch (e) {
@@ -338,14 +346,13 @@ class SendbirdService {
       final params = _createMessageParams(_batchSize);
       final latestMessages = await channel.getMessagesByTimestamp(lastTimestamp, params);
 
-      if (latestMessages.isNotEmpty) {
-        final newMessages = latestMessages.where((msg) => msg.createdAt > lastTimestamp).toList();
+      final baseMessages = latestMessages.whereType<BaseMessage>().toList();
+      final newMessages = baseMessages.where((msg) => msg.createdAt > lastTimestamp).toList();
 
-        if (newMessages.isNotEmpty) {
-          _lastMessageTimestamps[channelUrl] = newMessages.first.createdAt;
-          final chatMessages = _convertToChatMessages(newMessages);
-          _addToBatch(channelUrl, chatMessages);
-        }
+      if (newMessages.isNotEmpty) {
+        _lastMessageTimestamps[channelUrl] = newMessages.first.createdAt;
+        final chatMessages = _convertToChatMessages(newMessages);
+        _addToBatch(channelUrl, chatMessages);
       }
     } catch (e) {
       debugPrint('❌ Error in polling: $e');
@@ -406,14 +413,14 @@ class SendbirdService {
         throw Exception('Invalid conversation title (1-100 characters)');
       }
 
-      final currentUserId = SendbirdSdk().currentUser?.userId;
+      final currentUserId = SendbirdChat.currentUser?.userId;
       if (currentUserId == null || currentUserId.isEmpty) {
         throw Exception('User not authenticated');
       }
 
       debugPrint('🆕 Creating conversation: $title');
 
-      final params = GroupChannelParams()
+      final params = GroupChannelCreateParams()
         ..name = title.trim()
         ..userIds = [currentUserId]
         ..isDistinct = false

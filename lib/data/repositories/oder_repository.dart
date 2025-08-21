@@ -1,4 +1,3 @@
-import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/data/responses/order_deliveries_response.dart';
 import 'package:cfv_mobile/data/responses/oder_response.dart';
@@ -70,7 +69,7 @@ class OderRepository extends GetxController {
       throw Exception(e);
     }
   }
-  
+
   Future<OrderDeliveriesResponse> getOrderDeliveries(String id) async {
     try {
       final response = await _apiService.get('/orders/$id/order-deliveries');

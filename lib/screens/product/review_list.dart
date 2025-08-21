@@ -4,11 +4,7 @@ class ReviewListScreen extends StatefulWidget {
   final String? productName;
   final String? productId;
 
-  const ReviewListScreen({
-    Key? key,
-    this.productName,
-    this.productId,
-  }) : super(key: key);
+  const ReviewListScreen({super.key, this.productName, this.productId});
 
   @override
   State<ReviewListScreen> createState() => _ReviewListScreenState();
@@ -17,7 +13,7 @@ class ReviewListScreen extends StatefulWidget {
 class _ReviewListScreenState extends State<ReviewListScreen> {
   String selectedFilter = 'Tất cả';
   String selectedSort = 'Mới nhất';
-  
+
   final List<String> filterOptions = ['Tất cả', '5 sao', '4 sao', '3 sao', '2 sao', '1 sao'];
   final List<String> sortOptions = ['Mới nhất', 'Cũ nhất', 'Đánh giá cao', 'Đánh giá thấp'];
 
@@ -48,7 +44,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
       'userName': 'Lê Thị C',
       'rating': 5.0,
       'timeAgo': '2 tuần trước',
-      'comment': 'Rau rất tươi ngon, không có lá héo. Vườn này trồng rau sạch thật sự. Tôi đã mua nhiều lần và luôn hài lòng.',
+      'comment':
+          'Rau rất tươi ngon, không có lá héo. Vườn này trồng rau sạch thật sự. Tôi đã mua nhiều lần và luôn hài lòng.',
       'purchase': 'Đã mua: Xà lách xoong tươi (3kg)',
       'helpful': 15,
       'images': ['image3.jpg'],
@@ -87,7 +84,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
 
   List<Map<String, dynamic>> get filteredReviews {
     List<Map<String, dynamic>> filtered = List.from(reviews);
-    
+
     // Apply rating filter
     if (selectedFilter != 'Tất cả') {
       int targetRating = int.parse(selectedFilter.split(' ')[0]);
@@ -95,7 +92,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
         return review['rating'].floor() == targetRating;
       }).toList();
     }
-    
+
     // Apply sorting
     switch (selectedSort) {
       case 'Mới nhất':
@@ -111,7 +108,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
         filtered.sort((a, b) => a['rating'].compareTo(b['rating']));
         break;
     }
-    
+
     return filtered;
   }
 
@@ -143,11 +140,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
         ),
         title: Text(
           'Đánh giá sản phẩm',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
       ),
@@ -169,11 +162,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                         children: [
                           Text(
                             averageRating.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
+                            style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.black87),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -182,8 +171,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                                 index < averageRating.floor()
                                     ? Icons.star
                                     : index < averageRating
-                                        ? Icons.star_half
-                                        : Icons.star_border,
+                                    ? Icons.star_half
+                                    : Icons.star_border,
                                 color: Colors.orange,
                                 size: 20,
                               );
@@ -192,10 +181,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                           const SizedBox(height: 4),
                           Text(
                             '${reviews.length} đánh giá',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                            ),
+                            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
                           ),
                         ],
                       ),
@@ -226,10 +212,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                                     width: 20,
                                     child: Text(
                                       '${ratingDistribution[i] ?? 0}',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade600,
-                                      ),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                     ),
                                   ),
                                 ],
@@ -243,7 +226,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               ],
             ),
           ),
-          
+
           // Filter and sort options
           Container(
             color: Colors.white,
@@ -263,10 +246,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                         value: selectedFilter,
                         isExpanded: true,
                         items: filterOptions.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
+                          return DropdownMenuItem<String>(value: value, child: Text(value));
                         }).toList(),
                         onChanged: (String? newValue) {
                           setState(() {
@@ -291,10 +271,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                         value: selectedSort,
                         isExpanded: true,
                         items: sortOptions.map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
+                          return DropdownMenuItem<String>(value: value, child: Text(value));
                         }).toList(),
                         onChanged: (String? newValue) {
                           setState(() {
@@ -308,9 +285,9 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Reviews list
           Expanded(
             child: ListView.builder(
@@ -335,12 +312,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -353,15 +325,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
               Container(
                 width: 40,
                 height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.green.shade100,
-                ),
-                child: Icon(
-                  Icons.person,
-                  color: Colors.green.shade600,
-                  size: 20,
-                ),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
+                child: Icon(Icons.person, color: Colors.green.shade600, size: 20),
               ),
               const SizedBox(width: 12),
               // Name and rating
@@ -371,11 +336,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                   children: [
                     Text(
                       review['userName'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
                     ),
                     Row(
                       children: [
@@ -385,8 +346,8 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                               index < review['rating'].floor()
                                   ? Icons.star
                                   : index < review['rating']
-                                      ? Icons.star_half
-                                      : Icons.star_border,
+                                  ? Icons.star_half
+                                  : Icons.star_border,
                               color: Colors.orange,
                               size: 16,
                             );
@@ -395,11 +356,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                         const SizedBox(width: 8),
                         Text(
                           review['rating'].toString(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
                         ),
                       ],
                     ),
@@ -407,40 +364,23 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                 ),
               ),
               // Time
-              Text(
-                review['timeAgo'],
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-              ),
+              Text(review['timeAgo'], style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Review comment
-          Text(
-            review['comment'],
-            style: const TextStyle(
-              fontSize: 15,
-              color: Colors.black87,
-              height: 1.5,
-            ),
-          ),
-          
+          Text(review['comment'], style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.5)),
+
           const SizedBox(height: 12),
-          
+
           // Purchase info
           Text(
             review['purchase'],
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
-            ),
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
           ),
-          
+
           // Review images (if any)
           if (review['images'].isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -454,33 +394,20 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                     width: 80,
                     height: 80,
                     margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.image,
-                      color: Colors.grey.shade500,
-                      size: 30,
-                    ),
+                    decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
+                    child: Icon(Icons.image, color: Colors.grey.shade500, size: 30),
                   );
                 },
               ),
             ),
           ],
-          
+
           const SizedBox(height: 16),
-          
+
           // Helpful section
           Row(
             children: [
-              Text(
-                'Hữu ích?',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
-                ),
-              ),
+              Text('Hữu ích?', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
               const SizedBox(width: 12),
               GestureDetector(
                 onTap: () {
@@ -488,19 +415,9 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                 },
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.thumb_up_outlined,
-                      size: 16,
-                      color: Colors.grey.shade600,
-                    ),
+                    Icon(Icons.thumb_up_outlined, size: 16, color: Colors.grey.shade600),
                     const SizedBox(width: 4),
-                    Text(
-                      '${review['helpful']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
+                    Text('${review['helpful']}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
                   ],
                 ),
               ),
@@ -509,13 +426,7 @@ class _ReviewListScreenState extends State<ReviewListScreen> {
                 onTap: () {
                   // Handle report action
                 },
-                child: Text(
-                  'Báo cáo',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
+                child: Text('Báo cáo', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
               ),
             ],
           ),
