@@ -14,7 +14,6 @@ class SendbirdController extends GetxController {
   final RxBool isUserConnected = false.obs;
   final RxBool isLoading = false.obs;
   final RxBool isSending = false.obs;
-  final RxBool isTyping = false.obs;
   final RxString connectionStatus = 'Disconnected'.obs;
   final RxString currentConversationId = ''.obs;
 
@@ -25,7 +24,6 @@ class SendbirdController extends GetxController {
 
   // Streams and timers
   StreamSubscription<ChatMessage>? _messageSubscription;
-  Timer? _typingTimer;
 
   // Message tracking
   final Set<String> _processedMessageIds = <String>{};
@@ -291,8 +289,12 @@ class SendbirdController extends GetxController {
             }
 
             // Messages are already in correct order from service (oldest first)
+            // Double-check ordering to ensure chronological sequence
+            updatedMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
             messages.value = updatedMessages;
             debugPrint('📚 Added ${moreMessages.length} older messages. Total: ${messages.length}');
+            debugPrint('📚 Message order verified: ${messages.first.timestamp} to ${messages.last.timestamp}');
           }
         });
       } else {
@@ -333,6 +335,10 @@ class SendbirdController extends GetxController {
 
                 // Sort messages by timestamp to maintain chronological order
                 _sortMessages();
+
+                debugPrint('📨 New message added: ${message.text} at ${message.timestamp}');
+              } else {
+                debugPrint('📨 Duplicate message ignored: ${message.id}');
               }
 
               // Update conversation last message
@@ -348,19 +354,21 @@ class SendbirdController extends GetxController {
               }
             },
             onError: (error) {
+              debugPrint('❌ Message stream error: $error');
               // Attempt to resubscribe after error
               Future.delayed(Duration(seconds: 2), () {
                 if (currentConversationId.value.isNotEmpty && !isClosed) {
+                  debugPrint('🔄 Attempting to resubscribe to messages...');
                   _subscribeToMessages(currentConversationId.value);
                 }
               });
             },
             onDone: () {
-              // Message stream closed
+              debugPrint('📨 Message stream closed for channel: $channelUrl');
             },
           );
     } catch (e) {
-      // Failed to subscribe to messages
+      debugPrint('❌ Failed to subscribe to messages: $e');
     }
   }
 
@@ -376,8 +384,16 @@ class SendbirdController extends GetxController {
   }
 
   void _sortMessages() {
-    // Sort messages by timestamp (oldest first)
-    messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    // Sort messages by timestamp (oldest first) to maintain chronological order
+    if (messages.length > 1) {
+      final beforeSort = messages.map((m) => '${m.timestamp}: ${m.text}').take(3).toList();
+      debugPrint('📚 Before sorting: ${beforeSort.join(' | ')}');
+
+      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+      final afterSort = messages.map((m) => '${m.timestamp}: ${m.text}').take(3).toList();
+      debugPrint('📚 After sorting: ${afterSort.join(' | ')}');
+    }
   }
 
   Future<void> sendMessage(String text) async {
@@ -651,41 +667,6 @@ class SendbirdController extends GetxController {
     }
   }
 
-  void setTypingStatus(String text) {
-    if (isClosed) return;
-
-    // Cancel existing timer
-    _typingTimer?.cancel();
-
-    if (text.isNotEmpty) {
-      // Use Future.microtask to avoid setState during build
-      Future.microtask(() {
-        if (!isClosed) {
-          isTyping.value = true;
-        }
-      });
-
-      // Set typing to false after 2 seconds of no typing
-      _typingTimer = Timer(Duration(seconds: 2), () {
-        if (!isClosed) {
-          // Use Future.microtask to avoid setState during build
-          Future.microtask(() {
-            if (!isClosed) {
-              isTyping.value = false;
-            }
-          });
-        }
-      });
-    } else {
-      // Use Future.microtask to avoid setState during build
-      Future.microtask(() {
-        if (!isClosed) {
-          isTyping.value = false;
-        }
-      });
-    }
-  }
-
   void _clearCurrentConversation() {
     if (isClosed) return;
 
@@ -719,10 +700,6 @@ class SendbirdController extends GetxController {
     _messageSubscription?.cancel();
     _messageSubscription = null;
 
-    // Cancel all timers
-    _typingTimer?.cancel();
-    _typingTimer = null;
-
     // Clear all observable values to prevent updates after dispose
     if (!isClosed) {
       messages.clear();
@@ -739,7 +716,6 @@ class SendbirdController extends GetxController {
       isUserConnected.value = false;
       isLoading.value = false;
       isSending.value = false;
-      isTyping.value = false;
       connectionStatus.value = 'Disposed';
     }
 
@@ -757,4 +733,43 @@ class SendbirdController extends GetxController {
   String? get currentConversationLastMessage => currentConversation.value?.lastMessage;
   DateTime? get currentConversationLastMessageTime => currentConversation.value?.lastMessageTime;
   bool get isCurrentConversationOnline => currentConversation.value?.isOnline ?? false;
+
+  // Method to test message ordering for debugging
+  Future<Map<String, dynamic>> testMessageOrdering(String channelUrl) async {
+    try {
+      debugPrint('🧪 Controller: Testing message ordering for channel: $channelUrl');
+
+      final result = await _repository.testMessageOrdering(channelUrl);
+
+      // Add controller-specific checks
+      result['controllerMessagesCount'] = messages.length;
+      result['controllerMessagesOrdered'] = _areMessagesOrdered();
+
+      if (messages.isNotEmpty) {
+        result['controllerFirstTime'] = messages.first.timestamp.toString();
+        result['controllerLastTime'] = messages.last.timestamp.toString();
+      }
+
+      debugPrint('🧪 Controller test completed: ${result.toString()}');
+      return result;
+    } catch (e) {
+      debugPrint('❌ Controller test failed: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  // Helper method to check if controller messages are ordered
+  bool _areMessagesOrdered() {
+    if (messages.length <= 1) return true;
+
+    for (int i = 1; i < messages.length; i++) {
+      if (messages[i].timestamp.isBefore(messages[i - 1].timestamp)) {
+        debugPrint(
+          '⚠️ Controller: Order violation at index $i: ${messages[i].timestamp} < ${messages[i - 1].timestamp}',
+        );
+        return false;
+      }
+    }
+    return true;
+  }
 }

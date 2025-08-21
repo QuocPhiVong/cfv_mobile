@@ -33,13 +33,13 @@ class SendbirdService {
   static const String _apiToken = 'e4287fa793034582f027ac596bf2e1848faaec17';
 
   // Configuration constants
-  static const int _pollingIntervalSeconds = 1; // Giảm từ 2 xuống 1 giây để tăng tốc độ
-  static const int _maxMessagesPerRequest = 50; // Tăng từ 20 lên 50 để load nhiều hơn mỗi lần
+  static const int _pollingIntervalSeconds = 3; // Tăng từ 1 lên 3 giây để giảm tải và tránh nhảy UI
+  static const int _maxMessagesPerRequest = 50; // Giữ nguyên
   static const int _connectionCheckIntervalSeconds = 60; // Giữ nguyên
-  static const int _batchSize = 20; // Tăng batch size để xử lý nhiều tin nhắn hơn
-  static const int _maxBatchDelay = 100; // Giảm delay từ 200ms xuống 100ms để tăng tốc độ
-  static const int _maxRetries = 1; // Giảm từ 2 xuống 1 lần retry để tăng tốc độ
-  static const int _retryDelay = 100; // Giảm delay retry từ 200ms xuống 100ms
+  static const int _batchSize = 10; // Giảm batch size để xử lý nhanh hơn
+  static const int _maxBatchDelay = 200; // Tăng delay để tích lũy nhiều tin nhắn hơn
+  static const int _maxRetries = 1; // Giữ nguyên
+  static const int _retryDelay = 100; // Giữ nguyên
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -291,61 +291,26 @@ class SendbirdService {
         }
       }
 
-      // Load messages with correct parameters - try multiple approaches
+      // Load messages with correct parameters - use consistent approach
       List<BaseMessage> messages = [];
 
-      // Approach 1: Try loading recent messages first (most likely to work)
       try {
-        final recentParams = MessageListParams()
+        final params = MessageListParams()
           ..previousResultSize = limit
           ..reverse =
-              true // Use reverse=true for recent messages
+              false // Use reverse=false for consistent ordering
           ..includeReactions = false
           ..includeThreadInfo = false
           ..includeParentMessageInfo = false
           ..includeMetaArray = false;
 
+        // Load from current time to get recent messages
         final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-        messages = await channel.getMessagesByTimestamp(currentTimestamp, recentParams);
+        messages = await channel.getMessagesByTimestamp(currentTimestamp, params);
         debugPrint('✅ Successfully loaded ${messages.length} recent messages');
       } catch (e) {
         debugPrint('⚠️ Failed to load recent messages: $e');
-
-        // Approach 2: Try loading from a specific timestamp
-        try {
-          final specificParams = MessageListParams()
-            ..previousResultSize = limit
-            ..reverse = true
-            ..includeReactions = false
-            ..includeThreadInfo = false
-            ..includeParentMessageInfo = false
-            ..includeMetaArray = false;
-
-          // Try from 1 hour ago
-          final oneHourAgo = DateTime.now().subtract(Duration(hours: 1)).millisecondsSinceEpoch;
-          messages = await channel.getMessagesByTimestamp(oneHourAgo, specificParams);
-          debugPrint('✅ Successfully loaded ${messages.length} messages from 1 hour ago');
-        } catch (e2) {
-          debugPrint('⚠️ Failed to load from 1 hour ago: $e2');
-
-          // Approach 3: Try loading from beginning with different params
-          try {
-            final beginningParams = MessageListParams()
-              ..previousResultSize = limit
-              ..reverse = true
-              ..includeReactions = false
-              ..includeThreadInfo = false
-              ..includeParentMessageInfo = false
-              ..includeMetaArray = false;
-
-            final beginningTimestamp = DateTime(2020, 1, 1).millisecondsSinceEpoch;
-            messages = await channel.getMessagesByTimestamp(beginningTimestamp, beginningParams);
-            debugPrint('✅ Successfully loaded ${messages.length} messages from beginning');
-          } catch (e3) {
-            debugPrint('❌ All loading approaches failed: $e3');
-            return [];
-          }
-        }
+        return [];
       }
 
       if (messages.isEmpty) {
@@ -360,23 +325,14 @@ class SendbirdService {
           .cast<ChatMessage>()
           .toList();
 
-      // With reverse=true, messages are already in correct order (oldest first)
-      // But let's double-check and sort if needed
+      // With reverse=false, messages are in chronological order (oldest first)
+      // Double-check and ensure correct ordering
       if (chatMessages.length > 1) {
-        final firstTime = chatMessages.first.timestamp;
-        final lastTime = chatMessages.last.timestamp;
-
-        if (firstTime.isAfter(lastTime)) {
-          // Messages are in wrong order, sort them
-          chatMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-          debugPrint(
-            '📚 Messages were in wrong order, sorted: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
-          );
-        } else {
-          debugPrint(
-            '📚 Messages are already in correct order: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
-          );
-        }
+        // Sort by timestamp to ensure chronological order
+        chatMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        debugPrint(
+          '📚 Messages sorted chronologically: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
+        );
       }
 
       // Update timestamp for smart polling (use newest message)
@@ -419,7 +375,7 @@ class SendbirdService {
       final params = MessageListParams()
         ..previousResultSize = limit
         ..reverse =
-            true // Use reverse=true for consistency
+            false // Use reverse=false for consistency
         ..includeReactions = false
         ..includeThreadInfo = false
         ..includeParentMessageInfo = false
@@ -437,22 +393,12 @@ class SendbirdService {
 
       final chatMessages = olderMessages.map((msg) => ChatMessage.fromSendbird(msg)).toList();
 
-      // With reverse=true, messages should be in correct order, but verify
+      // Ensure messages are in chronological order
       if (chatMessages.length > 1) {
-        final firstTime = chatMessages.first.timestamp;
-        final lastTime = chatMessages.last.timestamp;
-
-        if (firstTime.isAfter(lastTime)) {
-          // Messages are in wrong order, sort them
-          chatMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-          debugPrint(
-            '📚 Older messages were in wrong order, sorted: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
-          );
-        } else {
-          debugPrint(
-            '📚 Older messages are already in correct order: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
-          );
-        }
+        chatMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        debugPrint(
+          '📚 Older messages sorted chronologically: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
+        );
       }
 
       // Update timestamp to the oldest message for next pagination
@@ -610,7 +556,7 @@ class SendbirdService {
       final params = MessageListParams()
         ..previousResultSize = _batchSize
         ..reverse =
-            true // Use reverse=true for consistency
+            false // Use reverse=false for consistency
         ..includeReactions = false
         ..includeThreadInfo = false
         ..includeParentMessageInfo = false
@@ -641,22 +587,12 @@ class SendbirdService {
           // Convert to ChatMessage objects
           final chatMessages = newMessages.map((msg) => ChatMessage.fromSendbird(msg)).toList();
 
-          // With reverse=true, messages should be in correct order, but verify
+          // Ensure messages are in chronological order
           if (chatMessages.length > 1) {
-            final firstTime = chatMessages.first.timestamp;
-            final lastTime = chatMessages.last.timestamp;
-
-            if (firstTime.isAfter(lastTime)) {
-              // Messages are in wrong order, sort them
-              chatMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-              debugPrint(
-                '📨 New messages were in wrong order, sorted: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
-              );
-            } else {
-              debugPrint(
-                '📨 New messages are already in correct order: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
-              );
-            }
+            chatMessages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+            debugPrint(
+              '📨 New messages sorted chronologically: ${chatMessages.first.timestamp} to ${chatMessages.last.timestamp}',
+            );
           }
 
           // Add to batch for processing
@@ -712,7 +648,9 @@ class SendbirdService {
 
       // Send all messages in batch in correct order
       for (final message in batch) {
-        controller.add(message);
+        if (!controller.isClosed && controller.hasListener) {
+          controller.add(message);
+        }
       }
 
       debugPrint('📨 Processed batch of ${batch.length} messages for channel: $channelUrl');
@@ -1044,6 +982,75 @@ class SendbirdService {
       debugPrint('❌ Error in test message loading: $e');
       return {'error': e.toString()};
     }
+  }
+
+  // Method to test message ordering for debugging
+  Future<Map<String, dynamic>> testMessageOrdering(String channelUrl) async {
+    try {
+      debugPrint('🧪 Testing message ordering for channel: $channelUrl');
+
+      final result = <String, dynamic>{};
+
+      // Test 1: Get chat history
+      try {
+        final history = await getChatHistory(channelUrl, limit: 10);
+        result['historyCount'] = history.length;
+        result['historyOrdered'] = _isListOrdered(history);
+
+        if (history.isNotEmpty) {
+          result['historyFirstTime'] = history.first.timestamp.toString();
+          result['historyLastTime'] = history.last.timestamp.toString();
+        }
+
+        debugPrint('✅ History test: ${history.length} messages, ordered: ${result['historyOrdered']}');
+      } catch (e) {
+        result['historyError'] = e.toString();
+        debugPrint('❌ History test failed: $e');
+      }
+
+      // Test 2: Test pagination
+      try {
+        final moreMessages = await loadMoreMessages(channelUrl, limit: 5);
+        result['paginationCount'] = moreMessages.length;
+        result['paginationOrdered'] = _isListOrdered(moreMessages);
+
+        if (moreMessages.isNotEmpty) {
+          result['paginationFirstTime'] = moreMessages.first.timestamp.toString();
+          result['paginationLastTime'] = moreMessages.last.timestamp.toString();
+        }
+
+        debugPrint('✅ Pagination test: ${moreMessages.length} messages, ordered: ${result['paginationOrdered']}');
+      } catch (e) {
+        result['paginationError'] = e.toString();
+        debugPrint('❌ Pagination test failed: $e');
+      }
+
+      // Test 3: Check timestamp tracking
+      final lastTimestamp = _lastMessageTimestamps[channelUrl];
+      if (lastTimestamp != null) {
+        result['lastTimestamp'] = DateTime.fromMillisecondsSinceEpoch(lastTimestamp).toString();
+        result['lastTimestampMs'] = lastTimestamp;
+      }
+
+      debugPrint('🧪 Message ordering test completed');
+      return result;
+    } catch (e) {
+      debugPrint('❌ Error in test message ordering: $e');
+      return {'error': e.toString()};
+    }
+  }
+
+  // Helper method to check if a list is properly ordered
+  bool _isListOrdered(List<ChatMessage> messages) {
+    if (messages.length <= 1) return true;
+
+    for (int i = 1; i < messages.length; i++) {
+      if (messages[i].timestamp.isBefore(messages[i - 1].timestamp)) {
+        debugPrint('⚠️ Order violation at index $i: ${messages[i].timestamp} < ${messages[i - 1].timestamp}');
+        return false;
+      }
+    }
+    return true;
   }
 
   void dispose() {

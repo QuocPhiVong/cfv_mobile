@@ -30,7 +30,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
 
   // Local state to avoid Obx() issues
   bool _isUserConnected = false;
-  bool _isTyping = false;
   bool _isSending = false;
   bool _isLoading = false;
   List<ChatMessage> _messages = [];
@@ -74,15 +73,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
       }
     });
 
-    // Listen to typing status
-    _sendbirdController.isTyping.listen((typing) {
-      if (mounted) {
-        setState(() {
-          _isTyping = typing;
-        });
-      }
-    });
-
     // Listen to sending status
     _sendbirdController.isSending.listen((sending) {
       if (mounted) {
@@ -108,6 +98,18 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
         setState(() {
           _messages = List.from(messages);
         });
+
+        // Verify message order for debugging
+        if (messages.length > 1) {
+          final firstTime = messages.first.timestamp;
+          final lastTime = messages.last.timestamp;
+          debugPrint('📱 UI: Messages updated. Range: $firstTime to $lastTime. Count: ${messages.length}');
+
+          // Check if messages are in correct order
+          if (firstTime.isAfter(lastTime)) {
+            debugPrint('⚠️ UI: Messages appear to be in wrong order!');
+          }
+        }
 
         // Auto-scroll to bottom for new messages (not user scrolling)
         if (!_isScrollingToBottom && messages.isNotEmpty) {
@@ -253,10 +255,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
     });
   }
 
-  void _onTypingChanged(String text) {
-    _sendbirdController.setTypingStatus(text);
-  }
-
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty || !mounted) return;
@@ -384,41 +382,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
     }
   }
 
-  Widget _buildTypingIndicator() {
-    return Container(
-      margin: EdgeInsets.only(top: 8, left: 50),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-          bottomLeft: Radius.circular(4),
-          bottomRight: Radius.circular(20),
-        ),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 5, offset: Offset(0, 2))],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
-            ),
-          ),
-          SizedBox(width: 8),
-          Text(
-            'Đang nhập...',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600], fontStyle: FontStyle.italic),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildMessageList() {
     if (_isInitializing) {
       return Center(
@@ -510,9 +473,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
 
               // Message bubble
               _buildMessageBubble(message),
-
-              // Typing indicator
-              if (messageIndex == _messages.length - 1 && _isTyping) _buildTypingIndicator(),
             ],
           );
         },
@@ -553,9 +513,17 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
         _isLoading = true;
       });
 
-      // Remember current scroll position
+      // Remember current scroll position and first visible message
       final currentScrollPosition = _scrollController.position.pixels;
       final currentMaxScroll = _scrollController.position.maxScrollExtent;
+
+      // Get the first visible message index for better scroll restoration
+      int firstVisibleIndex = 0;
+      if (_scrollController.hasClients) {
+        firstVisibleIndex = (_scrollController.position.pixels / 100).floor(); // Approximate
+      }
+
+      debugPrint('📚 Loading more messages. Current scroll: $currentScrollPosition, First visible: $firstVisibleIndex');
 
       // Load more messages
       await _sendbirdController.loadMoreMessages(_sendbirdController.currentConversationId.value, limit: 20);
@@ -566,14 +534,20 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
           if (mounted && _scrollController.hasClients) {
             final newMaxScroll = _scrollController.position.maxScrollExtent;
             final scrollOffset = newMaxScroll - currentMaxScroll;
+
             if (scrollOffset > 0) {
-              // Use jumpTo instead of animateTo to prevent scroll jumping
-              _scrollController.jumpTo(currentScrollPosition + scrollOffset);
+              // Calculate new position to keep the same content visible
+              final newPosition = currentScrollPosition + scrollOffset;
+              debugPrint('📚 Restoring scroll position: $currentScrollPosition -> $newPosition');
+
+              // Use jumpTo for immediate positioning to prevent visual jumping
+              _scrollController.jumpTo(newPosition);
             }
           }
         });
       }
     } catch (e) {
+      debugPrint('❌ Error loading more messages: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -655,9 +629,7 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
                                 ),
                               ),
                               SizedBox(width: 6),
-                              if (_isTyping)
-                                Text("Đang nhập...", style: TextStyle(fontSize: 12, color: Color(0xFF4CAF50)))
-                              else if (!_isUserConnected)
+                              if (!_isUserConnected)
                                 Text(
                                   _sendbirdController.connectionStatus.value == 'Connecting...'
                                       ? "Đang kết nối..."
@@ -900,23 +872,12 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
                       hintStyle: TextStyle(color: _isUserConnected ? Colors.grey[500] : Colors.red[300]),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                      suffixIcon: _isTyping
-                          ? Container(
-                              margin: EdgeInsets.all(8),
-                              child: SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
-                                ),
-                              ),
-                            )
-                          : null,
                     ),
                     maxLines: null,
                     textInputAction: TextInputAction.send,
-                    onChanged: _onTypingChanged,
+                    onChanged: (text) {
+                      // Typing logic removed
+                    },
                     onSubmitted: (_) => _sendMessage(),
                     enabled: _isUserConnected && !_isSending,
                   ),
@@ -966,7 +927,6 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
     // Clear all local state
     _messages.clear();
     _isUserConnected = false;
-    _isTyping = false;
     _isSending = false;
     _isLoading = false;
     _hasCurrentConversation = false;

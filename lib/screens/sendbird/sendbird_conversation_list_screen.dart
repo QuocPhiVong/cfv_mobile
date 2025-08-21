@@ -114,7 +114,6 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black87),
                       ),
                     ),
-                    Icon(Icons.search, size: 24, color: Colors.black54),
                   ],
                 ),
               ),
@@ -122,103 +121,69 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // New Chat Button
-          Container(
-            margin: EdgeInsets.all(16),
-            child: ElevatedButton(
-              onPressed: _startNewChat,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF4CAF50),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
-              ),
-              child: Row(
+      body: Expanded(
+        child: Obx(() {
+          if (_sendbirdController.isLoading.value) {
+            return Center(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.add, size: 20),
-                  SizedBox(width: 8),
-                  Text('Bắt đầu cuộc trò chuyện mới', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50))),
+                  SizedBox(height: 16),
+                  Text('Đang tải...', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
                 ],
               ),
-            ),
-          ),
+            );
+          }
 
-          // Divider
-          Container(height: 1, color: Colors.grey[200]),
-
-          // Conversations List
-          Expanded(
-            child: Obx(() {
-              if (_sendbirdController.isLoading.value) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50))),
-                      SizedBox(height: 16),
-                      Text('Đang tải...', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-                    ],
-                  ),
-                );
-              }
-
-              if (_sendbirdController.conversations.isEmpty) {
-                return RefreshIndicator(
-                  onRefresh: _refreshConversations,
-                  color: Color(0xFF4CAF50),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-                          child: Icon(Icons.chat_bubble_outline, size: 40, color: Colors.grey[400]),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'Chưa có cuộc trò chuyện nào',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[700]),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Bắt đầu cuộc trò chuyện đầu tiên',
-                          style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                        ),
-                        SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _startNewChat,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF4CAF50),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: Text('Bắt đầu ngay'),
-                        ),
-                      ],
+          if (_sendbirdController.conversations.isEmpty) {
+            return RefreshIndicator(
+              onRefresh: _refreshConversations,
+              color: Color(0xFF4CAF50),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+                      child: Icon(Icons.chat_bubble_outline, size: 40, color: Colors.grey[400]),
                     ),
-                  ),
-                );
-              }
-
-              return RefreshIndicator(
-                onRefresh: _refreshConversations,
-                color: Color(0xFF4CAF50),
-                child: ListView.builder(
-                  itemCount: _sendbirdController.conversations.length,
-                  itemBuilder: (context, index) {
-                    return _buildConversationTile(_sendbirdController.conversations[index]);
-                  },
+                    SizedBox(height: 16),
+                    Text(
+                      'Chưa có cuộc trò chuyện nào',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                    ),
+                    SizedBox(height: 8),
+                    Text('Bắt đầu cuộc trò chuyện đầu tiên', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _startNewChat,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF4CAF50),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: Text('Bắt đầu ngay'),
+                    ),
+                  ],
                 ),
-              );
-            }),
-          ),
-        ],
+              ),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: _refreshConversations,
+            color: Color(0xFF4CAF50),
+            child: ListView.builder(
+              itemCount: _sendbirdController.conversations.length,
+              itemBuilder: (context, index) {
+                return _buildConversationTile(_sendbirdController.conversations[index]);
+              },
+            ),
+          );
+        }),
       ),
     );
   }
