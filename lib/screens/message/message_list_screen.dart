@@ -2,7 +2,7 @@ import "package:cfv_mobile/screens/message/message_screen.dart";
 import "package:flutter/material.dart";
 
 class MessageListScreen extends StatelessWidget {
-  const MessageListScreen({Key? key}) : super(key: key);
+  const MessageListScreen({super.key});
 
   final List<ConversationItem> conversations = const [
     ConversationItem(
@@ -55,11 +55,7 @@ class MessageListScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         "Tin nhắn",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black87),
                       ),
                     ),
                     Icon(Icons.search, size: 24, color: Colors.black54),
@@ -72,10 +68,7 @@ class MessageListScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Container(
-            height: 1,
-            color: Colors.grey[200],
-          ),
+          Container(height: 1, color: Colors.grey[200]),
           Expanded(
             child: ListView.builder(
               itemCount: conversations.length,
@@ -83,12 +76,7 @@ class MessageListScreen extends StatelessWidget {
                 return ConversationListTile(
                   conversation: conversations[index],
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MessagesScreen(),
-                      ),
-                    );
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => MessagesScreen()));
                   },
                 );
               },
@@ -104,11 +92,7 @@ class ConversationListTile extends StatelessWidget {
   final ConversationItem conversation;
   final VoidCallback onTap;
 
-  const ConversationListTile({
-    Key? key,
-    required this.conversation,
-    required this.onTap,
-  }) : super(key: key);
+  const ConversationListTile({super.key, required this.conversation, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -124,15 +108,8 @@ class ConversationListTile extends StatelessWidget {
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: BoxDecoration(
-                    color: Color(0xFFB8E6B8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.person,
-                    color: Color(0xFF4CAF50),
-                    size: 28,
-                  ),
+                  decoration: BoxDecoration(color: Color(0xFFB8E6B8), shape: BoxShape.circle),
+                  child: Icon(Icons.person, color: Color(0xFF4CAF50), size: 28),
                 ),
                 if (conversation.isOnline)
                   Positioned(
@@ -162,21 +139,11 @@ class ConversationListTile extends StatelessWidget {
                       Expanded(
                         child: Text(
                           conversation.name,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Text(
-                        conversation.time,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
+                      Text(conversation.time, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                     ],
                   ),
                   SizedBox(height: 4),
@@ -185,10 +152,7 @@ class ConversationListTile extends StatelessWidget {
                       Expanded(
                         child: Text(
                           conversation.message,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
+                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -196,17 +160,10 @@ class ConversationListTile extends StatelessWidget {
                         Container(
                           margin: EdgeInsets.only(left: 8),
                           padding: EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Color(0xFF4CAF50),
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: BoxDecoration(color: Color(0xFF4CAF50), shape: BoxShape.circle),
                           child: Text(
                             conversation.unreadCount.toString(),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                         ),
                     ],
@@ -226,23 +183,14 @@ class BottomNavItem extends StatelessWidget {
   final String label;
   final bool isActive;
 
-  const BottomNavItem({
-    Key? key,
-    required this.icon,
-    required this.label,
-    required this.isActive,
-  }) : super(key: key);
+  const BottomNavItem({super.key, required this.icon, required this.label, required this.isActive});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          icon,
-          size: 24,
-          color: isActive ? Color(0xFF4CAF50) : Colors.grey[600],
-        ),
+        Icon(icon, size: 24, color: isActive ? Color(0xFF4CAF50) : Colors.grey[600]),
         SizedBox(height: 4),
         Text(
           label,

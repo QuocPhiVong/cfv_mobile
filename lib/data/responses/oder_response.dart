@@ -73,16 +73,16 @@ class OrderModel {
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-    orderId: json["orderId"],
-    retailerId: json["retailerId"],
-    retailerName: json["retailerName"],
-    gardenerId: json["gardenerId"],
-    status: json["status"],
-    totalAmount: json.parseDouble("totalAmount").toInt(),
-    shippingCost: json.parseDouble("shippingCost").toInt(),
-    createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
-    productTypeAmount: json["productTypeAmount"],
-  );
+      orderId: json["orderId"],
+      retailerId: json["retailerId"],
+      retailerName: json["retailerName"],
+      gardenerId: json["gardenerId"],
+      status: json["status"],
+      totalAmount: json.parseDouble("totalAmount").toInt(),
+      shippingCost: json.parseDouble("shippingCost").toInt(),
+      createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+      productTypeAmount: json["productTypeAmount"],
+    );
   }
 
   Map<String, dynamic> toJson() => {

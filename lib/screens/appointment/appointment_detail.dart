@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:cfv_mobile/controller/appointment_detail_controller.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 
-
 class AppointmentDetailScreen extends StatelessWidget {
   final String appointmentId;
 
@@ -411,9 +410,7 @@ class AppointmentDetailScreen extends StatelessWidget {
       () => SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
-          onPressed: controller.isUpdating.value
-              ? null
-              : () => _showCancellationReasons(controller),
+          onPressed: controller.isUpdating.value ? null : () => _showCancellationReasons(controller),
           icon: controller.isUpdating.value
               ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
               : Icon(Icons.cancel_outlined),
@@ -516,9 +513,7 @@ class AppointmentDetailScreen extends StatelessWidget {
   }
 
   void _processCancellation(String reason, AppointmentDetailController controller) async {
-    final success = await controller.cancelAppointment(
-      cancellationReason: reason,
-    );
+    final success = await controller.cancelAppointment(cancellationReason: reason);
 
     if (success) {
       // Show success message
