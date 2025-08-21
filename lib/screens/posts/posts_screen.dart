@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sendbird_chat_sdk/sendbird_chat_sdk.dart';
 
 class PostsScreen extends StatefulWidget {
   const PostsScreen({super.key});
@@ -25,6 +26,8 @@ class _PostsScreenState extends State<PostsScreen> {
 
   void _sendMessage() {
     if (_messageController.text.trim().isNotEmpty) {
+      String channelID = 'channel_${DateTime.now().millisecondsSinceEpoch}';
+      // Create or get channel and send message with senbird service
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Tin nhắn đã được gửi: ${_messageController.text}'),

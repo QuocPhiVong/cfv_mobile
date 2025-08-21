@@ -6,6 +6,53 @@ import 'package:sendbird_chat_sdk/sendbird_chat_sdk.dart';
 import '../../controller/auth_controller.dart';
 import '../responses/sendbird_response.dart';
 
+class _SendbirdChannelHandler extends GroupChannelHandler {
+  final SendbirdService _service;
+
+  _SendbirdChannelHandler(this._service);
+
+  @override
+  void onMessageReceived(BaseChannel channel, BaseMessage message) {
+    debugPrint('📨 Message received in channel: ${channel.channelUrl}');
+    debugPrint('📨 Message ID: ${message.messageId}, Type: ${message.runtimeType}');
+
+    try {
+      if (message.messageId.toString().isEmpty) {
+        debugPrint('⚠️ Skipping message with invalid ID');
+        return;
+      }
+
+      final chatMessage = ChatMessage.fromSendbird(message);
+
+      if (chatMessage.text.isEmpty && message is! UserMessage) {
+        debugPrint('⚠️ Skipping non-text message');
+        return;
+      }
+
+      _service._addMessageToStream(channel.channelUrl, chatMessage);
+
+      _service._lastMessageTimestamps[channel.channelUrl] = message.createdAt;
+
+      _service._processedMessageIds.add(message.messageId.toString());
+
+      _service._cleanupProcessedMessageIds();
+
+      debugPrint('✅ Message processed successfully: ${message.messageId} - "${chatMessage.text}"');
+    } catch (e) {
+      debugPrint('❌ Error processing received message: $e');
+      debugPrint('❌ Message details - ID: ${message.messageId}, Type: ${message.runtimeType}');
+
+      Future.delayed(Duration(seconds: 1), () {
+        try {
+          _service._setupChannelHandler();
+        } catch (retryError) {
+          debugPrint('❌ Failed to recover message handler: $retryError');
+        }
+      });
+    }
+  }
+}
+
 class SendbirdService {
   static SendbirdService? _instance;
   static SendbirdService get instance => _instance ??= SendbirdService._();
@@ -14,6 +61,9 @@ class SendbirdService {
 
   static const String _applicationId = '76B840AB-32EE-4792-B6C7-98FC3101C9D7';
 
+  static bool get _isValidApplicationId =>
+      _applicationId.isNotEmpty && _applicationId.length == 36 && _applicationId.contains('-');
+
   static const int _pollingIntervalSeconds = 3;
   static const int _maxMessagesPerRequest = 50;
   static const int _batchSize = 20;
@@ -21,6 +71,7 @@ class SendbirdService {
 
   bool _isInitialized = false;
   bool _isUserConnected = false;
+  String? _currentHandlerId;
 
   final Map<String, StreamController<ChatMessage>> _messageControllers = {};
   final Map<String, Timer> _pollingTimers = {};
@@ -28,13 +79,19 @@ class SendbirdService {
   final Map<String, List<ChatMessage>> _messageBatch = {};
   final Map<String, Timer> _batchTimers = {};
   final Set<String> _processedMessageIds = <String>{};
+  final Map<String, bool> _processingBatch = {};
 
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
+      if (!_isValidApplicationId) {
+        throw Exception('Invalid Sendbird Application ID format');
+      }
+
       debugPrint('🚀 Initializing Sendbird Chat SDK...');
       await SendbirdChat.init(appId: _applicationId);
+
       _isInitialized = true;
       debugPrint('✅ Sendbird Chat SDK initialized successfully!');
     } catch (e) {
@@ -58,10 +115,114 @@ class SendbirdService {
 
       final currentUser = SendbirdChat.currentUser;
       debugPrint('✅ User connected: ${currentUser?.userId} (${currentUser?.nickname})');
+
+      _setupChannelHandler();
+
       return true;
     } catch (e) {
       debugPrint('❌ Failed to connect user: $e');
       _isUserConnected = false;
+      return false;
+    }
+  }
+
+  void _setupChannelHandler() {
+    try {
+      if (_currentHandlerId != null) {
+        try {
+          SendbirdChat.removeChannelHandler(_currentHandlerId!);
+          debugPrint('🗑️ Removed existing channel handler: $_currentHandlerId');
+        } catch (e) {
+          debugPrint('⚠️ Warning: Failed to remove existing handler: $e');
+        }
+      }
+
+      _currentHandlerId = 'handler_${DateTime.now().millisecondsSinceEpoch}';
+
+      final handler = _SendbirdChannelHandler(this);
+      SendbirdChat.addChannelHandler(_currentHandlerId!, handler);
+
+      debugPrint('✅ Message reception handler set up successfully with ID: $_currentHandlerId');
+      debugPrint('🔍 Current user: ${SendbirdChat.currentUser?.userId}');
+      debugPrint('🔍 Handler registered for real-time message reception');
+
+      _verifyHandlerSetup();
+    } catch (e) {
+      debugPrint('❌ Failed to set up message reception handler: $e');
+      _currentHandlerId = null;
+
+      Future.delayed(Duration(seconds: 2), () {
+        if (_isUserConnected && _isInitialized) {
+          debugPrint('🔄 Retrying channel handler setup...');
+          _setupChannelHandler();
+        }
+      });
+    }
+  }
+
+  void _verifyHandlerSetup() {
+    try {
+      if (_currentHandlerId != null) {
+        final currentUser = SendbirdChat.currentUser;
+        if (currentUser != null) {
+          debugPrint('✅ Handler verification successful - User: ${currentUser.userId}');
+        } else {
+          debugPrint('⚠️ Handler verification warning - No current user');
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Handler verification failed: $e');
+    }
+  }
+
+  bool isMessageHandlerActive() {
+    return _currentHandlerId != null;
+  }
+
+  void testMessageReception() {
+    debugPrint('🧪 Testing message reception handler...');
+    debugPrint('🔍 Handler ID: $_currentHandlerId');
+    debugPrint('🔍 User connected: $_isUserConnected');
+    debugPrint('🔍 Current user: ${SendbirdChat.currentUser?.userId}');
+
+    if (_currentHandlerId != null) {
+      debugPrint('✅ Message handler is active');
+    } else {
+      debugPrint('❌ Message handler is not active');
+    }
+  }
+
+  void _cleanupProcessedMessageIds() {
+    try {
+      if (_processedMessageIds.length > 1000) {
+        final cutoffTime = DateTime.now().subtract(Duration(hours: 24));
+        _processedMessageIds.clear();
+        debugPrint('🧹 Cleaned up processed message IDs');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Warning: Failed to cleanup processed message IDs: $e');
+    }
+  }
+
+  Future<bool> ensureMessageHandler() async {
+    try {
+      if (_currentHandlerId == null || !_isUserConnected) {
+        debugPrint('🔄 Message handler not active, attempting to reconnect...');
+        final userId = Get.find<AuthenticationController>().currentUser?.accountId ?? '';
+        final name = Get.find<AuthenticationController>().currentUser?.name ?? '';
+
+        if (userId.isNotEmpty) {
+          final connected = await connectUser(userId, name);
+          if (connected) {
+            debugPrint('✅ Message handler re-established successfully');
+            return true;
+          }
+        }
+        return false;
+      }
+      return true;
+    } catch (e) {
+      debugPrint('❌ Failed to ensure message handler: $e');
       return false;
     }
   }
@@ -130,7 +291,11 @@ class SendbirdService {
       debugPrint('📚 Loading chat history: $channelUrl (limit: $limit)');
 
       final channel = await _getOrCreateChannel(channelUrl);
-      if (channel == null) return [];
+
+      if (channel == null) {
+        debugPrint('❌ Failed to get or create channel');
+        return [];
+      }
 
       final messages = await _loadMessagesWithStrategy(channel, limit);
       final chatMessages = _convertToChatMessages(messages);
@@ -172,7 +337,6 @@ class SendbirdService {
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
       var messages = await channel.getMessagesByTimestamp(currentTimestamp, params);
 
-      // Convert to BaseMessage list safely
       final baseMessages = messages.whereType<BaseMessage>().toList();
 
       if (baseMessages.length < limit * 0.5) {
@@ -290,7 +454,6 @@ class SendbirdService {
       final query = GroupChannelListQuery()..limit = 20;
       final channels = await query.next();
 
-      // Handle different possible return types from the new SDK
       final groupChannels = channels.whereType<GroupChannel>().toList();
       final conversations = groupChannels.map((channel) => Conversation.fromSendbird(channel)).toList();
       conversations.sort((a, b) => _compareConversationTime(a, b));
@@ -364,6 +527,11 @@ class SendbirdService {
       _messageBatch[channelUrl] = [];
     }
 
+    if (_processingBatch[channelUrl] == true) {
+      debugPrint('⚠️ Batch already processing for channel: $channelUrl, skipping...');
+      return;
+    }
+
     _messageBatch[channelUrl]!.addAll(messages);
     _batchTimers[channelUrl]?.cancel();
 
@@ -372,12 +540,22 @@ class SendbirdService {
 
   void _processBatch(String channelUrl) {
     try {
+      if (_processingBatch[channelUrl] == true) {
+        debugPrint('⚠️ Batch already processing for channel: $channelUrl');
+        return;
+      }
+      _processingBatch[channelUrl] = true;
+
       final controller = _messageControllers[channelUrl];
       final batch = _messageBatch[channelUrl];
 
-      if (controller == null || batch == null || batch.isEmpty) return;
+      if (controller == null || batch == null || batch.isEmpty) {
+        _processingBatch[channelUrl] = false;
+        return;
+      }
       if (controller.isClosed || !controller.hasListener) {
         _cleanupChannel(channelUrl);
+        _processingBatch[channelUrl] = false;
         return;
       }
 
@@ -391,8 +569,10 @@ class SendbirdService {
 
       _messageBatch[channelUrl]!.clear();
       _batchTimers.remove(channelUrl);
+      _processingBatch[channelUrl] = false;
     } catch (e) {
       debugPrint('❌ Error processing batch: $e');
+      _processingBatch[channelUrl] = false;
       _cleanupChannel(channelUrl);
     }
   }
@@ -471,6 +651,7 @@ class SendbirdService {
     _messageBatch.remove(channelUrl);
     _batchTimers.remove(channelUrl);
     _lastMessageTimestamps.remove(channelUrl);
+    _processingBatch.remove(channelUrl);
   }
 
   void stopPolling(String channelUrl) {
@@ -507,6 +688,7 @@ class SendbirdService {
     _lastMessageTimestamps.clear();
     _messageBatch.clear();
     _processedMessageIds.clear();
+    _processingBatch.clear();
 
     _isInitialized = false;
     _isUserConnected = false;

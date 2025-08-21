@@ -329,6 +329,45 @@ class _SendbirdChatScreenState extends State<SendbirdChatScreen> {
     }
   }
 
+  // Test method to check message reception
+  Future<void> _testMessageReception() async {
+    try {
+      // Check connection status
+      final isConnected = _sendbirdController.isUserConnected.value;
+      final connectionStatus = _sendbirdController.connectionStatus.value;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Trạng thái: ${isConnected ? "Đã kết nối" : "Chưa kết nối"} - $connectionStatus'),
+            backgroundColor: isConnected ? Colors.green : Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+
+      // Check message reception
+      if (isConnected) {
+        final messageStatus = await _sendbirdController.checkAndRestoreMessageReception();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(messageStatus ? 'Nhận tin nhắn ổn định' : 'Đang khôi phục nhận tin nhắn...'),
+              backgroundColor: messageStatus ? Colors.green : Colors.orange,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi kiểm tra: $e'), backgroundColor: Colors.red, duration: Duration(seconds: 3)),
+        );
+      }
+    }
+  }
+
   bool _shouldShowMessageHeader(ChatMessage previousMessage, ChatMessage currentMessage) {
     // Show header if messages are from different senders or different days
     if (previousMessage.isMe != currentMessage.isMe) return true;

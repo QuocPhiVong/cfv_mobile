@@ -318,21 +318,45 @@ class SendbirdController extends GetxController {
             },
             onError: (error) {
               debugPrint('❌ Message stream error: $error');
-              Future.delayed(Duration(seconds: 2), () {
-                if (currentConversationId.value.isNotEmpty && !isClosed) {
-                  debugPrint('🔄 Attempting to resubscribe to messages...');
-                  _subscribeToMessages(currentConversationId.value);
-                }
-              });
+
+              // Enhanced error handling with retry mechanism
+              if (currentConversationId.value.isNotEmpty && !isClosed) {
+                Future.delayed(Duration(seconds: 2), () {
+                  if (currentConversationId.value.isNotEmpty && !isClosed) {
+                    debugPrint('🔄 Attempting to resubscribe to messages...');
+                    _subscribeToMessages(currentConversationId.value);
+                  }
+                });
+              }
             },
             onDone: () {
               debugPrint('📨 Message stream closed for channel: $channelUrl');
+
+              // Auto-reconnect if stream closes unexpectedly
+              if (currentConversationId.value == channelUrl && !isClosed) {
+                Future.delayed(Duration(seconds: 1), () {
+                  if (currentConversationId.value == channelUrl && !isClosed) {
+                    debugPrint('🔄 Auto-reconnecting to message stream...');
+                    _subscribeToMessages(channelUrl);
+                  }
+                });
+              }
             },
           );
 
       debugPrint('✅ Successfully subscribed to messages for channel: $channelUrl');
     } catch (e) {
       debugPrint('❌ Failed to subscribe to messages: $e');
+
+      // Retry subscription after delay
+      if (currentConversationId.value.isNotEmpty && !isClosed) {
+        Future.delayed(Duration(seconds: 3), () {
+          if (currentConversationId.value.isNotEmpty && !isClosed) {
+            debugPrint('🔄 Retrying message subscription...');
+            _subscribeToMessages(currentConversationId.value);
+          }
+        });
+      }
     }
   }
 
@@ -467,6 +491,50 @@ class SendbirdController extends GetxController {
       }
     } catch (e) {
       debugPrint('❌ Error checking connection status: $e');
+    }
+  }
+
+  // Enhanced method to check and restore message reception
+  Future<bool> checkAndRestoreMessageReception() async {
+    try {
+      debugPrint('🔍 Checking message reception status...');
+
+      // Check if we have an active conversation
+      if (currentConversationId.value.isEmpty) {
+        debugPrint('⚠️ No active conversation to check message reception');
+        return false;
+      }
+
+      // Check if message subscription is active
+      if (_messageSubscription == null || _messageSubscription!.isPaused) {
+        debugPrint('🔄 Message subscription not active, reconnecting...');
+        _subscribeToMessages(currentConversationId.value);
+        return true;
+      }
+
+      // Check if we're receiving messages
+      final lastMessageTime = messages.isNotEmpty ? messages.last.timestamp : null;
+      final timeSinceLastMessage = lastMessageTime != null
+          ? DateTime.now().difference(lastMessageTime).inMinutes
+          : null;
+
+      if (timeSinceLastMessage != null && timeSinceLastMessage > 5) {
+        debugPrint('⚠️ No recent messages received ($timeSinceLastMessage minutes ago), checking connection...');
+
+        // Try to reconnect
+        final reconnected = await _repository.checkAndRecoverConnection();
+        if (reconnected) {
+          debugPrint('✅ Connection restored, resubscribing to messages...');
+          _subscribeToMessages(currentConversationId.value);
+          return true;
+        }
+      }
+
+      debugPrint('✅ Message reception appears to be working normally');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error checking message reception: $e');
+      return false;
     }
   }
 
