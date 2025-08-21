@@ -1,6 +1,8 @@
 import 'package:cfv_mobile/screens/sendbird/index.dart';
+import 'package:cfv_mobile/controller/sendbird_controller.dart';
 import 'package:cfv_mobile/data/services/sendbird_service.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class SendbirdConversationListScreen extends StatefulWidget {
   const SendbirdConversationListScreen({super.key});
@@ -10,48 +12,37 @@ class SendbirdConversationListScreen extends StatefulWidget {
 }
 
 class _SendbirdConversationListScreenState extends State<SendbirdConversationListScreen> {
-  List<Conversation> _conversations = [];
-  bool _isLoading = true;
-  final SendbirdService _sendbirdService = SendbirdService.instance;
+  late final SendbirdController _sendbirdController;
 
   @override
   void initState() {
     super.initState();
-    _loadConversations();
+    _sendbirdController = Get.put(SendbirdController());
+    _initializeAndLoad();
   }
 
-  Future<void> _loadConversations() async {
+  Future<void> _initializeAndLoad() async {
     try {
-      setState(() {
-        _isLoading = true;
-      });
+      // Initialize Sendbird
+      await _sendbirdController.initialize();
 
-      // Initialize Sendbird service if needed
-      await _sendbirdService.initialize();
-
-      // Get real conversations from Sendbird
-      final conversations = await _sendbirdService.getConversations();
-
-      setState(() {
-        _conversations = conversations;
-        _isLoading = false;
-      });
+      // Connect user
+      final connected = await _sendbirdController.connectUser();
+      if (connected) {
+        // Load conversations
+        await _sendbirdController.loadConversations();
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show error message to user
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Không thể tải danh sách trò chuyện: $e'), backgroundColor: Colors.red));
+        ).showSnackBar(SnackBar(content: Text('Không thể khởi tạo: $e'), backgroundColor: Colors.red));
       }
     }
   }
 
   Future<void> _refreshConversations() async {
-    await _loadConversations();
+    await _sendbirdController.loadConversations();
   }
 
   Future<void> _startNewChat() async {
@@ -59,19 +50,16 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
       // Show dialog to input conversation title
       final title = await _showNewChatDialog();
       if (title != null && title.isNotEmpty) {
-        // Create new conversation
-        final channelUrl = await _sendbirdService.createConversation(title);
+        // Create new conversation using controller
+        final newConversation = await _sendbirdController.createNewConversation(title);
 
-        // Navigate to chat screen with new channel
+        // Navigate to chat screen with new conversation
         if (mounted) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SendbirdChatScreen(conversationId: channelUrl)),
+            MaterialPageRoute(builder: (context) => SendbirdChatScreen(conversation: newConversation)),
           );
         }
-
-        // Refresh conversations list
-        await _loadConversations();
       }
     } catch (e) {
       if (mounted) {
@@ -164,61 +152,71 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
 
           // Conversations List
           Expanded(
-            child: _isLoading
-                ? Center(
+            child: Obx(() {
+              if (_sendbirdController.isLoading.value) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50))),
+                      SizedBox(height: 16),
+                      Text('Đang tải...', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                    ],
+                  ),
+                );
+              }
+
+              if (_sendbirdController.conversations.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: _refreshConversations,
+                  color: Color(0xFF4CAF50),
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50))),
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+                          child: Icon(Icons.chat_bubble_outline, size: 40, color: Colors.grey[400]),
+                        ),
                         SizedBox(height: 16),
-                        Text('Đang tải...', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                        Text(
+                          'Chưa có cuộc trò chuyện nào',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Bắt đầu cuộc trò chuyện đầu tiên',
+                          style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                        ),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _startNewChat,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF4CAF50),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: Text('Bắt đầu ngay'),
+                        ),
                       ],
                     ),
-                  )
-                : RefreshIndicator(
-                    onRefresh: _refreshConversations,
-                    color: Color(0xFF4CAF50),
-                    child: _conversations.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-                                  child: Icon(Icons.chat_bubble_outline, size: 40, color: Colors.grey[400]),
-                                ),
-                                SizedBox(height: 16),
-                                Text(
-                                  'Chưa có cuộc trò chuyện nào',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[700]),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Bắt đầu cuộc trò chuyện đầu tiên',
-                                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                                ),
-                                SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: _startNewChat,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFF4CAF50),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  ),
-                                  child: Text('Bắt đầu ngay'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: _conversations.length,
-                            itemBuilder: (context, index) {
-                              return _buildConversationTile(_conversations[index]);
-                            },
-                          ),
                   ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: _refreshConversations,
+                color: Color(0xFF4CAF50),
+                child: ListView.builder(
+                  itemCount: _sendbirdController.conversations.length,
+                  itemBuilder: (context, index) {
+                    return _buildConversationTile(_sendbirdController.conversations[index]);
+                  },
+                ),
+              );
+            }),
           ),
         ],
       ),
@@ -296,7 +294,7 @@ class _SendbirdConversationListScreenState extends State<SendbirdConversationLis
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => SendbirdChatScreen(conversationId: conversation.id)),
+            MaterialPageRoute(builder: (context) => SendbirdChatScreen(conversation: conversation)),
           );
         },
       ),
