@@ -1,5 +1,7 @@
 import 'package:cfv_mobile/controller/order_detail_controller.dart';
+import 'package:cfv_mobile/controller/review_controller.dart';
 import 'package:cfv_mobile/data/responses/order_detail_response.dart';
+import 'package:cfv_mobile/screens/order/create_review.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -15,11 +17,18 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final controller = Get.put(OrderDetailController());
+  final reviewController = Get.find<ReviewController>();
 
   @override
   void initState() {
     super.initState();
-    controller.loadOrderDetail(widget.orderId);
+    controller.loadOrderDetail(widget.orderId).whenComplete(() {
+      reviewController.getReview(
+        controller.order.value?.retailerId ?? '',
+        controller.order.value?.orderId ?? '',
+        controller.order.value?.orderDetails.first.orderDetailId ?? '',
+      );
+    });
     controller.loadOrderDeliveries(widget.orderId);
   }
 
@@ -153,6 +162,19 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               // Order summary
               _buildOrderSummaryCard(order),
 
+              // Create review section
+              Obx(
+                () =>
+                    (controller.order.value?.status != "DELIVERED" ||
+                        reviewController.isLoadingReview.value ||
+                        reviewController.review.value?.reviewId != null)
+                    ? const SizedBox.shrink()
+                    : _buildCreateReviewSection(
+                        order.retailerId,
+                        order.orderId,
+                        order.orderDetails.first.orderDetailId,
+                      ),
+              ),
               const SizedBox(height: 100),
             ],
           ),
@@ -541,6 +563,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCreateReviewSection(String retailerId, String orderId, String orderDetailId) {
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => CreateReviewScreen(retailerId: retailerId, orderId: orderId, detailId: orderDetailId));
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.star, color: Colors.yellow, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              'Đánh giá sản phẩm',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

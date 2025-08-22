@@ -4,12 +4,14 @@ import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/controller/oder_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
 import 'package:cfv_mobile/controller/appointment_controller.dart';
+import 'package:cfv_mobile/controller/review_controller.dart';
 import 'package:cfv_mobile/controller/sendbird_controller.dart';
 import 'package:cfv_mobile/data/repositories/cart_repository.dart';
 import 'package:cfv_mobile/data/repositories/home_repository.dart';
 import 'package:cfv_mobile/data/repositories/oder_repository.dart';
 import 'package:cfv_mobile/data/repositories/product_repository.dart';
 import 'package:cfv_mobile/data/repositories/appointment_repository.dart';
+import 'package:cfv_mobile/data/repositories/review_repositories.dart';
 import 'package:cfv_mobile/data/repositories/sendbird_repository.dart';
 import 'package:cfv_mobile/data/services/sendbird_service.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +41,7 @@ void main() async {
   Get.put(AppointmentRepository());
   Get.put(OderRepository());
   Get.put(SendbirdRepository());
+  Get.put(ReviewRepository());
 
   // Then, initialize your AuthenticationController with GetX
   Get.put(AuthenticationController());
@@ -49,6 +52,7 @@ void main() async {
   Get.put(CreateAppointmentController());
   Get.put(OderController());
   Get.put(SendbirdController());
+  Get.put(ReviewController());
 
   runApp(const MyApp());
 }

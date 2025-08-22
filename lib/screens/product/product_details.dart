@@ -1,6 +1,7 @@
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
+import 'package:cfv_mobile/controller/review_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/appointment/create_appointment.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
@@ -24,6 +25,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late CartService _cartService;
 
   ProductController get productController => Get.find<ProductController>();
+  ReviewController get reviewController => Get.find<ReviewController>();
   CartController get cartController => Get.find<CartController>();
 
   @override
@@ -32,6 +34,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     _cartService = CartService();
 
     productController.loadProductDetails(widget.productId);
+    reviewController.getReviews(widget.productId);
   }
 
   @override
