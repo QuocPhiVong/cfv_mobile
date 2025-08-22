@@ -1,6 +1,7 @@
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/product_controller.dart';
+import 'package:cfv_mobile/controller/review_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/appointment/create_appointment.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
@@ -24,14 +25,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   late CartService _cartService;
 
   ProductController get productController => Get.find<ProductController>();
+  ReviewController get reviewController => Get.find<ReviewController>();
   CartController get cartController => Get.find<CartController>();
-
+  Rx<double> rating = 0.0.obs;
   @override
   void initState() {
     super.initState();
     _cartService = CartService();
 
     productController.loadProductDetails(widget.productId);
+    reviewController.getReviews(widget.productId).whenComplete(() {
+      for (var review in reviewController.productReviews.value) {
+        rating.value += review.rating;
+      }
+      rating.value = rating.value / reviewController.productReviews.value.length;
+    });
   }
 
   @override
@@ -594,41 +602,45 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   // Overall rating
-                                  Row(
-                                    children: [
-                                      Icon(Icons.star, color: Colors.orange, size: 24),
-                                      const SizedBox(width: 8),
-                                      const Text(
-                                        '4.8 / 5.0',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
+                                  Obx(
+                                    () => Row(
+                                      children: [
+                                        Icon(Icons.star, color: Colors.orange, size: 24),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${rating.value.toStringAsFixed(1)} / 5.0',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        '(120 lượt đánh giá)',
-                                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                                      ),
-                                    ],
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '(${reviewController.productReviews.value.length} lượt đánh giá)',
+                                          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                   const SizedBox(height: 20),
                                   // Individual reviews
-                                  _buildReviewItem(
-                                    'Nguyễn Thị A',
-                                    5.0,
-                                    '2 ngày trước',
-                                    'Xà lách rất tươi và sạch, ăn ngon lắm!',
-                                    'Đã mua: Xà lách xoong tươi (2kg)',
-                                  ),
-                                  const SizedBox(height: 16),
-                                  _buildReviewItem(
-                                    'Trần Văn B',
-                                    4.5,
-                                    '1 tuần trước',
-                                    'Giao hàng nhanh, rau còn tươi rói. Sẽ ủng hộ tiếp.',
-                                    'Đã mua: Xà lách xoong tươi (1kg)',
+                                  Obx(
+                                    () => reviewController.isLoadingProductReview.value
+                                        ? const Center(child: CircularProgressIndicator())
+                                        : Column(
+                                            children: [
+                                              ...reviewController.productReviews.value.map(
+                                                (review) => _buildReviewItem(
+                                                  review.name,
+                                                  review.rating.toDouble(),
+                                                  review.createdAt,
+                                                  review.comment,
+                                                  'Đã mua: ${productController.product.value?.productName ?? 'Xà lách xoong tươi'} (${productController.product.value?.weightUnit ?? 'kg'})',
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                   ),
                                 ],
                               ),
