@@ -6,14 +6,19 @@ class ReviewController extends GetxController {
   final ReviewRepository _reviewRepository = ReviewRepository();
 
   final Rx<bool> isLoadingReview = false.obs;
+  final Rx<bool> isLoadingProductReview = false.obs;
   final Rx<OrderReviewResponse?> review = Rx<OrderReviewResponse?>(null);
+  final Rx<List<ProductReview>> productReviews = Rx<List<ProductReview>>([]);
 
-  Future<List<dynamic>> getReviews(String productId) async {
+  Future<void> getReviews(String productId) async {
     try {
+      isLoadingProductReview.value = true;
       final reviews = await _reviewRepository.getReviews(productId);
-      return reviews;
+      productReviews.value = reviews.productReviews;
     } catch (e) {
       throw Exception(e);
+    } finally {
+      isLoadingProductReview.value = false;
     }
   }
 

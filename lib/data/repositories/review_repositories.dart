@@ -5,10 +5,10 @@ import 'package:get/get.dart';
 class ReviewRepository extends GetxService {
   final ApiService _apiService = ApiService();
 
-  Future<List<dynamic>> getReviews(String productId) async {
+  Future<ProductReviewResponse> getReviews(String productId) async {
     try {
       final response = await _apiService.dio.get('/retailer/products/$productId/reviews');
-      return response.data;
+      return ProductReviewResponse.fromJson(response.data);
     } catch (e) {
       throw Exception(e);
     }
