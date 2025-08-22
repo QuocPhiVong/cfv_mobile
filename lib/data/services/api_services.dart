@@ -1,5 +1,42 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+
+class CloudinaryService {
+  static final CloudinaryService _instance = CloudinaryService._internal();
+  factory CloudinaryService() => _instance;
+  final cloudName = 'drdhrqd83';
+  final uploadPreset = 'cfv_mobile';
+  late Dio _dio;
+  CloudinaryService._internal() {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: 'https://api.cloudinary.com/v1_1/$cloudName',
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      ),
+    );
+  }
+
+  Future<String> uploadImageFromPlatformFile(PlatformFile file) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(file.path!, filename: file.name),
+      'upload_preset': uploadPreset,
+    });
+
+    try {
+      final response = await _dio.post('/image/upload', data: formData);
+      return response.data['secure_url'];
+    } catch (e) {
+      debugPrint('Error uploading image: $e');
+      return '';
+    }
+  }
+}
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -13,53 +50,42 @@ class ApiService {
   static const String baseUrl = 'https://cleanfoodapi-a3e7h6fgcuajf7cb.southeastasia-01.azurewebsites.net/api/v1';
 
   void _initializeDio() {
-    _dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      ),
+    );
 
     // Add interceptors for logging in debug mode
     if (kDebugMode) {
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        requestHeader: true,
-        responseHeader: false,
-        error: true,
-      ));
+      _dio.interceptors.add(
+        LogInterceptor(requestBody: true, responseBody: true, requestHeader: true, responseHeader: false, error: true),
+      );
     }
 
     // Add error interceptor
-    _dio.interceptors.add(InterceptorsWrapper(
-      onError: (error, handler) {
-        debugPrint('API Error: ${error.message}');
-        debugPrint('API Error Response: ${error.response?.data}');
-        handler.next(error);
-      },
-    ));
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (error, handler) {
+          debugPrint('API Error: ${error.message}');
+          debugPrint('API Error Response: ${error.response?.data}');
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   // Remove the separate initialize method since we initialize in constructor
   Dio get dio => _dio;
 
   // Generic GET request
-  Future<Response<T>> get<T>(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-  }) async {
+  Future<Response<T>> get<T>(String path, {Map<String, dynamic>? queryParameters, Options? options}) async {
     try {
-      return await _dio.get<T>(
-        path,
-        queryParameters: queryParameters,
-        options: options,
-      );
+      return await _dio.get<T>(path, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -73,12 +99,7 @@ class ApiService {
     Options? options,
   }) async {
     try {
-      return await _dio.post<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
+      return await _dio.post<T>(path, data: data, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -92,17 +113,12 @@ class ApiService {
     Options? options,
   }) async {
     try {
-      return await _dio.put<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
+      return await _dio.put<T>(path, data: data, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
   }
-  
+
   // Generic PATCH request
   Future<Response<T>> patch<T>(
     String path, {
@@ -111,12 +127,7 @@ class ApiService {
     Options? options,
   }) async {
     try {
-      return await _dio.patch<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
+      return await _dio.patch<T>(path, data: data, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }
@@ -130,12 +141,7 @@ class ApiService {
     Options? options,
   }) async {
     try {
-      return await _dio.delete<T>(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-        options: options,
-      );
+      return await _dio.delete<T>(path, data: data, queryParameters: queryParameters, options: options);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }

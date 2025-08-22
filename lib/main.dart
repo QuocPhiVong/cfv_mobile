@@ -29,6 +29,7 @@ void main() async {
 
   // Initialize API service (if it's a singleton that needs to be instantiated early)
   ApiService();
+  CloudinaryService();
   Get.lazyPut<SendbirdService>(() => SendbirdService.instance);
 
   // IMPORTANT: Register AuthenticationRepository first, as AuthenticationController depends on it.

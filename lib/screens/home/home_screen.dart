@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/controller/app_controller.dart';
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/data/responses/home_response.dart';
@@ -672,44 +673,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: 16),
 
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade400, Colors.green.shade600],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.green.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+          if (post.harvestStatus != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.green.shade400, Colors.green.shade600],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.agriculture,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Tình trạng mùa vụ',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    post.harvestStatusData.$2,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    post.harvestStatusData.$1,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
 
           const SizedBox(height: 16),
 
@@ -760,9 +762,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ProductDetailScreen(
+                        builder: (context) {
+                          AppController.productDepositPercentage[post.productId ?? ''] = post.depositPercentage ?? 0;
+                          return ProductDetailScreen(
                           productId: post.productId ?? '',
-                        ),
+                        );
+                        },
                       ),
                     );
                   },
@@ -821,7 +826,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const TextSpan(text: 'Đặt cọc trước: '),
                       TextSpan(
-                        text: '30%',
+                        text: '${post.depositPercentage}%',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.green,
@@ -885,9 +890,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ProductDetailScreen(
+                        builder: (context) {
+                          AppController.productDepositPercentage[post.productId ?? ''] = post.depositPercentage ?? 0;
+                          return ProductDetailScreen(
                           productId: post.productId ?? '',
-                        ),
+                        );
+                        },
                       ),
                     );
                   },

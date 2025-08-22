@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/controller/app_controller.dart';
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
@@ -214,6 +215,10 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
   }
 
   Widget _buildCartItem(CartResponse item) {
+    final depositPercentage = AppController.getProductDepositPercentage(item.cartItems?.first.productId ?? '');
+    final quantity = item.cartItems?.first.quantity ?? 0;
+    final price = item.cartItems?.first.price ?? 0;
+    final deposit = (price * quantity * depositPercentage / 100).toStringAsFixed(1);
     return Container(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -333,7 +338,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      '20%',
+                      '$depositPercentage%',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -353,7 +358,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      '100000 VNĐ',
+                      '$deposit VNĐ',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/controller/app_controller.dart';
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/cart_controller.dart';
 import 'package:cfv_mobile/controller/oder_controller.dart';
@@ -33,7 +34,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
   File? _selectedContract;
   String? _contractFileName;
-  
+  String? uploadedImageUrl;
+
   Map<String, double> _depositPercentages = {};
 
   // Delivery fee
@@ -49,7 +51,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     // Pre-fill some default values
     _nameController.text = _authController.currentUser?.name ?? '';
     _phoneController.text = _authController.currentUser?.phoneNumber ?? '';
-    
+
     for (var item in widget.orderItems) {
       _depositPercentages[item.gardenerName] = 20.0;
     }
@@ -150,10 +152,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                                   children: [
                                     Text(
                                       _selectedContract != null ? 'Tệp đã chọn:' : 'Chưa có tệp nào được chọn',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade600,
-                                      ),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
@@ -181,49 +180,58 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        // Upload button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _pickContractFile,
-                            icon: const Icon(Icons.cloud_upload),
-                            label: const Text('Chọn tệp hợp đồng'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade600,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                        if (uploadedImageUrl != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.network(
+                              uploadedImageUrl!,
+                              width: MediaQuery.of(context).size.width - 64,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        else ...{
+                          // Upload button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _pickContractFile,
+                              icon: const Icon(Icons.cloud_upload),
+                              label: const Text('Chọn tệp hợp đồng'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue.shade600,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Information message
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue.shade200),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.info_outline, color: Colors.blue.shade600, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Vui lòng tải lên hợp đồng để hoàn tất đơn hàng. Chấp nhận các định dạng: PDF, DOC, DOCX',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.blue.shade700,
-                                    fontWeight: FontWeight.w500,
+                          const SizedBox(height: 16),
+                          // Information message
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.blue.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.blue.shade600, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Vui lòng tải lên hợp đồng để hoàn tất đơn hàng. Chấp nhận các định dạng: PDF, DOC, DOCX',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.blue.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
+                        }
                       ],
                     ),
                   ),
@@ -355,16 +363,42 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   Future<void> _pickContractFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx'],
+        type: FileType.image,
+        // allowedExtensions: ['pdf', 'doc', 'docx'],
         allowMultiple: false,
       );
 
       if (result != null && result.files.single.path != null) {
-        setState(() {
-          _selectedContract = File(result.files.single.path!);
-          _contractFileName = result.files.single.name;
-        });
+        // show loading
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const Center(child: CircularProgressIndicator());
+          },
+        );
+
+        final imageUrl = await _oderController.uploadImage(result.files.single);
+        print('image url ==> $imageUrl');
+
+        Navigator.of(context).pop();
+
+        if (imageUrl.isNotEmpty) {
+          setState(() {
+            _selectedContract = File(result.files.single.path!);
+            _contractFileName = result.files.single.name;
+            uploadedImageUrl = imageUrl;
+          });
+          // show snackbar success
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Tải lên hợp đồng thành công'), backgroundColor: Colors.green));
+        } else {
+          // show snackbar error
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Tải lên hợp đồng thất bại'), backgroundColor: Colors.red));
+        }
+
       }
     } catch (e) {
       _showErrorMessage('Lỗi khi chọn tệp: $e');
@@ -613,9 +647,11 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   }
 
   Widget _buildOrderItem(CartResponse item) {
-    double depositPercentage = _depositPercentages[item.gardenerName] ?? 20.0;
-    double depositAmount = (item.totalPrice * depositPercentage) / 100;
-    
+    final depositPercentage = AppController.getProductDepositPercentage(item.cartItems?.first.productId ?? '');
+    final quantity = item.cartItems?.first.quantity ?? 0;
+    final price = item.cartItems?.first.price ?? 0;
+    final deposit = (price * quantity * depositPercentage / 100).toInt();
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -684,18 +720,11 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   children: [
                     Icon(Icons.account_balance_wallet, color: Colors.orange.shade600, size: 16),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Đặt cọc trước:',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
+                    const Text('Đặt cọc trước:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                     const Spacer(),
                     Text(
-                      '20%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange.shade700,
-                      ),
+                      '$depositPercentage%',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.orange.shade700),
                     ),
                   ],
                 ),
@@ -704,18 +733,11 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   children: [
                     Icon(Icons.payments, color: Colors.orange.shade600, size: 16),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Số tiền đặt cọc:',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
+                    const Text('Số tiền đặt cọc:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                     const Spacer(),
                     Text(
-                      '${_formatPrice(depositAmount.toInt())} VNĐ',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange.shade700,
-                      ),
+                      '${_formatPrice(deposit)} VNĐ',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.orange.shade700),
                     ),
                   ],
                 ),

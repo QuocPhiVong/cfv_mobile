@@ -1,6 +1,8 @@
 import 'package:cfv_mobile/data/repositories/oder_repository.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/data/responses/oder_response.dart';
+import 'package:cfv_mobile/data/services/api_services.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -63,6 +65,15 @@ class OderController extends GetxController {
     } catch (e) {
       updatingStatusOrderId.value = '';
       return false;
+    }
+  }
+  
+  Future<String> uploadImage(PlatformFile file) async {
+    try {
+      final response = await CloudinaryService().uploadImageFromPlatformFile(file);
+      return response;
+    } catch (e) {
+      return '';
     }
   }
 }

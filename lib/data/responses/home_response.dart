@@ -1,3 +1,8 @@
+import 'dart:ui';
+
+import 'package:cfv_mobile/map_parser.dart';
+import 'package:flutter/material.dart';
+
 class CategoriesResponse {
   final List<CategoryModel> categories;
 
@@ -223,6 +228,39 @@ class PostModel {
   final bool? hasProductCertificate;
   final String? productId;
   final String? gardenerId;
+  final String? harvestStatus;
+  final double? depositPercentage;
+  
+  (String, IconData) get harvestStatusData {
+    final Map<String, (String, IconData)> harvestStatusMap = {
+      "PREORDEROPEN": (
+        "Mở đặt cọc",
+        Icons.agriculture,
+      ),
+      "PLANTING": (
+        "Đang trồng",
+        Icons.agriculture,
+      ),
+      "HARVESTING": (
+        "Thu hoạch",
+        Icons.agriculture,
+      ),
+      "PROCESSING": (
+        "Đóng gói",
+        Icons.local_shipping,
+      ),
+      "READYFORSALE": (
+        "Có hàng",
+        Icons.store,
+      ),
+      "COMPLETED": (
+        "Đã thu hoạch",
+        Icons.check_circle,
+      ),
+    };
+    return harvestStatusMap[harvestStatus] ?? ('', Icons.agriculture);
+  }
+
   PostModel({
     this.postId,
     this.title,
@@ -239,6 +277,8 @@ class PostModel {
     this.hasProductCertificate,
     this.productId,
     this.gardenerId,
+    this.harvestStatus,
+    this.depositPercentage,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) => PostModel(
@@ -257,6 +297,8 @@ class PostModel {
     hasProductCertificate: json["hasProductCertificate"],
     productId: json["productId"],
     gardenerId: json["gardenerId"],
+    harvestStatus: json["harvestStatus"],
+    depositPercentage: json.parseDouble("depositPercentage") 
   );
 
   Map<String, dynamic> toJson() => {
@@ -275,5 +317,7 @@ class PostModel {
     "hasProductCertificate": hasProductCertificate,
     "productId": productId,
     "gardenerId": gardenerId,
+    "harvestStatus": harvestStatus,
+    "depositPercentage": depositPercentage,
   };
 }
