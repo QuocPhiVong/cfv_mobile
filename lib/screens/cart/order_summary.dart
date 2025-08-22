@@ -6,6 +6,8 @@ import 'package:cfv_mobile/screens/cart/address_selection.dart';
 import 'package:cfv_mobile/screens/cart/cart_services.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import 'order_success.dart';
 
 class OrderSummaryScreen extends StatefulWidget {
@@ -30,6 +32,11 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   final OderController _oderController = Get.find<OderController>();
   final CartController _cartController = Get.find<CartController>();
 
+  File? _selectedContract;
+  String? _contractFileName;
+  
+  Map<String, double> _depositPercentages = {};
+
   // Delivery fee
   final int deliveryFee = 15000;
 
@@ -43,6 +50,10 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     // Pre-fill some default values
     _nameController.text = _authController.currentUser?.name ?? '';
     _phoneController.text = _authController.currentUser?.phoneNumber ?? '';
+    
+    for (var item in widget.orderItems) {
+      _depositPercentages[item.gardenerName] = 20.0;
+    }
   }
 
   @override
@@ -112,26 +123,84 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     child: Column(children: widget.orderItems.map((item) => _buildOrderItem(item)).toList()),
                   ),
                   const SizedBox(height: 16),
-                  // Payment Method
+                  // Contract Upload section
                   _buildSectionCard(
-                    title: 'Phương thức thanh toán',
+                    title: 'Tải lên hợp đồng',
                     child: Column(
                       children: [
-                        _buildDeliveryOption(
-                          value: 'card',
-                          title: 'Thanh toán thẻ',
-                          subtitle: 'Thanh toán chuyển khoản/quét thẻ ngân hàng',
-                          icon: Icons.credit_card,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildDeliveryOption(
-                          value: 'cod',
-                          title: 'COD',
-                          subtitle: 'Thanh toán khi nhận hàng',
-                          icon: Icons.delivery_dining,
+                        // Contract file display box
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                            color: _selectedContract != null ? Colors.green.shade50 : Colors.grey.shade50,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                _selectedContract != null ? Icons.description : Icons.upload_file,
+                                color: _selectedContract != null ? Colors.green.shade600 : Colors.grey.shade500,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _selectedContract != null ? 'Tệp đã chọn:' : 'Chưa có tệp nào được chọn',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _contractFileName ?? 'Vui lòng chọn tệp hợp đồng',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: _selectedContract != null ? Colors.green.shade700 : Colors.grey.shade500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (_selectedContract != null)
+                                IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedContract = null;
+                                      _contractFileName = null;
+                                    });
+                                  },
+                                  icon: Icon(Icons.close, color: Colors.red.shade400, size: 20),
+                                ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 16),
-                        // Notification message
+                        // Upload button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _pickContractFile,
+                            icon: const Icon(Icons.cloud_upload),
+                            label: const Text('Chọn tệp hợp đồng'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.shade600,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Information message
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -145,7 +214,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Phí giao hàng sẽ được xác nhận bởi chủ vườn sau khi tạo đơn hàng',
+                                  'Vui lòng tải lên hợp đồng để hoàn tất đơn hàng. Chấp nhận các định dạng: PDF, DOC, DOCX',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.blue.shade700,
@@ -227,12 +296,6 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${_formatPrice(widget.totalPrice.toInt())} VNĐ + phí giao hàng',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.center,
-                    ),
                   ],
                 ),
               ),
@@ -290,7 +353,25 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     );
   }
 
-  // Rest of the methods remain the same...
+  Future<void> _pickContractFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _selectedContract = File(result.files.single.path!);
+          _contractFileName = result.files.single.name;
+        });
+      }
+    } catch (e) {
+      _showErrorMessage('Lỗi khi chọn tệp: $e');
+    }
+  }
+
   void _confirmOrder(double totalPrice) {
     // Validate required fields
     if (_nameController.text.trim().isEmpty) {
@@ -305,6 +386,12 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
     if (_addressController.text.trim().isEmpty) {
       _showErrorMessage('Vui lòng chọn địa chỉ giao hàng');
+      return;
+    }
+
+    // Validate contract upload
+    if (_selectedContract == null) {
+      _showErrorMessage('Vui lòng tải lên hợp đồng');
       return;
     }
 
@@ -331,6 +418,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     Text('Số điện thoại: ${_phoneController.text}'),
                     Text('Phương thức: ${selectedDeliveryMethod == 'card' ? 'Thanh toán thẻ' : 'COD'}'),
                     Text('Địa chỉ: ${_addressController.text}'),
+                    Text('Hợp đồng: ${_contractFileName ?? 'Chưa có tệp hợp đồng'}'),
                     const SizedBox(height: 8),
                     Text(
                       'Tổng tiền: ${_formatPrice(totalPrice.toInt())} VNĐ',
@@ -526,6 +614,9 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   }
 
   Widget _buildOrderItem(CartResponse item) {
+    double depositPercentage = _depositPercentages[item.gardenerName] ?? 20.0;
+    double depositAmount = (item.totalPrice * depositPercentage) / 100;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -534,42 +625,98 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
-            child: Icon(Icons.eco, color: Colors.green.shade600, size: 24),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.gardenerName,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.cartItems!.first.productName ?? '',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
+                child: Icon(Icons.eco, color: Colors.green.shade600, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Text(
-                        '${item.cartItems?.first.quantity} kg × ${item.cartItems?.first.price}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      item.gardenerName,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.cartItems!.first.productName ?? '',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            '${item.cartItems?.first.quantity} kg × ${item.cartItems?.first.price}',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          '${_formatPrice(item.totalPrice.toInt())} VNĐ',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green.shade600),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.account_balance_wallet, color: Colors.orange.shade600, size: 16),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Đặt cọc trước:',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '20%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade700,
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.payments, color: Colors.orange.shade600, size: 16),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Số tiền đặt cọc:',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    const Spacer(),
                     Text(
-                      '${_formatPrice(item.totalPrice.toInt())} VNĐ',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green.shade600),
+                      '${_formatPrice(depositAmount.toInt())} VNĐ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade700,
+                      ),
                     ),
                   ],
                 ),

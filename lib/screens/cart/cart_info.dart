@@ -204,7 +204,7 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                 elevation: 0,
               ),
               child: Text(
-                'Tạo đơn hàng ($itemCount sản phẩm) - ${cartItems.isNotEmpty ? cartItems.map((item) => (item.cartItems?.first.price ?? 1) * (item.cartItems?.first.quantity ?? 1)).reduce((a, b) => a + b) : 0} VNĐ',
+                'Tạo đơn hàng',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
@@ -219,16 +219,6 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product image
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
-            child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
-          ),
-
-          const SizedBox(width: 12),
-
           // Product details
           Expanded(
             child: Column(
@@ -323,18 +313,59 @@ class _CartInfoScreenState extends State<CartInfoScreen> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                // Total price - only show when not in edit mode
-                if (_isEditMode)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Tổng: ${_formatPrice(item.totalPrice.toInt())} VNĐ',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.green.shade600),
+                const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.account_balance_wallet, color: Colors.orange.shade600, size: 16),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Đặt cọc trước:',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '20%',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade700,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.payments, color: Colors.orange.shade600, size: 16),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Số tiền đặt cọc:',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '100000 VNĐ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+                
               ],
             ),
           ),
