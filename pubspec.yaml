@@ -45,6 +45,7 @@ dependencies:
   url_launcher: ^6.3.2
   maps_launcher: ^3.0.0+1
   sendbird_chat_sdk: ^4.5.1
+  file_picker: ^10.3.2
 
 dev_dependencies:
   flutter_test:
