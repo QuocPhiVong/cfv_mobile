@@ -36,7 +36,7 @@ class CartController extends GetxController {
       await loadCarts(retailerId); // Ensure cart is loaded before adding items
       List<CartResponse> temp = cartItems.value.toList();
 
-      temp.add(CartResponse(null, retailerId, gardenerId, gardenerName, cartItems: [cartItem]));
+      temp.add(CartResponse(null, retailerId, gardenerId, gardenerName, null, cartItems: [cartItem]));
 
       final response = await _cartRepository.updateCart(retailerId: retailerId, cartItems: temp);
       debugPrint('Added to cart successfully: $response');

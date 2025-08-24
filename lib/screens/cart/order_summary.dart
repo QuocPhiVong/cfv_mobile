@@ -496,7 +496,12 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
     // Clear cart
     _oderController
-        .createOder(_authController.currentUser?.accountId ?? '', selectedDeliveryMethod, widget.orderItems)
+        .createOder(
+          _authController.currentUser?.accountId ?? '',
+          selectedDeliveryMethod,
+          widget.orderItems,
+          uploadedImageUrl ?? '',
+        )
         .then((value) {
           if (value == true) {
             _cartController.deleteCart(_authController.currentUser?.accountId ?? '');

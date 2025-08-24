@@ -3,12 +3,13 @@ class CartResponse {
   final String retailerId;
   final String gardenerId;
   final String gardenerName;
+  final String? contractImage;
   final List<CartItemModel>? cartItems;
   double get totalPrice =>
       cartItems?.fold(0.0, (sum, item) => (sum ?? 0.0) + ((item.price ?? 0.0) * (item.quantity ?? 1))) ?? 0.0;
   int get itemCount => cartItems?.fold(0, (count, item) => (count ?? 0) + (item.quantity ?? 0)) ?? 0;
 
-  CartResponse(this.cartId, this.retailerId, this.gardenerId, this.gardenerName, {this.cartItems});
+  CartResponse(this.cartId, this.retailerId, this.gardenerId, this.gardenerName, this.contractImage, {this.cartItems});
 
   factory CartResponse.fromJson(Map<String, dynamic> json) {
     return CartResponse(
@@ -16,6 +17,7 @@ class CartResponse {
       json['retailerId'],
       json['gardenerId'],
       json['gardenerName'],
+      json['contractImage'],
       cartItems: (json['cartItems'] as List<dynamic>?)?.map((item) => CartItemModel.fromJson(item)).toList(),
     );
   }
@@ -27,7 +29,12 @@ class CartResponse {
       'gardenerId': gardenerId,
       'gardenerName': gardenerName,
       'cartItems': cartItems?.map((item) => item.toJson()).toList(),
+      'contractImage': contractImage,
     };
+  }
+
+  copyWith({required String contractImage}) {
+    return CartResponse(cartId, retailerId, gardenerId, gardenerName, contractImage, cartItems: cartItems);
   }
 }
 
@@ -39,7 +46,7 @@ class CartItemModel {
   final double? price;
   int? quantity;
   final String? productUnit;
-  final int? depositAmount;
+  final double? depositAmount;
   final int? depositPercentage;
 
   CartItemModel({

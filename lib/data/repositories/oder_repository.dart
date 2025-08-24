@@ -33,15 +33,16 @@ class OderRepository extends GetxController {
     }
   }
 
-  Future<bool?> createOder(String id, String paymentMethod, List<CartResponse> data) async {
+  Future<bool?> createOder(String id, String paymentMethod, List<CartResponse> data, String contractImage) async {
     try {
+      final newData = data.map((e) => e.copyWith(contractImage: contractImage)).toList();
       final response = await _apiService.post(
         '/orders/$id',
         queryParameters: {
-          'paymentMethod': paymentMethod.toUpperCase(),
+          'paymentMethod': "COD", //paymentMethod.toUpperCase(),
           "shippingAddress": "01JZ5RNPN3XX47MT6SJ7ZFX6AN",
         },
-        data: data.map((e) => e.toJson()).toList(),
+        data: newData.map((e) => e.toJson()).toList(),
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
