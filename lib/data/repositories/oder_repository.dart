@@ -40,7 +40,7 @@ class OderRepository extends GetxController {
         '/orders/$id',
         queryParameters: {
           'paymentMethod': "COD", //paymentMethod.toUpperCase(),
-          "shippingAddress": "01JZ5RNPN3XX47MT6SJ7ZFX6AN",
+          "shippingAddress": "39 Thạnh Xuân 18, Phường Thới An, Thành Phố Hồ Chí Minh", // "01JZ5RNPN3XX47MT6SJ7ZFX6AN",
         },
         data: newData.map((e) => e.toJson()).toList(),
       );

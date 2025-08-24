@@ -29,7 +29,7 @@ class CartResponse {
       'gardenerId': gardenerId,
       'gardenerName': gardenerName,
       'cartItems': cartItems?.map((item) => item.toJson()).toList(),
-      'contractImage': contractImage,
+      if (contractImage != null) 'contractImage': contractImage,
     };
   }
 
@@ -58,7 +58,7 @@ class CartItemModel {
     this.quantity,
     this.productUnit,
     this.depositAmount,
-    this.depositPercentage,
+    this.depositPercentage = 0,
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
@@ -81,7 +81,7 @@ class CartItemModel {
     "price": price,
     "quantity": quantity,
     "productUnit": productUnit,
-    "depositAmount": depositAmount,
+    "depositAmount": depositAmount ?? (price ?? 0) * (depositPercentage ?? 0.0),
     "depositPercentage": depositPercentage,
   };
 }
