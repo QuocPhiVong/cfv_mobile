@@ -25,6 +25,7 @@ class OrderDeliveryModel {
   final String createdAt;
   final String updatedAt;
   final String? note;
+  final int totalAmount;
   final List<OrderDeliveryDetailModel> orderDeliveryDetails;
 
   Color get deliveryStatusColor {
@@ -49,6 +50,7 @@ class OrderDeliveryModel {
     required this.deliveryStatus,
     required this.createdAt,
     required this.updatedAt,
+    required this.totalAmount,
     this.note,
     required this.orderDeliveryDetails,
   });
@@ -62,6 +64,7 @@ class OrderDeliveryModel {
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
       note: json['note'] as String?,
+      totalAmount: json.parseDouble('totalAmount').toInt(),
       orderDeliveryDetails: (json['orderDeliveryDetails'] as List<dynamic>)
           .map((item) => OrderDeliveryDetailModel.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -77,6 +80,7 @@ class OrderDeliveryModel {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'note': note,
+      'totalAmount': totalAmount,
       'orderDeliveryDetails': orderDeliveryDetails.map((item) => item.toJson()).toList(),
     };
   }

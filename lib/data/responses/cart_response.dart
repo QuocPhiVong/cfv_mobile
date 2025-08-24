@@ -39,8 +39,8 @@ class CartItemModel {
   final double? price;
   int? quantity;
   final String? productUnit;
-  final double? depositAmount;
-  final int depositPercentage;
+  final int? depositAmount;
+  final int? depositPercentage;
 
   CartItemModel({
     this.cartItemId,
@@ -51,7 +51,7 @@ class CartItemModel {
     this.quantity,
     this.productUnit,
     this.depositAmount,
-    this.depositPercentage = 0,
+    this.depositPercentage,
   });
 
   factory CartItemModel.fromJson(Map<String, dynamic> json) => CartItemModel(
@@ -74,7 +74,7 @@ class CartItemModel {
     "price": price,
     "quantity": quantity,
     "productUnit": productUnit,
-    "depositAmount": (price ?? 0) * (depositPercentage / 100),
+    "depositAmount": depositAmount,
     "depositPercentage": depositPercentage,
   };
 }

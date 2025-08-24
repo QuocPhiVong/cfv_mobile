@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  isar_flutter_libs
   maps_launcher
   url_launcher_linux
 )

@@ -14,6 +14,7 @@ class OrderDetailResponse {
   final String createdAt;
   final String? cancelReason;
   final String shippingAddress;
+  final int totalDepositAmount;
   final List<OrderDetail> orderDetails;
 
   Color get statusColor {
@@ -45,6 +46,7 @@ class OrderDetailResponse {
     this.cancelReason,
     required this.shippingAddress,
     required this.orderDetails,
+    required this.totalDepositAmount,
   });
 
   factory OrderDetailResponse.fromJson(Map<String, dynamic> json) {
@@ -61,6 +63,7 @@ class OrderDetailResponse {
       createdAt: json['createdAt'] as String,
       cancelReason: json['cancelReason'] as String?,
       shippingAddress: json['shippingAddress'] as String,
+      totalDepositAmount: json.parseDouble('totalDepositAmount').toInt(),
       orderDetails: (json['orderDetails'] as List<dynamic>)
           .map((item) => OrderDetail.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -97,6 +100,9 @@ class OrderDetail {
   final String weightUnit;
   final String currency;
   final int deliveredQuantity;
+  final String harvestStatus;
+  final int depositAmount;
+  final int depositPercentage;
 
   OrderDetail({
     required this.orderDetailId,
@@ -109,6 +115,9 @@ class OrderDetail {
     required this.weightUnit,
     required this.currency,
     required this.deliveredQuantity,
+    required this.harvestStatus,
+    required this.depositAmount,
+    required this.depositPercentage,
   });
 
   factory OrderDetail.fromJson(Map<String, dynamic> json) {
@@ -123,6 +132,9 @@ class OrderDetail {
       weightUnit: json['weightUnit'] as String,
       currency: json['currency'] as String,
       deliveredQuantity: json.parseDouble('deliveredQuantity').toInt(),
+      harvestStatus: json['harvestStatus'] as String,
+      depositAmount: json.parseDouble('depositAmount').toInt(),
+      depositPercentage: json.parseDouble('depositPercentage').toInt(),
     );
   }
 
@@ -138,6 +150,9 @@ class OrderDetail {
       'weightUnit': weightUnit,
       'currency': currency,
       'deliveredQuantity': deliveredQuantity,
+      'harvestStatus': harvestStatus,
+      'depositAmount': depositAmount,
+      'depositPercentage': depositPercentage,
     };
   }
 }
