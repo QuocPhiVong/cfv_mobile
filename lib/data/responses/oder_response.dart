@@ -58,6 +58,7 @@ class OrderModel {
   final int? shippingCost;
   final DateTime? createdAt;
   final int? productTypeAmount;
+  final int? totalDepositAmount;
 
   OrderModel({
     this.orderId,
@@ -69,6 +70,7 @@ class OrderModel {
     this.shippingCost,
     this.createdAt,
     this.productTypeAmount,
+    this.totalDepositAmount
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -82,6 +84,7 @@ class OrderModel {
       shippingCost: json.parseDouble("shippingCost").toInt(),
       createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
       productTypeAmount: json["productTypeAmount"],
+      totalDepositAmount: json["totalDepositAmount"],
     );
   }
 
@@ -95,5 +98,6 @@ class OrderModel {
     "shippingCost": shippingCost,
     "createdAt": createdAt?.toIso8601String(),
     "productTypeAmount": productTypeAmount,
+    "totalDepositAmount": totalDepositAmount,
   };
 }
