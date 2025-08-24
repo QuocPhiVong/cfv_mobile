@@ -36,7 +36,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   String? _contractFileName;
   String? uploadedImageUrl;
 
-  Map<String, double> _depositPercentages = {};
+  final Map<String, double> _depositPercentages = {};
 
   // Delivery fee
   final int deliveryFee = 15000;
@@ -231,7 +231,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                               ],
                             ),
                           ),
-                        }
+                        },
                       ],
                     ),
                   ),
@@ -398,7 +398,6 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
             context,
           ).showSnackBar(SnackBar(content: Text('Tải lên hợp đồng thất bại'), backgroundColor: Colors.red));
         }
-
       }
     } catch (e) {
       _showErrorMessage('Lỗi khi chọn tệp: $e');
