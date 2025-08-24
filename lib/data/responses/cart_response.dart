@@ -62,7 +62,7 @@ class CartItemModel {
     price: json["price"],
     quantity: json["quantity"],
     productUnit: json["productUnit"],
-    depositAmount: json["depositAmount"],
+    depositAmount: json["depositAmount"] ?? (json["price"] ?? 0) * (json["depositPercentage"] / 100),
     depositPercentage: json["depositPercentage"],
   );
 
