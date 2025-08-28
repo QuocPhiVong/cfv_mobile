@@ -167,7 +167,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               // Create review section
               Obx(
                 () =>
-                    (controller.order.value?.status != "DELIVERED" ||
+                    (controller.order.value?.status != "COMPLETED" ||
                         reviewController.isLoadingReview.value ||
                         reviewController.review.value?.reviewId != null)
                     ? const SizedBox.shrink()
