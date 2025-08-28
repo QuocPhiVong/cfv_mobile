@@ -1,6 +1,7 @@
 import 'package:cfv_mobile/controller/app_controller.dart';
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
+import 'package:cfv_mobile/controller/sendbird_controller.dart';
 import 'package:cfv_mobile/data/responses/home_response.dart';
 import 'package:cfv_mobile/screens/product/product_details.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
@@ -42,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   HomeController get homeController => Get.find<HomeController>();
   AuthenticationController get authController => Get.find<AuthenticationController>();
+  SendbirdController get sendbirdController => Get.find<SendbirdController>();
   // Controllers for message input fields
   Map<int, TextEditingController> messageControllers = {};
 
@@ -51,6 +53,28 @@ class _HomeScreenState extends State<HomeScreen> {
     homeController.loadCategoriesData();
     homeController.loadGardenersData();
     homeController.loadPostsData();
+    _initializeSendbird();
+  }
+
+  Future<void> _initializeSendbird() async {
+    try {
+      final userId = authController.currentUser?.accountId ?? '';
+      final name = authController.currentUser?.name ?? '';
+
+      if (userId.isNotEmpty && name.isNotEmpty) {
+        await sendbirdController.initialize();
+        await sendbirdController.connectUser();
+
+        // Check connection status
+        if (sendbirdController.isUserConnected.value) {
+          debugPrint('✅ Sendbird connected successfully');
+        } else {
+          debugPrint('⚠️ Sendbird connection failed');
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to initialize Sendbird: $e');
+    }
   }
 
   @override
@@ -780,16 +804,68 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Method to handle sending messages
-  void _sendMessage(int postIndex, String message) {
-    if (message.trim().isNotEmpty) {
-      String channelID = 'channel_${DateTime.now().millisecondsSinceEpoch}';
-      // Create or get channel and send message with sendbird service
+  Future<void> _sendMessage(int postIndex, String message) async {
+    if (message.trim().isEmpty) return;
 
+    try {
+      // Get the post data
+      final post = homeController.posts[postIndex];
+      final postId = post.postId ?? '';
+      final gardenerId = post.gardenerId ?? '';
+      final gardenerName = post.gardenerName ?? '';
+
+      if (postId.isEmpty || gardenerId.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể xác định thông tin bài đăng'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Check connection status first
+      if (!sendbirdController.isUserConnected.value) {
+        debugPrint('🔄 Reconnecting to Sendbird...');
+        await sendbirdController.connectUser();
+      }
+
+      final conversationTitle = 'Chat với ${gardenerName.isNotEmpty ? gardenerName : 'Gardener'}';
+
+      try {
+        // Create or get conversation first
+        final conversation = await sendbirdController.createNewConversation(
+          conversationTitle,
+          initialMessage: message,
+          postId: postId,
+          gardenerId: gardenerId,
+        );
+
+        // Open the conversation to set it as current
+        await sendbirdController.openConversation(conversation);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Tin nhắn đã được gửi: $message'),
+            backgroundColor: Colors.green.shade600,
+          ),
+        );
+
+        // Clear the message input
+        messageControllers[postIndex]?.clear();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi gửi tin nhắn: $e'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Tin nhắn đã được gửi!'),
-          backgroundColor: Colors.green.shade600,
-          duration: const Duration(seconds: 2),
+          content: Text('Lỗi kết nối: $e'),
+          backgroundColor: Colors.red.shade600,
         ),
       );
     }
