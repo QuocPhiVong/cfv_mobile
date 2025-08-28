@@ -184,7 +184,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: Image.network(
-                              uploadedImageUrl!,
+                              'https://cdn-icons-png.flaticon.com/512/906/906313.png',
                               width: MediaQuery.of(context).size.width - 64,
                               fit: BoxFit.cover,
                             ),
@@ -363,8 +363,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   Future<void> _pickContractFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        // allowedExtensions: ['pdf', 'doc', 'docx'],
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
         allowMultiple: false,
       );
 

@@ -28,7 +28,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed
-    Get.delete<OderController>();
     super.dispose();
   }
 
