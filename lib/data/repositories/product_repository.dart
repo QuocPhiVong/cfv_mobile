@@ -14,9 +14,9 @@ class ProductRepository extends GetxController {
     debugPrint('ProductRepository onReady: Initialized successfully.');
   }
 
-  Future<ProductModel?> fetchProductDetails(String productId) async {
+  Future<ProductModel?> fetchProductDetails(String productId, String postId) async {
     try {
-      final response = await _apiService.dio.get('/products/$productId');
+      final response = await _apiService.dio.get('/products/$productId?postId=$postId');
       return ProductModel.fromJson(response.data);
     } catch (e) {
       debugPrint('Error fetching products: $e');

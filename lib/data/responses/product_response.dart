@@ -13,6 +13,7 @@ class ProductModel {
   final String? weightUnit;
   final String? gardenerId;
   final String? gardenerName;
+  final String? postId;
 
   ProductModel({
     this.productId,
@@ -29,6 +30,7 @@ class ProductModel {
     this.weightUnit,
     this.gardenerId,
     this.gardenerName,
+    this.postId,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
@@ -46,6 +48,7 @@ class ProductModel {
     weightUnit: json["weightUnit"],
     gardenerId: json["gardenerId"],
     gardenerName: json["gardenerName"],
+    postId: json["postId"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -63,6 +66,7 @@ class ProductModel {
     "weightUnit": weightUnit,
     "gardenerId": gardenerId,
     "gardenerName": gardenerName,
+    "postId": postId,
   };
 }
 

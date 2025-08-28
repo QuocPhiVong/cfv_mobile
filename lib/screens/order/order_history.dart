@@ -21,7 +21,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void initState() {
     super.initState();
-    orderController = Get.put(OderController());
+    orderController = Get.find<OderController>();
     _initializeData();
   }
 

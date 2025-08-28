@@ -13,8 +13,9 @@ import 'package:intl/intl.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
+  final String postId;
 
-  const ProductDetailScreen({super.key, required this.productId});
+  const ProductDetailScreen({super.key, required this.productId, required this.postId});
 
   @override
   State<ProductDetailScreen> createState() => _ProductDetailScreenState();
@@ -33,7 +34,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     super.initState();
     _cartService = CartService();
 
-    productController.loadProductDetails(widget.productId);
+    productController.loadProductDetails(widget.productId, widget.postId);
     reviewController.getReviews(widget.productId).whenComplete(() {
       for (var review in reviewController.productReviews.value) {
         rating.value += review.rating;
@@ -893,6 +894,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             price: double.parse(product?.price.toString() ?? '25000'),
             quantity: quantity,
             productUnit: product?.weightUnit ?? 'kg',
+            postId: productController.product.value?.postId ?? '',
           ),
         )
         .then((response) {

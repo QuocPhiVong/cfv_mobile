@@ -58,7 +58,7 @@ class OrderModel {
   final int? shippingCost;
   final DateTime? createdAt;
   final int? productTypeAmount;
-  final int? totalDepositAmount;
+  final double? totalDepositAmount;
 
   OrderModel({
     this.orderId,
@@ -70,7 +70,7 @@ class OrderModel {
     this.shippingCost,
     this.createdAt,
     this.productTypeAmount,
-    this.totalDepositAmount
+    this.totalDepositAmount,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {

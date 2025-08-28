@@ -157,10 +157,7 @@ class _GardenerProfileScreenState extends State<GardenerProfileScreen> with Sing
                                     // Navigate to Create Appointment Screen
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            CreateAppointmentScreen(),
-                                      ),
+                                      MaterialPageRoute(builder: (context) => CreateAppointmentScreen()),
                                     );
                                   },
                                   icon: const Icon(Icons.calendar_today, size: 18),
@@ -426,6 +423,7 @@ class _GardenerProfileScreenState extends State<GardenerProfileScreen> with Sing
             builder: (context) => ProductDetailScreen(
               // TODO: update for product details
               productId: "123",
+              postId: "123",
               // product: {
               //   'name': product['name'],
               //   'price': product['price'],

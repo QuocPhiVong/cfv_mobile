@@ -21,10 +21,10 @@ class ProductController extends GetxController {
     debugPrint('ProductController onReady: Initialized successfully.');
   }
 
-  Future<void> loadProductDetails(String productId) async {
+  Future<void> loadProductDetails(String productId, String postId) async {
     isLoading.value = true;
     try {
-      final data = await _productRepository.fetchProductDetails(productId);
+      final data = await _productRepository.fetchProductDetails(productId, postId);
       if (data != null) {
         product.value = data;
         debugPrint('Product details loaded successfully: ${data.productName}');
