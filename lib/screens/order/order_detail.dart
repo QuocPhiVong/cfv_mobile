@@ -1,3 +1,4 @@
+import 'package:cfv_mobile/controller/app_controller.dart';
 import 'package:cfv_mobile/controller/order_detail_controller.dart';
 import 'package:cfv_mobile/controller/review_controller.dart';
 import 'package:cfv_mobile/data/responses/order_detail_response.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -282,56 +284,150 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
           const SizedBox(height: 16),
           ...order.orderDetails.map<Widget>((product) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
-                    child: Icon(Icons.eco, color: Colors.green.shade600, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.productName,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${product.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ/kg',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+            final depositPercentage = AppController.getProductDepositPercentage(product.productId ?? '');
+            final quantity = product.quantity ?? 0;
+            final price = product.price ?? 0;
+            final deposit = (price * quantity * depositPercentage / 100).toInt();
+            return Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Row(
                     children: [
-                      Text('Tổng: ${product.quantity} kg', style: const TextStyle(fontSize: 11, color: Colors.black87)),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Đã giao: ${product.deliveredQuantity} kg',
-                        style: TextStyle(fontSize: 11, color: Colors.green.shade600),
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(color: Colors.green.shade100, borderRadius: BorderRadius.circular(8)),
+                        child: Icon(Icons.eco, color: Colors.green.shade600, size: 24),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Còn lại: ${product.quantity - product.deliveredQuantity} kg',
-                        style: TextStyle(fontSize: 11, color: Colors.orange.shade600),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.productName,
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${product.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} VNĐ/kg',
+                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Tổng: ${product.quantity} kg',
+                            style: const TextStyle(fontSize: 11, color: Colors.black87),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Đã giao: ${product.deliveredQuantity} kg',
+                            style: TextStyle(fontSize: 11, color: Colors.green.shade600),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Còn lại: ${product.quantity - product.deliveredQuantity} kg',
+                            style: TextStyle(fontSize: 11, color: Colors.orange.shade600),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.account_balance_wallet, color: Colors.orange.shade600, size: 16),
+                          const SizedBox(width: 8),
+                          const Text('Đặt cọc trước:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          const Spacer(),
+                          Text(
+                            '$depositPercentage%',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.orange.shade700),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(Icons.payments, color: Colors.orange.shade600, size: 16),
+                          const SizedBox(width: 8),
+                          const Text('Số tiền đặt cọc:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          const Spacer(),
+                          Text(
+                            '${_formatPrice(deposit)} VNĐ',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.orange.shade700),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    const Text('Trạng thái gieo trồng:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    const Spacer(),
+                    Text(
+                      {
+                            "PREORDEROPEN": "Mở đặt cọc",
+                            "PLANTING": "Đang trồng",
+                            "HARVESTING": "Thu hoạch",
+                            "PROCESSING": "Đóng gói",
+                            "READYFORSALE": "Có hàng",
+                            "HARVESTFAILED": "Mất mùa",
+                          }[product.harvestStatus] ??
+                          "N/A",
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue.shade700),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                GestureDetector(
+                  onTap: () {
+                    // Handle contract download
+                    _downloadContract(order.contractImage);
+                  },
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Hợp đồng',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          fontStyle: FontStyle.italic,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.download, color: Colors.blue.shade600, size: 16),
+                    ],
+                  ),
+                ),
+              ],
             );
           }),
         ],
       ),
     );
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
   }
 
   Widget _buildOrderTrackingCard() {
@@ -591,5 +687,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
       ),
     );
+  }
+
+  void _downloadContract(String? url) async {
+    if (url == null) return;
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
   }
 }

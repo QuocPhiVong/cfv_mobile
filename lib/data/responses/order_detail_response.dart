@@ -16,6 +16,7 @@ class OrderDetailResponse {
   final String shippingAddress;
   final int totalDepositAmount;
   final List<OrderDetail> orderDetails;
+  final String? contractImage;
 
   Color get statusColor {
     switch (status) {
@@ -47,6 +48,7 @@ class OrderDetailResponse {
     required this.shippingAddress,
     required this.orderDetails,
     required this.totalDepositAmount,
+    this.contractImage,
   });
 
   factory OrderDetailResponse.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,7 @@ class OrderDetailResponse {
       cancelReason: json['cancelReason'] as String?,
       shippingAddress: json['shippingAddress'] as String,
       totalDepositAmount: json.parseDouble('totalDepositAmount').toInt(),
+      contractImage: json['contractImage'] as String?,
       orderDetails: (json['orderDetails'] as List<dynamic>)
           .map((item) => OrderDetail.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -84,6 +87,8 @@ class OrderDetailResponse {
       'createdAt': createdAt,
       'cancelReason': cancelReason,
       'shippingAddress': shippingAddress,
+      'totalDepositAmount': totalDepositAmount,
+      'contractImage': contractImage,
       'orderDetails': orderDetails.map((item) => item.toJson()).toList(),
     };
   }
