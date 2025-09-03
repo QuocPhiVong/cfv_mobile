@@ -32,9 +32,9 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   final OderController _oderController = Get.find<OderController>();
   final CartController _cartController = Get.find<CartController>();
 
-  File? _selectedContract;
-  String? _contractFileName;
-  String? uploadedImageUrl;
+  final List<File> _selectedContract = [];
+  final List<String> _contractFileName = [];
+  List<String> uploadedImageUrl = [];
 
   final Map<String, double> _depositPercentages = {};
 
@@ -129,109 +129,147 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     title: 'Tải lên hợp đồng',
                     child: Column(
                       children: [
-                        // Contract file display box
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                            color: _selectedContract != null ? Colors.green.shade50 : Colors.grey.shade50,
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                _selectedContract != null ? Icons.description : Icons.upload_file,
-                                color: _selectedContract != null ? Colors.green.shade600 : Colors.grey.shade500,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _selectedContract != null ? 'Tệp đã chọn:' : 'Chưa có tệp nào được chọn',
-                                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      _contractFileName ?? 'Vui lòng chọn tệp hợp đồng',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color: _selectedContract != null ? Colors.green.shade700 : Colors.grey.shade500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (_selectedContract != null)
-                                IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _selectedContract = null;
-                                      _contractFileName = null;
-                                    });
-                                  },
-                                  icon: Icon(Icons.close, color: Colors.red.shade400, size: 20),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        if (uploadedImageUrl != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              'https://cdn-icons-png.flaticon.com/512/906/906313.png',
-                              width: MediaQuery.of(context).size.width - 64,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        else ...{
-                          // Upload button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _pickContractFile,
-                              icon: const Icon(Icons.cloud_upload),
-                              label: const Text('Chọn tệp hợp đồng'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade600,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Information message
+                        // Contract files display
+                        if (_selectedContract.isEmpty)
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
+                              border: Border.all(color: Colors.grey.shade300),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.blue.shade200),
+                              color: Colors.grey.shade50,
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.info_outline, color: Colors.blue.shade600, size: 20),
-                                const SizedBox(width: 8),
+                                Icon(Icons.upload_file, color: Colors.grey.shade500, size: 24),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    'Vui lòng tải lên hợp đồng để hoàn tất đơn hàng. Chấp nhận các định dạng: PDF, DOC, DOCX',
+                                    'Chưa có tệp nào được chọn',
                                     style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.blue.shade700,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.w500,
+                                      color: Colors.grey.shade500,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
+                          )
+                        else
+                          Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.green.shade200),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Đã chọn ${_selectedContract.length} tệp hợp đồng',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.green.shade700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ...List.generate(_selectedContract.length, (index) {
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey.shade300),
+                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.white,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.description, color: Colors.blue.shade600, size: 20),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _contractFileName[index],
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.black87,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Tệp hợp đồng',
+                                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () => _removeFile(index),
+                                        icon: Icon(Icons.close, color: Colors.red.shade400, size: 20),
+                                        tooltip: 'Xóa tệp',
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ],
                           ),
-                        },
+                        const SizedBox(height: 16),
+                        // Upload button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _pickContractFile,
+                            icon: const Icon(Icons.add),
+                            label: Text(_selectedContract.isEmpty ? 'Chọn tệp hợp đồng' : 'Thêm tệp hợp đồng'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.shade600,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Information message
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, color: Colors.blue.shade600, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Vui lòng tải lên hợp đồng để hoàn tất đơn hàng. Chấp nhận các định dạng: PDF, DOC, DOCX',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.blue.shade700,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -365,10 +403,10 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'doc', 'docx'],
-        allowMultiple: false,
+        allowMultiple: true,
       );
 
-      if (result != null && result.files.single.path != null) {
+      if (result != null && result.files.isNotEmpty) {
         // show loading
         showDialog(
           context: context,
@@ -377,21 +415,25 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           },
         );
 
-        final imageUrl = await _oderController.uploadImage(result.files.single);
-        print('image url ==> $imageUrl');
+        final imageUrls = await _oderController.uploadImage(result.files);
+        print('image url ==> $imageUrls');
 
         Navigator.of(context).pop();
 
-        if (imageUrl.isNotEmpty) {
+        if (imageUrls.isNotEmpty) {
           setState(() {
-            _selectedContract = File(result.files.single.path!);
-            _contractFileName = result.files.single.name;
-            uploadedImageUrl = imageUrl;
+            // Add new files to existing ones
+            _selectedContract.addAll(result.files.map((e) => File(e.path!)));
+            _contractFileName.addAll(result.files.map((e) => e.name));
+            uploadedImageUrl.addAll(imageUrls);
           });
           // show snackbar success
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Tải lên hợp đồng thành công'), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Tải lên ${result.files.length} tệp hợp đồng thành công'),
+              backgroundColor: Colors.green,
+            ),
+          );
         } else {
           // show snackbar error
           ScaffoldMessenger.of(
@@ -402,6 +444,14 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     } catch (e) {
       _showErrorMessage('Lỗi khi chọn tệp: $e');
     }
+  }
+
+  void _removeFile(int index) {
+    setState(() {
+      _selectedContract.removeAt(index);
+      _contractFileName.removeAt(index);
+      uploadedImageUrl.removeAt(index);
+    });
   }
 
   void _confirmOrder(double totalPrice) {
@@ -422,8 +472,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
     }
 
     // Validate contract upload
-    if (_selectedContract == null) {
-      _showErrorMessage('Vui lòng tải lên hợp đồng');
+    if (_selectedContract.isEmpty) {
+      _showErrorMessage('Vui lòng tải lên ít nhất một tệp hợp đồng');
       return;
     }
 
@@ -450,7 +500,9 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     Text('Số điện thoại: ${_phoneController.text}'),
                     Text('Phương thức: ${selectedDeliveryMethod == 'card' ? 'Thanh toán thẻ' : 'COD'}'),
                     Text('Địa chỉ: ${_addressController.text}'),
-                    Text('Hợp đồng: ${_contractFileName ?? 'Chưa có tệp hợp đồng'}'),
+                    Text(
+                      'Hợp đồng: ${_contractFileName.isNotEmpty ? _contractFileName.join(', ') : 'Chưa có tệp hợp đồng'}',
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'Tổng tiền: ${_formatPrice(totalPrice.toInt())} VNĐ',
@@ -500,7 +552,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           _authController.currentUser?.accountId ?? '',
           selectedDeliveryMethod,
           widget.orderItems,
-          uploadedImageUrl ?? '',
+          uploadedImageUrl,
         )
         .then((value) {
           if (value == true) {
@@ -588,64 +640,6 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           borderSide: BorderSide(color: Colors.green.shade600),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      ),
-    );
-  }
-
-  Widget _buildDeliveryOption({
-    required String value,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedDeliveryMethod = value;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: selectedDeliveryMethod == value ? Colors.green.shade600 : Colors.grey.shade300,
-            width: selectedDeliveryMethod == value ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          color: selectedDeliveryMethod == value ? Colors.green.shade50 : Colors.white,
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: selectedDeliveryMethod == value ? Colors.green.shade600 : Colors.grey.shade600),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: selectedDeliveryMethod == value ? Colors.green.shade700 : Colors.black87,
-                    ),
-                  ),
-                  Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-                ],
-              ),
-            ),
-            Radio<String>(
-              value: value,
-              groupValue: selectedDeliveryMethod,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedDeliveryMethod = newValue!;
-                });
-              },
-              activeColor: Colors.green.shade600,
-            ),
-          ],
-        ),
       ),
     );
   }

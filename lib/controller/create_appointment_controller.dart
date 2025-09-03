@@ -40,8 +40,7 @@ class CreateAppointmentController extends GetxController {
       clearMessages();
       isCreating.value = true;
 
-      final request = CreateAppointmentRequest
-      (
+      final request = CreateAppointmentRequest(
         subject: subject,
         description: description,
         appointmentDate: appointmentDate,

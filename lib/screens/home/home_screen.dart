@@ -6,6 +6,7 @@ import 'package:cfv_mobile/data/responses/home_response.dart';
 import 'package:cfv_mobile/screens/product/product_details.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:video_player/video_player.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -123,8 +124,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Xin chào!', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
-                            const Text(
-                              'Vòng Quốc Phi',
+                            Text(
+                              authController.currentUser?.name ?? '',
                               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
                             ),
                           ],
@@ -484,7 +485,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
-                  child: Icon(Icons.person, color: Colors.green.shade600, size: 24),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(25),
+                    child: Image.network(
+                      post.gardenerAvatar ?? '',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(Icons.person, color: Colors.green.shade600, size: 24),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -496,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
                       ),
                       Text(
-                        '0982912617 • '
+                        '${'post.gardenerPhone' ?? ''} • '
                         '${post.createdAt != null ? timeAgoSinceDate(post.createdAt!) : 'Chưa có ngày'}',
                         style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                       ),
@@ -524,11 +533,11 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  isExpanded
+                Html(
+                  data: isExpanded
                       ? post.content ?? ""
                       : post.content?.substring(0, post.content!.length > 30 ? 30 : post.content!.length) ?? "",
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.4),
+                  // style: TextStyle(fontSize: 14, color: Colors.grey.shade700, height: 1.4),
                 ),
                 const SizedBox(height: 4),
                 GestureDetector(
@@ -816,10 +825,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (postId.isEmpty || gardenerId.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Không thể xác định thông tin bài đăng'),
-            backgroundColor: Colors.red,
-          ),
+          const SnackBar(content: Text('Không thể xác định thông tin bài đăng'), backgroundColor: Colors.red),
         );
         return;
       }
@@ -845,29 +851,20 @@ class _HomeScreenState extends State<HomeScreen> {
         await sendbirdController.openConversation(conversation);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Tin nhắn đã được gửi: $message'),
-            backgroundColor: Colors.green.shade600,
-          ),
+          SnackBar(content: Text('Tin nhắn đã được gửi: $message'), backgroundColor: Colors.green.shade600),
         );
 
         // Clear the message input
         messageControllers[postIndex]?.clear();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi gửi tin nhắn: $e'),
-            backgroundColor: Colors.red.shade600,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Lỗi gửi tin nhắn: $e'), backgroundColor: Colors.red.shade600));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Lỗi kết nối: $e'),
-          backgroundColor: Colors.red.shade600,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Lỗi kết nối: $e'), backgroundColor: Colors.red.shade600));
     }
   }
 

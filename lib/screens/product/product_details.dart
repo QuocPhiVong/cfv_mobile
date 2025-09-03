@@ -320,14 +320,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           // );
                                         },
                                         child: Container(
-                                          width: 60,
-                                          height: 60,
+                                          width: 50,
+                                          height: 50,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: Colors.green.shade100,
-                                            border: Border.all(color: Colors.green.shade300, width: 2),
                                           ),
-                                          child: Icon(Icons.person, color: Colors.green.shade600, size: 30),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(25),
+                                            child: Image.network(
+                                              productController.product.value?.gardenerAvatar ?? '',
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                  Icon(Icons.person, color: Colors.green.shade600, size: 24),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 16),
@@ -344,7 +351,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                               ),
                                             ),
                                             Text(
-                                              productController.product.value?.gardenerName ?? '0901 234 567',
+                                              '0901 234 567 - ${productController.product.value?.createdAt != null ? DateFormat("dd/MM/yyyy").format(productController.product.value?.createdAt ?? DateTime.now()) : 'Chưa có ngày'}',
                                               style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                                             ),
                                           ],

@@ -3,7 +3,7 @@ class CartResponse {
   final String retailerId;
   final String gardenerId;
   final String gardenerName;
-  final String? contractImage;
+  final List<String>? contractImage;
   final List<CartItemModel>? cartItems;
   double get totalPrice =>
       cartItems?.fold(0.0, (sum, item) => (sum ?? 0.0) + ((item.price ?? 0.0) * (item.quantity ?? 1))) ?? 0.0;
@@ -17,7 +17,7 @@ class CartResponse {
       json['retailerId'],
       json['gardenerId'],
       json['gardenerName'],
-      json['contractImage'],
+      (json['contractImage'] as List<dynamic>?)?.map((e) => e as String).toList(),
       cartItems: (json['cartItems'] as List<dynamic>?)?.map((item) => CartItemModel.fromJson(item)).toList(),
     );
   }
@@ -33,7 +33,7 @@ class CartResponse {
     };
   }
 
-  copyWith({required String contractImage}) {
+  copyWith({required List<String> contractImage}) {
     return CartResponse(cartId, retailerId, gardenerId, gardenerName, contractImage, cartItems: cartItems);
   }
 }

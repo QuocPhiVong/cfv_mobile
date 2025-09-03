@@ -33,7 +33,7 @@ class OderRepository extends GetxController {
     }
   }
 
-  Future<bool?> createOder(String id, String paymentMethod, List<CartResponse> data, String contractImage) async {
+  Future<bool?> createOder(String id, String paymentMethod, List<CartResponse> data, List<String> contractImage) async {
     try {
       final newData = data.map((e) => e.copyWith(contractImage: contractImage)).toList();
       final response = await _apiService.post(

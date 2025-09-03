@@ -34,7 +34,7 @@ class OderController extends GetxController {
     }
   }
 
-  Future<bool?> createOder(String id, String paymentMethod, List<CartResponse> data, String contractImage) async {
+  Future<bool?> createOder(String id, String paymentMethod, List<CartResponse> data, List<String> contractImage) async {
     try {
       final response = await oderRepository.createOder(id, paymentMethod, data, contractImage);
       return response;
@@ -68,12 +68,16 @@ class OderController extends GetxController {
     }
   }
 
-  Future<String> uploadImage(PlatformFile file) async {
+  Future<List<String>> uploadImage(List<PlatformFile> files) async {
     try {
-      final response = await CloudinaryService().uploadImageFromPlatformFile(file);
-      return response;
+      List<String> result = [];
+      for (var file in files) {
+        final response = await CloudinaryService().uploadImageFromPlatformFile(file);
+        result.add(response);
+      }
+      return result;
     } catch (e) {
-      return '';
+      return [];
     }
   }
 }
