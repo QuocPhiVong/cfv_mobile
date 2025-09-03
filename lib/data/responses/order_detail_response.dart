@@ -16,7 +16,7 @@ class OrderDetailResponse {
   final String shippingAddress;
   final int totalDepositAmount;
   final List<OrderDetail> orderDetails;
-  final String? contractImage;
+  final List<String>? contractImage;
 
   Color get statusColor {
     switch (status) {
@@ -66,7 +66,9 @@ class OrderDetailResponse {
       cancelReason: json['cancelReason'] as String?,
       shippingAddress: json['shippingAddress'] as String,
       totalDepositAmount: json.parseDouble('totalDepositAmount').toInt(),
-      contractImage: json['contractImage'] as String?,
+      contractImage: json['contractImage'] != null
+          ? (json['contractImage'] as List<dynamic>).map((e) => e.toString()).toList()
+          : null,
       orderDetails: (json['orderDetails'] as List<dynamic>)
           .map((item) => OrderDetail.fromJson(item as Map<String, dynamic>))
           .toList(),

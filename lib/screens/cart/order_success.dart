@@ -1,4 +1,5 @@
 import 'package:cfv_mobile/data/responses/cart_response.dart';
+import 'package:cfv_mobile/screens/order/order_detail.dart';
 import 'package:flutter/material.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
@@ -248,7 +249,10 @@ class OrderSuccessScreen extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         // Navigate to order details/history screen
-                        _showOrderDetails(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => OrderDetailScreen(orderId: orderId)),
+                        );
                       },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.green.shade600,

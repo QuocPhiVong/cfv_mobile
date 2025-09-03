@@ -141,11 +141,11 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.upload_file, color: Colors.grey.shade500, size: 24),
+                                Icon(Icons.image, color: Colors.grey.shade500, size: 24),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    'Chưa có tệp nào được chọn',
+                                    'Chưa có hình ảnh nào được chọn',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
@@ -172,7 +172,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                                     Icon(Icons.check_circle, color: Colors.green.shade600, size: 20),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Đã chọn ${_selectedContract.length} tệp hợp đồng',
+                                      'Đã chọn ${_selectedContract.length} hình ảnh hợp đồng',
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
@@ -194,7 +194,28 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.description, color: Colors.blue.shade600, size: 20),
+                                      // Image preview
+                                      Container(
+                                        width: 50,
+                                        height: 50,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.grey.shade300),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Image.file(
+                                            _selectedContract[index],
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Container(
+                                                color: Colors.grey.shade100,
+                                                child: Icon(Icons.image, color: Colors.grey.shade400, size: 24),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
@@ -211,7 +232,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              'Tệp hợp đồng',
+                                              'Hình ảnh hợp đồng',
                                               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                             ),
                                           ],
@@ -220,7 +241,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                                       IconButton(
                                         onPressed: () => _removeFile(index),
                                         icon: Icon(Icons.close, color: Colors.red.shade400, size: 20),
-                                        tooltip: 'Xóa tệp',
+                                        tooltip: 'Xóa hình ảnh',
                                       ),
                                     ],
                                   ),
@@ -235,7 +256,9 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _pickContractFile,
                             icon: const Icon(Icons.add),
-                            label: Text(_selectedContract.isEmpty ? 'Chọn tệp hợp đồng' : 'Thêm tệp hợp đồng'),
+                            label: Text(
+                              _selectedContract.isEmpty ? 'Chọn hình ảnh hợp đồng' : 'Thêm hình ảnh hợp đồng',
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade600,
                               foregroundColor: Colors.white,
@@ -259,7 +282,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'Vui lòng tải lên hợp đồng để hoàn tất đơn hàng. Chấp nhận các định dạng: PDF, DOC, DOCX',
+                                  'Vui lòng tải lên hình ảnh hợp đồng để hoàn tất đơn hàng. Chấp nhận các định dạng: JPG, PNG, JPEG',
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.blue.shade700,
@@ -306,7 +329,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: Colors.grey.withValues(alpha: 0.2),
                   spreadRadius: 2,
                   blurRadius: 8,
                   offset: const Offset(0, -3),
@@ -401,8 +424,8 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   Future<void> _pickContractFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx'],
+        type: FileType.image,
+        // allowedExtensions: ['pdf', 'doc', 'docx'],
         allowMultiple: true,
       );
 
@@ -416,33 +439,35 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         );
 
         final imageUrls = await _oderController.uploadImage(result.files);
-        print('image url ==> $imageUrls');
+        debugPrint('image url ==> $imageUrls');
 
-        Navigator.of(context).pop();
+        if (mounted) {
+          Navigator.of(context).pop();
 
-        if (imageUrls.isNotEmpty) {
-          setState(() {
-            // Add new files to existing ones
-            _selectedContract.addAll(result.files.map((e) => File(e.path!)));
-            _contractFileName.addAll(result.files.map((e) => e.name));
-            uploadedImageUrl.addAll(imageUrls);
-          });
-          // show snackbar success
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Tải lên ${result.files.length} tệp hợp đồng thành công'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        } else {
-          // show snackbar error
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Tải lên hợp đồng thất bại'), backgroundColor: Colors.red));
+          if (imageUrls.isNotEmpty) {
+            setState(() {
+              // Add new files to existing ones
+              _selectedContract.addAll(result.files.map((e) => File(e.path!)));
+              _contractFileName.addAll(result.files.map((e) => e.name));
+              uploadedImageUrl.addAll(imageUrls);
+            });
+            // show snackbar success
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Tải lên ${result.files.length} hình ảnh hợp đồng thành công'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            // show snackbar error
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Tải lên hình ảnh hợp đồng thất bại'), backgroundColor: Colors.red));
+          }
         }
       }
     } catch (e) {
-      _showErrorMessage('Lỗi khi chọn tệp: $e');
+      _showErrorMessage('Lỗi khi chọn hình ảnh: $e');
     }
   }
 
@@ -473,7 +498,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
 
     // Validate contract upload
     if (_selectedContract.isEmpty) {
-      _showErrorMessage('Vui lòng tải lên ít nhất một tệp hợp đồng');
+      _showErrorMessage('Vui lòng tải lên ít nhất một hình ảnh hợp đồng');
       return;
     }
 
@@ -501,7 +526,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                     Text('Phương thức: ${selectedDeliveryMethod == 'card' ? 'Thanh toán thẻ' : 'COD'}'),
                     Text('Địa chỉ: ${_addressController.text}'),
                     Text(
-                      'Hợp đồng: ${_contractFileName.isNotEmpty ? _contractFileName.join(', ') : 'Chưa có tệp hợp đồng'}',
+                      'Hợp đồng: ${_contractFileName.isNotEmpty ? _contractFileName.join(', ') : 'Chưa có hình ảnh hợp đồng'}',
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -555,12 +580,14 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           uploadedImageUrl,
         )
         .then((value) {
-          if (value == true) {
-            _cartController.deleteCart(_authController.currentUser?.accountId ?? '');
-            _navigateToSuccessScreen();
-          } else {
-            _showErrorMessage('Đặt hàng thất bại');
-            Navigator.of(context).pop();
+          if (mounted) {
+            if (value == true) {
+              _cartController.deleteCart(_authController.currentUser?.accountId ?? '');
+              _navigateToSuccessScreen();
+            } else {
+              _showErrorMessage('Đặt hàng thất bại');
+              Navigator.of(context).pop();
+            }
           }
         });
   }
@@ -593,7 +620,12 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 5, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Column(

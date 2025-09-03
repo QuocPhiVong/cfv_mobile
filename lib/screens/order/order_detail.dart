@@ -5,7 +5,6 @@ import 'package:cfv_mobile/data/responses/order_detail_response.dart';
 import 'package:cfv_mobile/screens/order/create_review.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -284,9 +283,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           ),
           const SizedBox(height: 16),
           ...order.orderDetails.map<Widget>((product) {
-            final depositPercentage = AppController.getProductDepositPercentage(product.productId ?? '');
-            final quantity = product.quantity ?? 0;
-            final price = product.price ?? 0;
+            final depositPercentage = AppController.getProductDepositPercentage(product.productId);
+            final quantity = product.quantity;
+            final price = product.price;
             final deposit = (price * quantity * depositPercentage / 100).toInt();
             return Column(
               children: [
@@ -397,26 +396,86 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                GestureDetector(
-                  onTap: () {
-                    // Handle contract download
-                    _downloadContract(order.contractImage);
-                  },
-                  child: Row(
-                    children: [
-                      const Text(
-                        'Hợp đồng',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          fontStyle: FontStyle.italic,
-                          decoration: TextDecoration.underline,
+                // Contract files section
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Hình ảnh hợp đồng:',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 8),
+                    if (order.contractImage != null && order.contractImage!.isNotEmpty)
+                      Column(
+                        children: [
+                          // Summary info
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.blue.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.photo_library, color: Colors.blue.shade600, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${order.contractImage!.length} hình ảnh hợp đồng',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          // Contract images list
+                          ...order.contractImage!.asMap().entries.map((entry) {
+                            int index = entry.key;
+                            String imageUrl = entry.value;
+                            String fileName = _getFileNameFromUrl(imageUrl);
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: _buildImagePreview(imageUrl, fileName, index),
+                            );
+                          }),
+                        ],
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey.shade50,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline, color: Colors.grey.shade600, size: 20),
+                            const SizedBox(width: 12),
+                            const Text('Chưa có hình ảnh hợp đồng', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.download, color: Colors.blue.shade600, size: 16),
-                    ],
-                  ),
+                  ],
                 ),
               ],
             );
@@ -689,11 +748,231 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 
-  void _downloadContract(String? url) async {
-    if (url == null) return;
-    final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri)) {
-      throw Exception('Could not launch $uri');
+  // Helper functions for file handling
+  String _getFileNameFromUrl(String url) {
+    try {
+      Uri uri = Uri.parse(url);
+      String path = uri.path;
+      return path.split('/').last.isNotEmpty ? path.split('/').last : 'contract_file';
+    } catch (e) {
+      return 'contract_file';
     }
+  }
+
+  Widget _buildImagePreview(String imageUrl, String fileName, int index) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Image preview
+        GestureDetector(
+          onTap: () => _viewImage(imageUrl),
+          child: Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+              child: Stack(
+                children: [
+                  Image.network(
+                    imageUrl,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: Colors.grey.shade100,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+                              ),
+                              const SizedBox(height: 8),
+                              Text('Đang tải hình ảnh...', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade100,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image, color: Colors.grey.shade400, size: 48),
+                            const SizedBox(height: 8),
+                            Text('Không thể tải hình ảnh', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  // Image number badge
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Hình ${index + 1}',
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  // Zoom icon
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.zoom_in, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Image info and actions
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Image icon
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(color: Colors.blue.shade600, borderRadius: BorderRadius.circular(8)),
+                child: const Icon(Icons.image, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              // Image info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      fileName,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black87),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text('Hình ảnh hợp đồng ${index + 1}', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                  ],
+                ),
+              ),
+              // Action buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // View button
+                  GestureDetector(
+                    onTap: () => _viewImage(imageUrl),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Icon(Icons.visibility, color: Colors.blue.shade600, size: 16),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Download button
+                  GestureDetector(
+                    // onTap: () => _downloadImage(imageUrl, fileName),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.green.shade600, borderRadius: BorderRadius.circular(6)),
+                      child: const Icon(Icons.download, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _downloadImage(String imageUrl, String fileName) async {
+    try {
+      final Uri uri = Uri.parse(imageUrl);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $uri');
+      }
+    } catch (e) {
+      _showErrorMessage('Không thể tải xuống hình ảnh: $e');
+    }
+  }
+
+  void _viewImage(String imageUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            title: const Text('Hình ảnh hợp đồng', style: TextStyle(color: Colors.white)),
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator(color: Colors.white));
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, color: Colors.white, size: 64),
+                        SizedBox(height: 16),
+                        Text('Không thể tải hình ảnh', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
   }
 }

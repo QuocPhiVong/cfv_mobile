@@ -29,7 +29,7 @@ class CloudinaryService {
     });
 
     try {
-      final response = await _dio.post('/raw/upload', data: formData);
+      final response = await _dio.post('/image/upload', data: formData);
       return response.data['secure_url'];
     } catch (e) {
       debugPrint('Error uploading image: $e');
