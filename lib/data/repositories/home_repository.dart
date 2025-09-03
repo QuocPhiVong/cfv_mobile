@@ -1,4 +1,5 @@
 import 'package:cfv_mobile/data/responses/home_response.dart';
+import 'package:cfv_mobile/data/responses/notification_response.dart';
 import 'package:cfv_mobile/data/services/api_services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart'; // Using the import path from your desired repo
@@ -53,6 +54,28 @@ class HomeRepository extends GetxController {
   Future<bool?> favPost(String retailerId, String postId) async {
     try {
       final response = await _apiService.dio.post('/retailer/$retailerId/fav-posts/$postId');
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<NotificationResponse?> fetchNotification({String? accountId}) async {
+    try {
+      final response = await _apiService.dio.get('/accounts/$accountId/notifications');
+      return NotificationResponse.fromJson(response.data);
+    } catch (e) {
+      debugPrint('Error fetching notifications data: $e');
+      return null;
+    }
+  }
+
+  Future<bool?> createNotification({String? accountId, String? message, String? link, String? sender}) async {
+    try {
+      final response = await _apiService.dio.post(
+        '/accounts/$accountId/notifications',
+        data: {'accountId': accountId, 'message': message, 'link': link, 'sender': sender},
+      );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       return false;

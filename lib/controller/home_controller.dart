@@ -1,5 +1,6 @@
 import 'package:cfv_mobile/data/repositories/home_repository.dart';
 import 'package:cfv_mobile/data/responses/home_response.dart';
+import 'package:cfv_mobile/data/responses/notification_response.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -17,6 +18,9 @@ class HomeController extends GetxController {
 
   Rx<bool> isPostsLoading = true.obs;
   RxList<PostModel> posts = <PostModel>[].obs;
+
+  Rx<bool> isNotificationLoading = true.obs;
+  RxList<NotificationModel> notifications = <NotificationModel>[].obs;
 
   @override
   void onReady() {
@@ -67,6 +71,40 @@ class HomeController extends GetxController {
       return response;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<void> createNotification({String? accountId, String? message, String? link, String? sender}) async {
+    try {
+      final response = await _homeRepository.createNotification(
+        accountId: accountId,
+        message: message,
+        link: link,
+        sender: sender,
+      );
+      if (response != null) {
+        debugPrint('Notification created successfully: $response');
+      } else {
+        debugPrint('Failed to create notification.');
+      }
+    } catch (e) {
+      return;
+    }
+  }
+
+  Future<void> fetchNotification({String? accountId}) async {
+    try {
+      final response = await _homeRepository.fetchNotification(accountId: accountId);
+      isNotificationLoading.value = false;
+      if (response != null) {
+        notifications.assignAll(response.notifications);
+        debugPrint('Notifications data loaded successfully: ${response.notifications}');
+      } else {
+        debugPrint('Failed to load notifications data.');
+      }
+    } catch (e) {
+      isNotificationLoading.value = false;
+      debugPrint('Failed to load notifications data.');
     }
   }
 }

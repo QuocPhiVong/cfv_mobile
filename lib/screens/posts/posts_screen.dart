@@ -22,10 +22,10 @@ class _PostsScreenState extends State<PostsScreen> with TickerProviderStateMixin
   final Map<String, TextEditingController> _postMessageControllers = {};
   final Map<String, bool> _postLikedStates = {};
   final Map<String, int> _postLikeCounts = {};
-  
+
   // Video player controllers for posts with videos
   final Map<int, VideoPlayerController> _videoControllers = {};
-  
+
   // Track which posts are expanded
   Set<int> expandedPosts = {};
   Set<int> likedPosts = {};
@@ -177,10 +177,8 @@ class _PostsScreenState extends State<PostsScreen> with TickerProviderStateMixin
     }
   }
 
-
-
   List<PostModel> get _allPosts => _homeController.posts;
-  
+
   List<PostModel> get _favoritePosts {
     // Filter posts that are liked
     return _homeController.posts.where((post) {
@@ -617,7 +615,7 @@ class _PostsScreenState extends State<PostsScreen> with TickerProviderStateMixin
         child: Column(
           children: [
             const SizedBox(height: 16),
-            
+
             // Categories section
             SizedBox(
               height: 120,
@@ -639,20 +637,20 @@ class _PostsScreenState extends State<PostsScreen> with TickerProviderStateMixin
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             ...posts.asMap().entries.map((entry) {
               final index = entry.key;
               final post = entry.value;
               bool isExpanded = expandedPosts.contains(index);
               bool isLiked = likedPosts.contains(index);
-              
+
               // Initialize controller for this post if not exists
               if (!_postMessageControllers.containsKey(post.postId)) {
                 _postMessageControllers[post.postId ?? ''] = TextEditingController();
               }
-              
+
               return postItem(post, isExpanded, index, context, isLiked);
             }),
             const SizedBox(height: 100),
@@ -719,10 +717,7 @@ class _PostsScreenState extends State<PostsScreen> with TickerProviderStateMixin
           ? const Center(child: CircularProgressIndicator())
           : TabBarView(
               controller: _tabController,
-              children: [
-                _buildPostsList(_allPosts),
-                _buildPostsList(_favoritePosts),
-              ],
+              children: [_buildPostsList(_allPosts), _buildPostsList(_favoritePosts)],
             ),
     );
   }

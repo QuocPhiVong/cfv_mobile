@@ -3,6 +3,7 @@ import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/controller/sendbird_controller.dart';
 import 'package:cfv_mobile/data/responses/home_response.dart';
+import 'package:cfv_mobile/screens/notification/notifications_screen.dart';
 import 'package:cfv_mobile/screens/product/product_details.dart';
 import 'package:cfv_mobile/screens/cart/cart_info.dart';
 import 'package:flutter/material.dart';
@@ -146,11 +147,19 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
-                              child: Icon(Icons.notifications_outlined, color: Colors.green.shade600, size: 24),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                                );
+                              },
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.shade100),
+                                child: Icon(Icons.notifications_outlined, color: Colors.green.shade600, size: 24),
+                              ),
                             ),
                           ],
                         ),
