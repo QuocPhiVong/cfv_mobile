@@ -5,7 +5,6 @@ import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/controller/sendbird_controller.dart';
 import 'package:cfv_mobile/data/responses/home_response.dart';
-import 'package:cfv_mobile/screens/posts/post_detail.dart';
 
 class PostsScreen extends StatefulWidget {
   const PostsScreen({super.key});
@@ -61,6 +60,7 @@ class _PostsScreenState extends State<PostsScreen> {
     setState(() => _isLoading = true);
 
     try {
+      await _homeController.loadCategoriesData();
       await _homeController.loadPostsData();
 
       for (final post in _homeController.posts) {
@@ -257,21 +257,11 @@ class _PostsScreenState extends State<PostsScreen> {
                   end: Alignment.centerRight,
                 ),
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.green.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: Colors.green.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))],
               ),
               child: Row(
                 children: [
-                  Icon(
-                    post.harvestStatusData.$2,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  Icon(post.harvestStatusData.$2, color: Colors.white, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     post.harvestStatusData.$1,
@@ -493,12 +483,91 @@ class _PostsScreenState extends State<PostsScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 16),
+
+                    // Categories section
+                    SizedBox(
+                      height: 120,
+                      child: Obx(
+                        () => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _homeController.isCategoriesLoading.value
+                              ? const Center(child: CircularProgressIndicator())
+                              : ListView.builder(
+                                  itemCount: _homeController.categories.length,
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    return _buildCategoryItem(
+                                      imagePath: '/placeholder.svg?height=60&width=60',
+                                      label: _homeController.categories[index].name,
+                                    );
+                                  },
+                                ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
                     ..._homeController.posts.map((post) => _buildPostCard(post, 0)),
                     const SizedBox(height: 100),
                   ],
                 ),
               ),
             ),
+    );
+  }
+
+  Widget _buildCategoryItem({required String imagePath, required String label}) {
+    return Container(
+      margin: const EdgeInsets.only(right: 16),
+      child: Column(
+        children: [
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                imagePath,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 70,
+                    height: 70,
+                    color: Colors.green.shade100,
+                    child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: 70,
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

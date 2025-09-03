@@ -51,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    homeController.loadCategoriesData();
     homeController.loadGardenersData();
     homeController.loadPostsData();
     _initializeSendbird();
@@ -171,30 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Categories section (keeping existing code)
-              SizedBox(
-                height: 120,
-                child: Obx(
-                  () => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: homeController.isCategoriesLoading.value
-                        ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            itemCount: homeController.categories.length,
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (BuildContext context, int index) {
-                              return _buildCategoryItem(
-                                imagePath: '/placeholder.svg?height=60&width=60',
-                                label: homeController.categories[index].name,
-                              );
-                            },
-                          ),
-                  ),
                 ),
               ),
 
@@ -505,8 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
                       ),
                       Text(
-                        '${'post.gardenerPhone' ?? ''} • '
-                        '${post.createdAt != null ? timeAgoSinceDate(post.createdAt!) : 'Chưa có ngày'}',
+                        post.createdAt != null ? timeAgoSinceDate(post.createdAt!) : 'Chưa có ngày',
                         style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                       ),
                     ],
@@ -621,12 +595,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 GestureDetector(
                   onTap: () {
                     // Navigate to ProductDetailScreen with product data
-                    final productData = {
-                      'name': post.title ?? "",
-                      'price': "${post.price}",
-                      'quantity': post.weightUnit ?? "",
-                      // 'garden': post. ?? "",
-                    };
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -720,11 +688,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 GestureDetector(
                   onTap: () {
                     // Navigate to product details or perform detail action
-                    final productData = {
-                      'name': post.title ?? "",
-                      'price': "${post.price}",
-                      'quantity': post.weightUnit ?? "",
-                    };
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -872,58 +835,4 @@ class _HomeScreenState extends State<HomeScreen> {
   // Widget _buildProductCard(Map<String, String> product, double width) {
   //   ...unused code...
   // }
-
-  Widget _buildCategoryItem({required String imagePath, required String label}) {
-    return Container(
-      margin: const EdgeInsets.only(right: 16),
-      child: Column(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                imagePath,
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 70,
-                    height: 70,
-                    color: Colors.green.shade100,
-                    child: Icon(Icons.eco, color: Colors.green.shade600, size: 30),
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: 70,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
