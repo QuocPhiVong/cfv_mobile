@@ -1,4 +1,6 @@
+import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/create_appointment_controller.dart';
+import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/data/services/storage_service.dart';
 import 'package:cfv_mobile/screens/appointment/appointment_success.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +27,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final CreateAppointmentController _appointmentController = Get.put(CreateAppointmentController());
-
+  final HomeController _homeController = Get.find<HomeController>();
+  final AuthenticationController _authController = Get.find<AuthenticationController>();
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String _selectedDuration = '30 phút';
@@ -561,6 +564,13 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
           'description': _descriptionController.text,
           'appointmentId': '',
         };
+
+        _homeController.createNotification(
+          accountId: retailerId ?? '',
+          message: 'Lịch hẹn ${appointmentData['subject']} đã được tạo thành công',
+          link: '/appointment-detail/${appointmentData['appointmentId']}',
+          sender: _authController.currentUser?.name ?? '',
+        );
 
         // Navigate to success screen
         Navigator.push(

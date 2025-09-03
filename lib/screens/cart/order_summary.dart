@@ -1,6 +1,7 @@
 import 'package:cfv_mobile/controller/app_controller.dart';
 import 'package:cfv_mobile/controller/auth_controller.dart';
 import 'package:cfv_mobile/controller/cart_controller.dart';
+import 'package:cfv_mobile/controller/home_controller.dart';
 import 'package:cfv_mobile/controller/oder_controller.dart';
 import 'package:cfv_mobile/data/responses/cart_response.dart';
 import 'package:cfv_mobile/screens/cart/address_selection.dart';
@@ -31,6 +32,7 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
   final AuthenticationController _authController = Get.find<AuthenticationController>();
   final OderController _oderController = Get.find<OderController>();
   final CartController _cartController = Get.find<CartController>();
+  final HomeController _homeController = Get.find<HomeController>();
 
   final List<File> _selectedContract = [];
   final List<String> _contractFileName = [];
@@ -583,6 +585,13 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
           if (mounted) {
             if (value == true) {
               _cartController.deleteCart(_authController.currentUser?.accountId ?? '');
+              final orderId = _generateOrderId();
+              _homeController.createNotification(
+                accountId: _authController.currentUser?.accountId ?? '',
+                message: 'Đơn hàng $orderId đã được tạo thành công',
+                link: '/order-detail/$orderId',
+                sender: _authController.currentUser?.name ?? '',
+              );
               _navigateToSuccessScreen();
             } else {
               _showErrorMessage('Đặt hàng thất bại');

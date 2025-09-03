@@ -73,7 +73,7 @@ class HomeRepository extends GetxController {
   Future<bool?> createNotification({String? accountId, String? message, String? link, String? sender}) async {
     try {
       final response = await _apiService.dio.post(
-        '/accounts/$accountId/notifications',
+        '/notifications',
         data: {'accountId': accountId, 'message': message, 'link': link, 'sender': sender},
       );
       return response.statusCode == 200 || response.statusCode == 201;
