@@ -64,7 +64,7 @@ class OrderDeliveryModel {
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
       note: json['note'] as String?,
-      totalAmount: json.parseDouble('totalAmount').toInt(),
+      totalAmount: json.parseDouble('totalAmount')?.toInt() ?? 0,
       orderDeliveryDetails: (json['orderDeliveryDetails'] as List<dynamic>)
           .map((item) => OrderDeliveryDetailModel.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -113,8 +113,8 @@ class OrderDeliveryDetailModel {
       productId: json['productId'] as String,
       productName: json['productName'] as String,
       deliveredAt: json['deliveredAt'] as String,
-      quantity: json.parseDouble('quantity').toInt(),
-      price: json.parseDouble('price').toInt(),
+      quantity: json.parseDouble('quantity')?.toInt() ?? 0,
+      price: json.parseDouble('price')?.toInt() ?? 0,
       productUnit: json['productUnit'] as String,
       currency: json['currency'] as String,
     );

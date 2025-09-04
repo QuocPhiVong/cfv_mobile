@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cfv_mobile/map_parser.dart';
 import 'package:flutter/material.dart';
 
@@ -230,33 +228,15 @@ class PostModel {
   final String? gardenerId;
   final String? harvestStatus;
   final double? depositPercentage;
-  
+
   (String, IconData) get harvestStatusData {
     final Map<String, (String, IconData)> harvestStatusMap = {
-      "PREORDEROPEN": (
-        "Mở đặt cọc",
-        Icons.agriculture,
-      ),
-      "PLANTING": (
-        "Đang trồng",
-        Icons.agriculture,
-      ),
-      "HARVESTING": (
-        "Thu hoạch",
-        Icons.agriculture,
-      ),
-      "PROCESSING": (
-        "Đóng gói",
-        Icons.local_shipping,
-      ),
-      "READYFORSALE": (
-        "Có hàng",
-        Icons.store,
-      ),
-      "COMPLETED": (
-        "Đã thu hoạch",
-        Icons.check_circle,
-      ),
+      "PREORDEROPEN": ("Mở đặt cọc", Icons.agriculture),
+      "PLANTING": ("Đang trồng", Icons.agriculture),
+      "HARVESTING": ("Thu hoạch", Icons.agriculture),
+      "PROCESSING": ("Đóng gói", Icons.local_shipping),
+      "READYFORSALE": ("Có hàng", Icons.store),
+      "COMPLETED": ("Đã thu hoạch", Icons.check_circle),
     };
     return harvestStatusMap[harvestStatus] ?? ('', Icons.agriculture);
   }
@@ -282,23 +262,23 @@ class PostModel {
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) => PostModel(
-    postId: json["postId"],
-    title: json["title"],
-    price: json["price"],
-    currency: json["currency"],
-    thumbNail: json["thumbNail"],
-    gardenerName: json["gardenerName"],
-    gardenerAvatar: json["gardenerAvatar"],
-    createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
-    content: json["content"],
-    status: json["status"],
-    rating: json["rating"],
-    weightUnit: json["weightUnit"],
-    hasProductCertificate: json["hasProductCertificate"],
-    productId: json["productId"],
-    gardenerId: json["gardenerId"],
-    harvestStatus: json["harvestStatus"],
-    depositPercentage: json.parseDouble("depositPercentage") 
+    postId: json.parseString("postId"),
+    title: json.parseString("title"),
+    price: json.parseDouble("price"),
+    currency: json.parseString("currency"),
+    thumbNail: json.parseString("thumbNail"),
+    gardenerName: json.parseString("gardenerName"),
+    gardenerAvatar: json.parseString("gardenerAvatar"),
+    createdAt: json.parseDateTime("createdAt"),
+    content: json.parseString("content"),
+    status: json.parseString("status"),
+    rating: json.parseDouble("rating"),
+    weightUnit: json.parseString("weightUnit"),
+    hasProductCertificate: json.parseBool("hasProductCertificate"),
+    productId: json.parseString("productId"),
+    gardenerId: json.parseString("gardenerId"),
+    harvestStatus: json.parseString("harvestStatus"),
+    depositPercentage: json.parseDouble("depositPercentage"),
   );
 
   Map<String, dynamic> toJson() => {

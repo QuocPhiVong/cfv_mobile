@@ -59,13 +59,13 @@ class OrderDetailResponse {
       accountName: json['accountName'] as String,
       phoneNumber: json['phoneNumber'] as String,
       status: json['status'] as String,
-      totalAmount: json.parseDouble('totalAmount').toInt(),
-      shippingCost: json.parseDouble('shippingCost').toInt(),
+      totalAmount: json.parseDouble('totalAmount')?.toInt() ?? 0,
+      shippingCost: json.parseDouble('shippingCost')?.toInt() ?? 0,
       paymentMethod: json['paymentMethod'] as String,
       createdAt: json['createdAt'] as String,
       cancelReason: json['cancelReason'] as String?,
       shippingAddress: json['shippingAddress'] as String,
-      totalDepositAmount: json.parseDouble('totalDepositAmount').toInt(),
+      totalDepositAmount: json.parseDouble('totalDepositAmount')?.toInt() ?? 0,
       contractImage: json['contractImage'] != null
           ? (json['contractImage'] as List<dynamic>).map((e) => e.toString()).toList()
           : null,
@@ -130,18 +130,18 @@ class OrderDetail {
   factory OrderDetail.fromJson(Map<String, dynamic> json) {
     return OrderDetail(
       orderDetailId: json['orderDetailId'] as String,
-      price: json.parseDouble('price').toInt(),
-      quantity: json.parseInt('quantity'),
+      price: json.parseDouble('price')?.toInt() ?? 0,
+      quantity: json.parseInt('quantity') ?? 0,
       productUnit: json['productUnit'] as String,
       deliveryStatus: json['deliveryStatus'] as String,
       productId: json['productId'] as String,
       productName: json['productName'] as String,
       weightUnit: json['weightUnit'] as String,
       currency: json['currency'] as String,
-      deliveredQuantity: json.parseDouble('deliveredQuantity').toInt(),
+      deliveredQuantity: json.parseDouble('deliveredQuantity')?.toInt() ?? 0,
       harvestStatus: json['harvestStatus'] as String,
-      depositAmount: json.parseDouble('depositAmount').toInt(),
-      depositPercentage: json.parseDouble('depositPercentage').toInt(),
+      depositAmount: json.parseDouble('depositAmount')?.toInt() ?? 0,
+      depositPercentage: json.parseDouble('depositPercentage')?.toInt() ?? 0,
     );
   }
 
